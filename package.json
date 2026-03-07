@@ -1,0 +1,45 @@
+{
+  "name": "rdkit-wrapper",
+  "version": "0.0.0",
+  "description": "A modern wrapper for RDKit.",
+  "homepage": "https://github.com/tandemai/rdkit-wrapper#readme",
+  "bugs": {
+    "url": "https://github.com/tandemai/rdkit-wrapper/issues"
+  },
+  "license": "MIT",
+  "author": "Paul Pillot <paul.pillot@tandemai.com>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tandemai/rdkit-wrapper.git"
+  },
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "main": "./dist/index.mjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
+  "exports": {
+    ".": "./dist/index.mjs",
+    "./package.json": "./package.json"
+  },
+  "scripts": {
+    "build": "tsdown",
+    "dev": "tsdown --watch",
+    "fmt": "oxfmt",
+    "fmt:check": "oxfmt --check",
+    "test": "vitest",
+    "typecheck": "tsgo --noEmit",
+    "prepublishOnly": "pnpm run build"
+  },
+  "devDependencies": {
+    "@types/node": "^25.0.3",
+    "@typescript/native-preview": "7.0.0-dev.20260307.1",
+    "bumpp": "^10.3.2",
+    "oxfmt": "^0.36.0",
+    "rolldown-plugin-wasm": "^0.2.1",
+    "tsdown": "^0.18.1",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.16"
+  }
+}
