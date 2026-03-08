@@ -5,7 +5,16 @@ import type {
   RDKitSubstructMatch,
   RDKitDescriptors,
   RDKitJson,
+  RDKitStereoTags,
+  RDKitRemoveHsOptions,
+  RDKitAlignedCoordsOpt,
+  RDKitMorganFPOptions,
+  RDKitPatternFPOptions,
+  RDKitTopologicalTorsionFPOptions,
+  RDKitRdkitFpOptions,
+  RDKitAtomPairFPOptions,
 } from './types/rdkit-json-based-typings.d.ts';
+import { MolCollection } from './mol-list.ts';
 
 /**
  * A wrapper around RDKit's JSMol object providing a typed, camelCase API.
@@ -75,6 +84,11 @@ export class Mol implements Disposable {
     return this.jsMol.get_smarts();
   }
 
+  /** Returns the Chemaxon Extended SMARTS string */
+  getCxSmarts(): string {
+    return this.jsMol.get_cxsmarts();
+  }
+
   /**
    * Returns the V2000 Molfile string
    * @param options - Molblock generation options
@@ -110,6 +124,11 @@ export class Mol implements Disposable {
   /** Returns the parsed JSON representation of the molecule */
   getJson(): RDKitJson {
     return JSON.parse(this.jsMol.get_json()) as RDKitJson;
+  }
+
+  /** Returns an unsigned integer array representation of the molecule */
+  getAsUint8Array(): Uint8Array {
+    return this.jsMol.get_as_uint8array();
   }
 
   // -- SVG --
@@ -184,14 +203,102 @@ export class Mol implements Disposable {
   /**
    * Returns the Morgan fingerprint as a bit string
    * @param options - Fingerprint options
-   * @param options.radius - Fingerprint radius
-   * @param options.nBits - Fingerprint length
    */
-  getMorganFp(options?: { radius?: number; nBits?: number }): string {
+  getMorganFp(options?: Partial<RDKitMorganFPOptions>): string {
     const mol = this.jsMol;
     return options
       ? mol.get_morgan_fp(JSON.stringify(options))
       : mol.get_morgan_fp();
+  }
+
+  /** Returns the pattern fingerprint as a bit string */
+  getPatternFp(options?: Partial<RDKitPatternFPOptions>): string {
+    const mol = this.jsMol;
+    return options
+      ? mol.get_pattern_fp(JSON.stringify(options))
+      : mol.get_pattern_fp();
+  }
+
+  /** Returns the topological torsion fingerprint as a bit string */
+  getTopologicalTorsionFp(
+    options?: Partial<RDKitTopologicalTorsionFPOptions>,
+  ): string {
+    const mol = this.jsMol;
+    return options
+      ? mol.get_topological_torsion_fp(JSON.stringify(options))
+      : mol.get_topological_torsion_fp();
+  }
+
+  /** Returns the RDKit fingerprint as a bit string */
+  getRdkitFp(options?: Partial<RDKitRdkitFpOptions>): string {
+    const mol = this.jsMol;
+    return options
+      ? mol.get_rdkit_fp(JSON.stringify(options))
+      : mol.get_rdkit_fp();
+  }
+
+  /** Returns the atom pair fingerprint as a bit string */
+  getAtomPairFp(options?: Partial<RDKitAtomPairFPOptions>): string {
+    const mol = this.jsMol;
+    return options
+      ? mol.get_atom_pair_fp(JSON.stringify(options))
+      : mol.get_atom_pair_fp();
+  }
+
+  /** Returns the MACCS fingerprint as a bit string (fixed 167-bit) */
+  getMaccsFp(): string {
+    return this.jsMol.get_maccs_fp();
+  }
+
+  /** Returns the Morgan fingerprint as a Uint8Array */
+  getMorganFpAsUint8Array(options?: Partial<RDKitMorganFPOptions>): Uint8Array {
+    const mol = this.jsMol;
+    return options
+      ? mol.get_morgan_fp_as_uint8array(JSON.stringify(options))
+      : mol.get_morgan_fp_as_uint8array();
+  }
+
+  /** Returns the pattern fingerprint as a Uint8Array */
+  getPatternFpAsUint8Array(
+    options?: Partial<RDKitPatternFPOptions>,
+  ): Uint8Array {
+    const mol = this.jsMol;
+    return options
+      ? mol.get_pattern_fp_as_uint8array(JSON.stringify(options))
+      : mol.get_pattern_fp_as_uint8array();
+  }
+
+  /** Returns the topological torsion fingerprint as a Uint8Array */
+  getTopologicalTorsionFpAsUint8Array(
+    options?: Partial<RDKitTopologicalTorsionFPOptions>,
+  ): Uint8Array {
+    const mol = this.jsMol;
+    return options
+      ? mol.get_topological_torsion_fp_as_uint8array(JSON.stringify(options))
+      : mol.get_topological_torsion_fp_as_uint8array();
+  }
+
+  /** Returns the RDKit fingerprint as a Uint8Array */
+  getRdkitFpAsUint8Array(options?: Partial<RDKitRdkitFpOptions>): Uint8Array {
+    const mol = this.jsMol;
+    return options
+      ? mol.get_rdkit_fp_as_uint8array(JSON.stringify(options))
+      : mol.get_rdkit_fp_as_uint8array();
+  }
+
+  /** Returns the atom pair fingerprint as a Uint8Array */
+  getAtomPairFpAsUint8Array(
+    options?: Partial<RDKitAtomPairFPOptions>,
+  ): Uint8Array {
+    const mol = this.jsMol;
+    return options
+      ? mol.get_atom_pair_fp_as_uint8array(JSON.stringify(options))
+      : mol.get_atom_pair_fp_as_uint8array();
+  }
+
+  /** Returns the MACCS fingerprint as a Uint8Array */
+  getMaccsFpAsUint8Array(): Uint8Array {
+    return this.jsMol.get_maccs_fp_as_uint8array();
   }
 
   // -- Properties --
@@ -229,6 +336,29 @@ export class Mol implements Disposable {
     return this.jsMol.clear_prop(key);
   }
 
+  /**
+   * Returns the list of property names
+   * @param options - Filter options
+   */
+  getPropList(options?: {
+    includePrivate?: boolean;
+    includeComputed?: boolean;
+  }): string[] {
+    const mol = this.jsMol;
+    const sl = options
+      ? mol.get_prop_list(
+          options.includePrivate ?? false,
+          options.includeComputed ?? false,
+        )
+      : mol.get_prop_list();
+    const result: string[] = [];
+    for (let i = 0; i < sl.size(); i++) {
+      result.push(sl.get(i));
+    }
+    sl.delete();
+    return result;
+  }
+
   // -- Molecule info --
 
   /** Returns true if the molecule's structure is valid */
@@ -244,6 +374,245 @@ export class Mol implements Disposable {
   /** Returns the number of bonds in the molecule */
   getNumBonds(): number {
     return this.jsMol.get_num_bonds();
+  }
+
+  /** Returns 0 if no coords, 2 for 2D, 3 for 3D */
+  hasCoords(): 0 | 2 | 3 {
+    return this.jsMol.has_coords();
+  }
+
+  /** Returns stereo tags (CIP codes) for the molecule */
+  getStereoTags(): RDKitStereoTags {
+    return JSON.parse(this.jsMol.get_stereo_tags()) as RDKitStereoTags;
+  }
+
+  // -- Aromatic / Kekule --
+
+  /** Returns the V2000 Molfile representation of the aromatic form */
+  getAromaticForm(): string {
+    return this.jsMol.get_aromatic_form();
+  }
+
+  /** Returns the V2000 Molfile representation of the Kekule form */
+  getKekuleForm(): string {
+    return this.jsMol.get_kekule_form();
+  }
+
+  /** Converts the molecule to aromatic form in place */
+  convertToAromaticForm(): void {
+    this.jsMol.convert_to_aromatic_form();
+  }
+
+  /** Converts the molecule to Kekule form in place */
+  convertToKekuleForm(): void {
+    this.jsMol.convert_to_kekule_form();
+  }
+
+  // -- Hydrogen methods --
+
+  /**
+   * Returns a V2000 Molfile string with explicit hydrogens removed
+   * @param options - Options controlling which hydrogens to remove
+   */
+  removeHs(options?: Partial<RDKitRemoveHsOptions>): string {
+    const mol = this.jsMol;
+    return options
+      ? mol.remove_hs(JSON.stringify(options))
+      : mol.remove_hs();
+  }
+
+  /**
+   * Removes explicit hydrogens from the molecule in place
+   * @param options - Options controlling which hydrogens to remove
+   */
+  removeHsInPlace(options?: Partial<RDKitRemoveHsOptions>): boolean {
+    const mol = this.jsMol;
+    return options
+      ? mol.remove_hs_in_place(JSON.stringify(options))
+      : mol.remove_hs_in_place();
+  }
+
+  /** Returns a V2000 Molfile string with explicit hydrogens added */
+  addHs(): string {
+    return this.jsMol.add_hs();
+  }
+
+  /** Adds explicit hydrogens to the molecule in place */
+  addHsInPlace(): boolean {
+    return this.jsMol.add_hs_in_place();
+  }
+
+  // -- Coordinate generation --
+
+  /**
+   * Generates new 2D coordinates for the molecule
+   * @param useCoordGen - Use the CoordGen algorithm
+   */
+  setNewCoords(useCoordGen?: boolean): boolean {
+    const mol = this.jsMol;
+    return useCoordGen !== undefined
+      ? mol.set_new_coords(useCoordGen)
+      : mol.set_new_coords();
+  }
+
+  /**
+   * Returns a V2000 Molfile string with newly generated coordinates
+   * @param useCoordGen - Use the CoordGen algorithm
+   */
+  getNewCoords(useCoordGen?: boolean): string {
+    const mol = this.jsMol;
+    return useCoordGen !== undefined
+      ? mol.get_new_coords(useCoordGen)
+      : mol.get_new_coords();
+  }
+
+  /**
+   * Aligns molecule coordinates with a template molecule
+   * @param template - Template molecule to align to
+   * @param options - Alignment options
+   */
+  generateAlignedCoords(
+    template: Mol,
+    options?: Partial<RDKitAlignedCoordsOpt>,
+  ): string {
+    return this.jsMol.generate_aligned_coords(
+      template.jsMol,
+      JSON.stringify(options ?? {}),
+    );
+  }
+
+  // -- Depiction --
+
+  /**
+   * Normalizes the depiction of the molecule
+   * @param options - Normalization options
+   */
+  normalizeDepiction(options?: {
+    canonicalize?: number;
+    scaleFactor?: number;
+  }): number {
+    const mol = this.jsMol;
+    if (!options) return mol.normalize_depiction();
+    const { canonicalize, scaleFactor } = options;
+    if (scaleFactor !== undefined && canonicalize !== undefined) {
+      return mol.normalize_depiction(canonicalize, scaleFactor);
+    }
+    if (canonicalize !== undefined) {
+      return mol.normalize_depiction(canonicalize);
+    }
+    return mol.normalize_depiction();
+  }
+
+  /**
+   * Straightens the depiction of the molecule
+   * @param smallRotation - Only apply small rotations
+   */
+  straightenDepiction(smallRotation?: boolean): void {
+    this.jsMol.straighten_depiction(smallRotation);
+  }
+
+  // -- Abbreviations --
+
+  /**
+   * Condenses functional group abbreviations in the molecule
+   * @param options - Abbreviation options
+   */
+  condenseAbbreviations(options?: {
+    maxCoverage?: number;
+    useLinkers?: boolean;
+  }): string {
+    const mol = this.jsMol;
+    if (!options) return mol.condense_abbreviations();
+    const { maxCoverage, useLinkers } = options;
+    if (maxCoverage !== undefined && useLinkers !== undefined) {
+      return mol.condense_abbreviations(maxCoverage, useLinkers);
+    }
+    return mol.condense_abbreviations();
+  }
+
+  // -- Canvas drawing --
+
+  /**
+   * Draws the molecule to an HTML5 canvas
+   * @param canvas - Target canvas element
+   * @param width - Width in pixels
+   * @param height - Height in pixels
+   */
+  drawToCanvas(
+    canvas: HTMLCanvasElement,
+    width: number,
+    height: number,
+  ): void;
+  /**
+   * Draws the molecule to an HTML5 canvas with highlighting options
+   * @param canvas - Target canvas element
+   * @param options - Drawing options including dimensions and highlighting
+   */
+  drawToCanvas(
+    canvas: HTMLCanvasElement,
+    options: Partial<RDKitDepictionDetails>,
+  ): void;
+  drawToCanvas(
+    canvas: HTMLCanvasElement,
+    widthOrOptions: number | Partial<RDKitDepictionDetails>,
+    height?: number,
+  ): void {
+    const mol = this.jsMol;
+    if (typeof widthOrOptions === 'number') {
+      mol.draw_to_canvas(canvas, widthOrOptions, height!);
+    } else {
+      mol.draw_to_canvas_with_highlights(
+        canvas,
+        JSON.stringify(widthOrOptions),
+      );
+    }
+  }
+
+  /**
+   * Draws the molecule to an HTML5 canvas with an offset
+   * @param canvas - Target canvas element
+   * @param offsetX - Horizontal offset in pixels
+   * @param offsetY - Vertical offset in pixels
+   * @param width - Width in pixels
+   * @param height - Height in pixels
+   */
+  drawToCanvasWithOffset(
+    canvas: HTMLCanvasElement,
+    offsetX: number,
+    offsetY: number,
+    width: number,
+    height: number,
+  ): void {
+    this.jsMol.draw_to_canvas_with_offset(canvas, offsetX, offsetY, width, height);
+  }
+
+  // -- Fragments --
+
+  /**
+   * Returns the disconnected fragments of the molecule
+   * @returns An object with fragment-to-atom mappings and a MolCollection of fragments
+   */
+  getFrags(): {
+    frags: number[];
+    fragsMolAtomMapping: number[][];
+    mols: MolCollection;
+  } {
+    const result = this.jsMol.get_frags();
+    const parsed = JSON.parse(result.mappings) as {
+      frags: number[];
+      fragsMolAtomMapping: number[][];
+    };
+    return {
+      ...parsed,
+      mols: new MolCollection(result.molList, this.#module),
+    };
+  }
+
+  // -- Copy --
+
+  /** Returns a copy of the molecule */
+  copy(): Mol {
+    return new Mol(this.jsMol.copy(), this.#module);
   }
 
   // -- Lifecycle --

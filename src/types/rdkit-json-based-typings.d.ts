@@ -259,3 +259,116 @@ export type RDKitMCSResult = {
    */
   smarts: string | string[];
 };
+
+export type RDKitMorganFPOptions = {
+  /** @default 2 */
+  radius: number;
+  /** @default 2048 */
+  nBits: number;
+  /** @default false */
+  useCountSimulation: boolean;
+  /** @default false */
+  useChirality: boolean;
+  /** @default true */
+  useBondTypes: boolean;
+  /** @default false */
+  includeRedundantEnvironments: boolean;
+  /** @default false */
+  onlyNonzeroInvariants: boolean;
+};
+
+export type RDKitPatternFPOptions = {
+  /** @default 2048 */
+  nBits: number;
+  /** @default false */
+  tautomericFingerprint: boolean;
+}
+
+export type RDKitTopologicalTorsionFPOptions = {
+  /** @default 2048 */
+  nBits: number;
+  /** @default false */
+  useChirality: boolean;
+  /** @default 4 */
+  torsionAtomCount: number;
+  /** @default true */
+  useCountSimulation: boolean;
+};
+
+export type RDKitRdkitFpOptions = {
+  /** @default 2048 */
+  nBits: number;
+  /** @default 2 */
+  nBitsPerHash: number;
+  /** @default 1 */
+  minPath: number;
+  /** @default 7 */
+  maxPath: number;
+  /** @default true */
+  useBondOrder: boolean;
+  /** @default true */
+  branchedPaths: boolean;
+  /** @default false */
+  useCountSimulation: boolean;
+  /** @default true */
+  useHs: boolean;
+}
+
+export type RDKitAtomPairFPOptions = {
+  /** @default 2048 */
+  nBits: number;
+  /** @default false */
+  useChirality: boolean;
+  /** @default 1 */
+  minLength: number;
+  /** @default 30 */
+  maxLength: number;
+  /** @default true */
+  useCountSimulation: boolean;
+  /** @default true */
+  use2D: boolean;
+};
+
+export type RDKitRemoveHsOptions = {
+  /** @default false — hydrogens that have no bonds */
+  removeDegreeZero: boolean;
+  /** @default false — hydrogens with two (or more) bonds */
+  removeHigherDegrees: boolean;
+  /** @default false — hydrogens with bonds only to other hydrogens */
+  removeOnlyHNeighbors: boolean;
+  /** @default false — hydrogens with non-default isotopes */
+  removeIsotopes: boolean;
+  /** @default false — removes isotopic Hs, tracks them via _isotopicHs property */
+  removeAndTrackIsotopes: boolean;
+  /** @default false — hydrogens with at least one dummy-atom neighbor */
+  removeDummyNeighbors: boolean;
+  /** @default false — hydrogens defining bond stereochemistry */
+  removeDefiningBondStereo: boolean;
+  /** @default true — hydrogens with wedged bonds */
+  removeWithWedgedBond: boolean;
+  /** @default false — hydrogens with queries defined */
+  removeWithQuery: boolean;
+  /** @default true — mapped hydrogens */
+  removeMapped: boolean;
+  /** @default true — hydrogens in SubstanceGroups */
+  removeInSGroups: boolean;
+  /** @default true — display warnings for Hs that are not removed */
+  showWarnings: boolean;
+  /** @default true @deprecated — equivalent of !implicitOnly */
+  removeNonimplicit: boolean;
+  /** @default false @deprecated */
+  updateExplicitCount: boolean;
+  /** @default false — remove hydrides */
+  removeHydrides: boolean;
+  /** @default false — remove Hs bonded to atoms with non-tetrahedral stereochemistry */
+  removeNontetrahedralNeighbors: boolean;
+};
+
+export type RDKitAlignedCoordsOpt = {
+  useCoordGen: boolean;
+  referenceSmarts: string;
+  allowRGroups: boolean;
+  acceptFailure: boolean;
+  alignOnly: boolean;
+};
+

@@ -43,9 +43,6 @@ export interface JSMol {
   get_v3Kmolblock(): string;
   get_v3Kmolblock(options: JSONString): string;
 
-  /** Returns the pickled string representation of the molecule */
-  get_pickle(): string;
-
   /** Return the InChI string */
   get_inchi(): string;
   /**
@@ -66,14 +63,6 @@ export interface JSMol {
 
   /** Returns an SVG of the molecule */
   get_svg(): string;
-
-  /**
-   * Returns an SVG of the molecule
-   *
-   * @param width Width in pixels
-   * @param height Height in pixels
-   */
-  get_svg(width: number, height: number): string;
 
   /**
    * Returns an SVG of the molcule, with atoms highlighted
@@ -123,19 +112,6 @@ export interface JSMol {
   get_morgan_fp(options: JSONString): string;
 
   /**
-   * Returns the Morgan fingerprint as binary
-   */
-  get_morgan_fp_as_binary_text(): string;
-
-  /**
-   * Returns the Morgan fingerprint as binary
-   *
-   * @param radius fingerprint radius
-   * @param len fingerprint length
-   */
-  get_morgan_fp_as_binary_text(radius: number, len: number): string;
-
-  /**
    * Returns the Morgan fingerprint as an unsigned integer array
    */
   get_morgan_fp_as_uint8array(): Uint8Array;
@@ -163,18 +139,6 @@ export interface JSMol {
    * @param {number} len fingerprint length
    */
   get_pattern_fp(options: JSONString): string;
-
-  /**
-   * Returns the pattern fingerprint as binary
-   */
-  get_pattern_fp_as_binary_text(): string;
-
-  /**
-   * Returns the pattern fingerprint as binary
-   *
-   * @param len fingerprint length
-   */
-  get_pattern_fp_as_binary_text(len: number): string;
 
   /**
    * Returns the pattern fingerprint as an unsigned integer array
@@ -293,24 +257,10 @@ export interface JSMol {
    */
   get_maccs_fp_as_uint8array(): Uint8Array;
 
-  /**
-   * Returns the maccs fingerprint as an unsigned integer array
-   *
-   * you can also specify the following options
-   * (passed as a stringified JSON object)
-   * @param {number} fplen fingerprint length
-   */
-  get_maccst_fp_as_uint8array(options: JSONString): Uint8Array;
-
   // abbreviation methods
 
   condense_abbreviations(): string;
   condense_abbreviations(maxCoverage: number, useLinkers: boolean): string;
-  condense_abbreviations_from_defs(
-    definitions: string,
-    maxCoverage: number,
-    useLinkers: boolean
-  ): string;
 
   // coord generation
 
@@ -342,8 +292,8 @@ export interface JSMol {
   /** Returns the V2000 Molfile representation of the kekule form of the molecule */
   get_kekule_form(): string;
 
-  /** Returns a stringified JSON object containing the disconnected fragments of the molecule object */
-  get_frags(): { mappings: JSONString; molIterator: MolList };
+  /** Returns the disconnected fragments of the molecule */
+  get_frags(): { mappings: JSONString; molList: MolList };
 
   /** Generate new 2D coordinates */
   set_new_coords(): boolean;
@@ -375,22 +325,9 @@ export interface JSMol {
   has_prop(key: string): boolean;
 
   /** Returns the list of property names */
-  get_prop_list(): string[];
-
-  /**
-   * Returns the list of property names
-   *
-   * @param includePrivate set to true to include private properties
-   */
-  get_prop_list(includePrivate: boolean): string[];
-
-  /**
-   * Returns the list of property names
-   *
-   * @param includePrivate set to true to include private properties
-   * @param includeComputed set to true to include computed properties
-   */
-  get_prop_list(includePrivate: boolean, includeComputed: boolean): string[];
+  get_prop_list(): StringList;
+  get_prop_list(includePrivate: boolean): StringList;
+  get_prop_list(includePrivate: boolean, includeComputed: boolean): StringList;
 
   /**
    * Sets a property on the molecule
@@ -431,9 +368,11 @@ export interface JSMol {
    * @returns V2000 Molfile string without explicit hydrogens
    */
   remove_hs(): string;
+  remove_hs(options: JSONString): string;
 
-  /** Remoce explicit hydrogens from the molecule */
+  /** Remove explicit hydrogens from the molecule */
   remove_hs_in_place(): boolean;
+  remove_hs_in_place(options: JSONString): boolean;
 
   /**
    * Add explicit hydrogens
@@ -449,6 +388,9 @@ export interface JSMol {
 
   convert_to_aromatic_form(): void;
   convert_to_kekule_form(): void;
+
+  /** Returns a copy of the molecule */
+  copy(): JSMol;
 
   // depiction methods
 
@@ -644,6 +586,13 @@ export interface MolList {
    * @returns size of the list
    */
   size: () => number;
+}
+
+/** Emscripten vector<string> wrapper */
+export interface StringList {
+  size(): number;
+  get(i: number): string;
+  delete(): void;
 }
 
 // constructor interfaces
