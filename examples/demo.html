@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>rdkit-wrapper ESM Demo</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, sans-serif; color: #1a1a1a; padding: 2rem; max-width: 900px; margin: 0 auto; }
+    h1 { color: #044484; margin-bottom: 0.25rem; }
+    h2 { color: #044484; margin-top: 1.5rem; margin-bottom: 0.5rem; font-size: 1.2rem; }
+    #version { color: #666; font-size: 0.9rem; margin-bottom: 1.5rem; }
+    #loading { color: #888; }
+
+    label { margin-right: 1rem; cursor: pointer; user-select: none; }
+    input[type="text"] { padding: 4px 8px; font-size: 0.95rem; width: 360px; }
+    .input-row { margin-bottom: 0.5rem; }
+    .input-row label { font-weight: 600; width: 70px; display: inline-block; }
+    .options { margin: 0.75rem 0; display: flex; flex-wrap: wrap; gap: 0.25rem 1.5rem; align-items: center; }
+    .options label { font-weight: normal; }
+    .legend-input { width: 140px; }
+
+    #drawing { margin: 1rem 0; min-height: 200px; }
+    #drawing svg { border: 1px solid #ddd; border-radius: 4px; }
+    #can-smiles { font-family: monospace; font-size: 0.95rem; color: #333; margin-bottom: 0.5rem; }
+    #can-smiles:empty { display: none; }
+    #error { color: #c00; font-size: 0.9rem; min-height: 1.2em; }
+
+    #descriptors { margin-top: 0.5rem; font-size: 0.9rem; line-height: 1.6; }
+    #descriptors b { color: #044484; }
+    #fingerprint { font-family: monospace; font-size: 0.75rem; word-break: break-all; color: #555; margin-top: 0.25rem; }
+  </style>
+</head>
+<body>
+  <h1>rdkit-wrapper ESM Demo</h1>
+  <div id="version"><span id="loading">Loading WASM module...</span></div>
+
+  <div class="input-row">
+    <label for="smiles-input">SMILES</label>
+    <input id="smiles-input" type="text" value="CC(=O)Oc1ccccc1C(=O)O">
+  </div>
+  <div class="input-row">
+    <label for="smarts-input">SMARTS</label>
+    <input id="smarts-input" type="text" value="" placeholder="e.g. c1ccccc1">
+  </div>
+
+  <div class="options">
+    <label><input type="checkbox" id="addAtomIndices"> Atom indices</label>
+    <label><input type="checkbox" id="addBondIndices"> Bond indices</label>
+    <label><input type="checkbox" id="explicitMethyl"> Explicit methyl</label>
+    <label><input type="checkbox" id="addStereoAnnotation"> Stereo annotation</label>
+    <label>Legend: <input type="text" id="legend" class="legend-input" value=""></label>
+  </div>
+
+  <div id="error"></div>
+  <div id="can-smiles"></div>
+  <div id="drawing"></div>
+
+  <h2>Computed Values</h2>
+  <div id="descriptors"></div>
+  <div id="fingerprint"></div>
+
+  <!--
+    This demo imports the built ESM library from ../dist/.
+    Serve with any HTTP server, e.g.: npx serve . (from repo root)
+    Then open: http://localhost:3000/examples/demo.html
+  -->
+  <script type="module" src="./demo.js"></script>
+</body>
+</html>
