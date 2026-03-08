@@ -282,7 +282,7 @@ export type RDKitPatternFPOptions = {
   nBits: number;
   /** @default false */
   tautomericFingerprint: boolean;
-}
+};
 
 export type RDKitTopologicalTorsionFPOptions = {
   /** @default 2048 */
@@ -312,7 +312,7 @@ export type RDKitRdkitFpOptions = {
   useCountSimulation: boolean;
   /** @default true */
   useHs: boolean;
-}
+};
 
 export type RDKitAtomPairFPOptions = {
   /** @default 2048 */
@@ -371,4 +371,3 @@ export type RDKitAlignedCoordsOpt = {
   acceptFailure: boolean;
   alignOnly: boolean;
 };
-

@@ -20,6 +20,26 @@ export class MolCollection implements Disposable {
   #molList: MolList | null;
   #module: RDKitModule;
 
+  /**
+   * Creates a MolCollection from an array of molecule strings.
+   * (SMILES, MolBlocks, etc. — any format accepted by `getMol`).
+   * Invalid strings are silently skipped.
+   *
+   * @param input - Array of molecule strings
+   * @param module - The RDKit WASM module
+   */
+  static fromArray(input: string[], module: RDKitModule): MolCollection {
+    const molList = new module.MolList();
+    for (const s of input) {
+      const jsMol = module.get_mol(s);
+      if (jsMol && jsMol.is_valid()) {
+        molList.append(jsMol);
+      }
+      jsMol?.delete();
+    }
+    return new MolCollection(molList, module);
+  }
+
   constructor(molList: MolList, module: RDKitModule) {
     this.#molList = molList;
     this.#module = module;

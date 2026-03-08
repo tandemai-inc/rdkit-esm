@@ -432,19 +432,18 @@ export interface JSMol {
     offsetx: number,
     offsety: number,
     width: number,
-    height: number
+    height: number,
   ): void;
 }
 
-export interface JSReaction
-  extends Pick<
-    JSMol,
-    | 'delete'
-    | 'draw_to_canvas'
-    | 'draw_to_canvas_with_highlights'
-    | 'get_svg'
-    | 'get_svg_with_highlights'
-  > {
+export interface JSReaction extends Pick<
+  JSMol,
+  | 'delete'
+  | 'draw_to_canvas'
+  | 'draw_to_canvas_with_highlights'
+  | 'get_svg'
+  | 'get_svg_with_highlights'
+> {
   is_AliasOf(rxn: JSReaction): boolean;
   is_Deleted(): boolean;
   deleteLater(): boolean;
@@ -620,13 +619,6 @@ export interface RDKitModule {
    * @param details_json @type {RDKitGetMolOpt}
    */
   get_mol(input: string, details_json?: string): JSMol | null;
-
-  /**
-   * Create a molecule from a pickle string
-   *
-   * @param pkl pickle string
-   */
-  get_mol_from_pickle(pkl: string): JSMol;
 
   /**
    * Create a molecule from an integer array

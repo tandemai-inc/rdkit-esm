@@ -95,9 +95,7 @@ export class Mol implements Disposable {
    */
   getMolblock(options?: Partial<RDKitGetMolBlockOpt>): string {
     const mol = this.jsMol;
-    return options
-      ? mol.get_molblock(JSON.stringify(options))
-      : mol.get_molblock();
+    return options ? mol.get_molblock(JSON.stringify(options)) : mol.get_molblock();
   }
 
   /**
@@ -106,9 +104,7 @@ export class Mol implements Disposable {
    */
   getV3KMolblock(options?: Partial<RDKitGetMolBlockOpt>): string {
     const mol = this.jsMol;
-    return options
-      ? mol.get_v3Kmolblock(JSON.stringify(options))
-      : mol.get_v3Kmolblock();
+    return options ? mol.get_v3Kmolblock(JSON.stringify(options)) : mol.get_v3Kmolblock();
   }
 
   /**
@@ -183,9 +179,7 @@ export class Mol implements Disposable {
     const mol = this.jsMol;
     const [qmol, shouldDelete] = this.resolveQuery(query);
     try {
-      return JSON.parse(
-        mol.get_substruct_matches(qmol),
-      ) as RDKitSubstructMatch[];
+      return JSON.parse(mol.get_substruct_matches(qmol)) as RDKitSubstructMatch[];
     } finally {
       if (shouldDelete) qmol.delete();
     }
@@ -206,23 +200,17 @@ export class Mol implements Disposable {
    */
   getMorganFp(options?: Partial<RDKitMorganFPOptions>): string {
     const mol = this.jsMol;
-    return options
-      ? mol.get_morgan_fp(JSON.stringify(options))
-      : mol.get_morgan_fp();
+    return options ? mol.get_morgan_fp(JSON.stringify(options)) : mol.get_morgan_fp();
   }
 
   /** Returns the pattern fingerprint as a bit string */
   getPatternFp(options?: Partial<RDKitPatternFPOptions>): string {
     const mol = this.jsMol;
-    return options
-      ? mol.get_pattern_fp(JSON.stringify(options))
-      : mol.get_pattern_fp();
+    return options ? mol.get_pattern_fp(JSON.stringify(options)) : mol.get_pattern_fp();
   }
 
   /** Returns the topological torsion fingerprint as a bit string */
-  getTopologicalTorsionFp(
-    options?: Partial<RDKitTopologicalTorsionFPOptions>,
-  ): string {
+  getTopologicalTorsionFp(options?: Partial<RDKitTopologicalTorsionFPOptions>): string {
     const mol = this.jsMol;
     return options
       ? mol.get_topological_torsion_fp(JSON.stringify(options))
@@ -232,17 +220,13 @@ export class Mol implements Disposable {
   /** Returns the RDKit fingerprint as a bit string */
   getRdkitFp(options?: Partial<RDKitRdkitFpOptions>): string {
     const mol = this.jsMol;
-    return options
-      ? mol.get_rdkit_fp(JSON.stringify(options))
-      : mol.get_rdkit_fp();
+    return options ? mol.get_rdkit_fp(JSON.stringify(options)) : mol.get_rdkit_fp();
   }
 
   /** Returns the atom pair fingerprint as a bit string */
   getAtomPairFp(options?: Partial<RDKitAtomPairFPOptions>): string {
     const mol = this.jsMol;
-    return options
-      ? mol.get_atom_pair_fp(JSON.stringify(options))
-      : mol.get_atom_pair_fp();
+    return options ? mol.get_atom_pair_fp(JSON.stringify(options)) : mol.get_atom_pair_fp();
   }
 
   /** Returns the MACCS fingerprint as a bit string (fixed 167-bit) */
@@ -259,9 +243,7 @@ export class Mol implements Disposable {
   }
 
   /** Returns the pattern fingerprint as a Uint8Array */
-  getPatternFpAsUint8Array(
-    options?: Partial<RDKitPatternFPOptions>,
-  ): Uint8Array {
+  getPatternFpAsUint8Array(options?: Partial<RDKitPatternFPOptions>): Uint8Array {
     const mol = this.jsMol;
     return options
       ? mol.get_pattern_fp_as_uint8array(JSON.stringify(options))
@@ -287,9 +269,7 @@ export class Mol implements Disposable {
   }
 
   /** Returns the atom pair fingerprint as a Uint8Array */
-  getAtomPairFpAsUint8Array(
-    options?: Partial<RDKitAtomPairFPOptions>,
-  ): Uint8Array {
+  getAtomPairFpAsUint8Array(options?: Partial<RDKitAtomPairFPOptions>): Uint8Array {
     const mol = this.jsMol;
     return options
       ? mol.get_atom_pair_fp_as_uint8array(JSON.stringify(options))
@@ -340,16 +320,10 @@ export class Mol implements Disposable {
    * Returns the list of property names
    * @param options - Filter options
    */
-  getPropList(options?: {
-    includePrivate?: boolean;
-    includeComputed?: boolean;
-  }): string[] {
+  getPropList(options?: { includePrivate?: boolean; includeComputed?: boolean }): string[] {
     const mol = this.jsMol;
     const sl = options
-      ? mol.get_prop_list(
-          options.includePrivate ?? false,
-          options.includeComputed ?? false,
-        )
+      ? mol.get_prop_list(options.includePrivate ?? false, options.includeComputed ?? false)
       : mol.get_prop_list();
     const result: string[] = [];
     for (let i = 0; i < sl.size(); i++) {
@@ -416,9 +390,7 @@ export class Mol implements Disposable {
    */
   removeHs(options?: Partial<RDKitRemoveHsOptions>): string {
     const mol = this.jsMol;
-    return options
-      ? mol.remove_hs(JSON.stringify(options))
-      : mol.remove_hs();
+    return options ? mol.remove_hs(JSON.stringify(options)) : mol.remove_hs();
   }
 
   /**
@@ -427,9 +399,7 @@ export class Mol implements Disposable {
    */
   removeHsInPlace(options?: Partial<RDKitRemoveHsOptions>): boolean {
     const mol = this.jsMol;
-    return options
-      ? mol.remove_hs_in_place(JSON.stringify(options))
-      : mol.remove_hs_in_place();
+    return options ? mol.remove_hs_in_place(JSON.stringify(options)) : mol.remove_hs_in_place();
   }
 
   /** Returns a V2000 Molfile string with explicit hydrogens added */
@@ -450,9 +420,7 @@ export class Mol implements Disposable {
    */
   setNewCoords(useCoordGen?: boolean): boolean {
     const mol = this.jsMol;
-    return useCoordGen !== undefined
-      ? mol.set_new_coords(useCoordGen)
-      : mol.set_new_coords();
+    return useCoordGen !== undefined ? mol.set_new_coords(useCoordGen) : mol.set_new_coords();
   }
 
   /**
@@ -461,9 +429,7 @@ export class Mol implements Disposable {
    */
   getNewCoords(useCoordGen?: boolean): string {
     const mol = this.jsMol;
-    return useCoordGen !== undefined
-      ? mol.get_new_coords(useCoordGen)
-      : mol.get_new_coords();
+    return useCoordGen !== undefined ? mol.get_new_coords(useCoordGen) : mol.get_new_coords();
   }
 
   /**
@@ -471,14 +437,8 @@ export class Mol implements Disposable {
    * @param template - Template molecule to align to
    * @param options - Alignment options
    */
-  generateAlignedCoords(
-    template: Mol,
-    options?: Partial<RDKitAlignedCoordsOpt>,
-  ): string {
-    return this.jsMol.generate_aligned_coords(
-      template.jsMol,
-      JSON.stringify(options ?? {}),
-    );
+  generateAlignedCoords(template: Mol, options?: Partial<RDKitAlignedCoordsOpt>): string {
+    return this.jsMol.generate_aligned_coords(template.jsMol, JSON.stringify(options ?? {}));
   }
 
   // -- Depiction --
@@ -487,10 +447,7 @@ export class Mol implements Disposable {
    * Normalizes the depiction of the molecule
    * @param options - Normalization options
    */
-  normalizeDepiction(options?: {
-    canonicalize?: number;
-    scaleFactor?: number;
-  }): number {
+  normalizeDepiction(options?: { canonicalize?: number; scaleFactor?: number }): number {
     const mol = this.jsMol;
     if (!options) return mol.normalize_depiction();
     const { canonicalize, scaleFactor } = options;
@@ -517,10 +474,7 @@ export class Mol implements Disposable {
    * Condenses functional group abbreviations in the molecule
    * @param options - Abbreviation options
    */
-  condenseAbbreviations(options?: {
-    maxCoverage?: number;
-    useLinkers?: boolean;
-  }): string {
+  condenseAbbreviations(options?: { maxCoverage?: number; useLinkers?: boolean }): string {
     const mol = this.jsMol;
     if (!options) return mol.condense_abbreviations();
     const { maxCoverage, useLinkers } = options;
@@ -538,20 +492,13 @@ export class Mol implements Disposable {
    * @param width - Width in pixels
    * @param height - Height in pixels
    */
-  drawToCanvas(
-    canvas: HTMLCanvasElement,
-    width: number,
-    height: number,
-  ): void;
+  drawToCanvas(canvas: HTMLCanvasElement, width: number, height: number): void;
   /**
    * Draws the molecule to an HTML5 canvas with highlighting options
    * @param canvas - Target canvas element
    * @param options - Drawing options including dimensions and highlighting
    */
-  drawToCanvas(
-    canvas: HTMLCanvasElement,
-    options: Partial<RDKitDepictionDetails>,
-  ): void;
+  drawToCanvas(canvas: HTMLCanvasElement, options: Partial<RDKitDepictionDetails>): void;
   drawToCanvas(
     canvas: HTMLCanvasElement,
     widthOrOptions: number | Partial<RDKitDepictionDetails>,
@@ -561,10 +508,7 @@ export class Mol implements Disposable {
     if (typeof widthOrOptions === 'number') {
       mol.draw_to_canvas(canvas, widthOrOptions, height!);
     } else {
-      mol.draw_to_canvas_with_highlights(
-        canvas,
-        JSON.stringify(widthOrOptions),
-      );
+      mol.draw_to_canvas_with_highlights(canvas, JSON.stringify(widthOrOptions));
     }
   }
 

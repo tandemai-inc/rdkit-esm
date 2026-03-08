@@ -1,5 +1,5 @@
 export { initRDKit } from './init.ts';
-export type { RDKit, InitRDKitOptions } from './init.ts';
+export type { RDKit, InitRDKitOptions, MCSResult } from './init.ts';
 export { Mol } from './mol.ts';
 export { MolCollection } from './mol-list.ts';
 
@@ -19,6 +19,8 @@ export type {
   RDKitTopologicalTorsionFPOptions,
   RDKitRdkitFpOptions,
   RDKitAtomPairFPOptions,
+  RDKitGetMCSOpt,
+  RDKitMCSResult,
 } from './types/rdkit-json-based-typings.d.ts';
 
 export type { RDKitModule, JSMol, MolList } from './types/rdkit-typings.d.ts';

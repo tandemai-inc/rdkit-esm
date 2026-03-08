@@ -3,8 +3,13 @@ import initRDKitModule from './minimalib/RDKit_minimal.js';
 import wasmUrl from './minimalib/RDKit_minimal.wasm?url';
 
 import { Mol } from './mol.ts';
+import { MolCollection } from './mol-list.ts';
 import type { RDKitModule } from './types/rdkit-typings.d.ts';
-import type { RDKitGetMolOpt } from './types/rdkit-json-based-typings.d.ts';
+import type {
+  RDKitGetMolOpt,
+  RDKitGetMCSOpt,
+  RDKitMCSResult,
+} from './types/rdkit-json-based-typings.d.ts';
 
 /**
  * Resolves the WASM URL for the current environment.
@@ -16,9 +21,7 @@ import type { RDKitGetMolOpt } from './types/rdkit-json-based-typings.d.ts';
 function resolveWasmUrl(): string {
   const url = wasmUrl as string;
   const isNode =
-    typeof process !== 'undefined' &&
-    process.versions != null &&
-    process.versions.node != null;
+    typeof process !== 'undefined' && process.versions != null && process.versions.node != null;
   if (isNode && url.startsWith('/') && !url.startsWith('//')) {
     return process.cwd() + url;
   }
@@ -54,11 +57,46 @@ export interface RDKit {
    */
   getQMol(input: string): Mol | null;
 
+  /**
+   * Creates a MolCollection, optionally populated from SMILES strings.
+   *
+   * @param smiles - Optional array of SMILES strings to populate the collection.
+   *   Invalid SMILES are silently skipped.
+   * @returns A new MolCollection instance
+   */
+  getMolCollection(smiles?: string[]): MolCollection;
+
+  /**
+   * Computes the Maximum Common Substructure (MCS) of a set of molecules.
+   *
+   * @param mols - A MolCollection or an array of SMILES strings
+   * @param options - MCS algorithm options
+   * @returns An MCSResult with match info and a lazy `qmol` getter
+   */
+  getMCS(mols: MolCollection | string[], options?: Partial<RDKitGetMCSOpt>): MCSResult;
+
   /** Returns the RDKit version string */
   version(): string;
 
   /** The underlying RDKitModule for direct access to the raw API */
   readonly module: RDKitModule;
+}
+
+/** Result of a Maximum Common Substructure (MCS) computation */
+export interface MCSResult {
+  numAtoms: number;
+  numBonds: number;
+  canceled: boolean;
+  /** SMARTS string(s) — an array when the `StoreAll` option is used */
+  smarts: string | string[];
+  /**
+   * Lazily creates a query Mol from the first SMARTS.
+   * Returns null if SMARTS is empty.
+   *
+   * **WARNING:** The caller is responsible for explicitly deleting this
+   * object (via `.delete()` or `using`) to avoid memory leaks.
+   */
+  get qmol(): Mol | null;
 }
 
 /**
@@ -80,9 +118,7 @@ export async function initRDKit(options?: InitRDKitOptions): Promise<RDKit> {
 
   return {
     getMol(input: string, opts?: Partial<RDKitGetMolOpt>): Mol | null {
-      const jsMol = opts
-        ? mod.get_mol(input, JSON.stringify(opts))
-        : mod.get_mol(input);
+      const jsMol = opts ? mod.get_mol(input, JSON.stringify(opts)) : mod.get_mol(input);
       if (!jsMol || !jsMol.is_valid()) {
         jsMol?.delete();
         return null;
@@ -96,6 +132,44 @@ export async function initRDKit(options?: InitRDKitOptions): Promise<RDKit> {
         return null;
       }
       return new Mol(jsMol, mod);
+    },
+
+    getMolCollection(input?: string[]): MolCollection {
+      if (input) {
+        return MolCollection.fromArray(input, mod);
+      }
+      return new MolCollection(new mod.MolList(), mod);
+    },
+
+    getMCS(mols: MolCollection | string[], options?: Partial<RDKitGetMCSOpt>): MCSResult {
+      const isArray = Array.isArray(mols);
+      const collection = isArray ? MolCollection.fromArray(mols, mod) : mols;
+
+      const json = options
+        ? mod.get_mcs_as_json(collection.molList, JSON.stringify(options))
+        : mod.get_mcs_as_json(collection.molList);
+
+      if (isArray) {
+        collection.delete();
+      }
+
+      const parsed = JSON.parse(json) as RDKitMCSResult;
+      let cachedQmol: Mol | null | undefined;
+
+      return {
+        ...parsed,
+        get qmol(): Mol | null {
+          if (cachedQmol !== undefined) return cachedQmol;
+          const s = Array.isArray(parsed.smarts) ? parsed.smarts[0] : parsed.smarts;
+          if (!s) {
+            cachedQmol = null;
+            return null;
+          }
+          const jsMol = mod.get_qmol(s);
+          cachedQmol = jsMol ? new Mol(jsMol, mod) : null;
+          return cachedQmol;
+        },
+      };
     },
 
     version(): string {
