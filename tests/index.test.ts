@@ -1,6 +1,7 @@
 import { expect, test } from 'vitest';
-import { fn } from '../src';
+import { initRDKit, Mol } from '../src/index.ts';
 
-test('fn', () => {
-  expect(fn()).toBe('Hello, tsdown!');
+test('public API exports are available', () => {
+  expect(initRDKit).toBeTypeOf('function');
+  expect(Mol).toBeTypeOf('function');
 });
