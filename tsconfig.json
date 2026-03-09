@@ -17,5 +17,5 @@
     "verbatimModuleSyntax": true,
     "skipLibCheck": true
   },
-  "include": ["src"]
+  "include": ["src", "MinimalLib/dist/RDKit_minimal.d.ts"]
 }

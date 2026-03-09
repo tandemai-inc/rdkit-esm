@@ -1,17 +1,17 @@
-import initRDKitModule from './minimalib/RDKit_minimal.js';
+import initRDKitModule from "../MinimalLib/dist/RDKit_minimal.js";
 // @ts-expect-error -- Vite/Rolldown ?url import directive
-import wasmUrl from './minimalib/RDKit_minimal.wasm?url';
+import wasmUrl from "./MinimalLib/dist/RDKit_minimal.wasm?url";
 
-import { Mol } from './mol.ts';
-import { MolCollection } from './mol-list.ts';
-import { Reaction } from './reaction.ts';
-import type { RDKitModule } from './types/rdkit-typings.d.ts';
+import { Mol } from "./mol.ts";
+import { MolCollection } from "./mol-list.ts";
+import { Reaction } from "./reaction.ts";
+import type { RDKitModule } from "./types/rdkit-typings.d.ts";
 import type {
   RDKitGetMolOpt,
   RDKitGetMCSOpt,
   RDKitMCSResult,
   RDKitRxnDetails,
-} from './types/rdkit-json-based-typings.d.ts';
+} from "./types/rdkit-json-based-typings.d.ts";
 
 /**
  * Resolves the WASM URL for the current environment.
@@ -23,8 +23,10 @@ import type {
 function resolveWasmUrl(): string {
   const url = wasmUrl as string;
   const isNode =
-    typeof process !== 'undefined' && process.versions != null && process.versions.node != null;
-  if (isNode && url.startsWith('/') && !url.startsWith('//')) {
+    typeof process !== "undefined" &&
+    process.versions != null &&
+    process.versions.node != null;
+  if (isNode && url.startsWith("/") && !url.startsWith("//")) {
     return process.cwd() + url;
   }
   return new URL(url, import.meta.url).href;
@@ -75,7 +77,10 @@ export interface RDKit {
    * @param options - MCS algorithm options
    * @returns An MCSResult with match info and a lazy `qmol` getter
    */
-  getMCS(mols: MolCollection | string[], options?: Partial<RDKitGetMCSOpt>): MCSResult;
+  getMCS(
+    mols: MolCollection | string[],
+    options?: Partial<RDKitGetMCSOpt>,
+  ): MCSResult;
 
   /**
    * Creates a Reaction from a reaction SMARTS, SMILES, or RXN block.
@@ -129,7 +134,9 @@ export async function initRDKit(options?: InitRDKitOptions): Promise<RDKit> {
 
   return {
     getMol(input: string, opts?: Partial<RDKitGetMolOpt>): Mol | null {
-      const jsMol = opts ? mod.get_mol(input, JSON.stringify(opts)) : mod.get_mol(input);
+      const jsMol = opts
+        ? mod.get_mol(input, JSON.stringify(opts))
+        : mod.get_mol(input);
       if (!jsMol || !jsMol.is_valid()) {
         jsMol?.delete();
         return null;
@@ -152,7 +159,10 @@ export async function initRDKit(options?: InitRDKitOptions): Promise<RDKit> {
       return new MolCollection(new mod.MolList(), mod);
     },
 
-    getMCS(mols: MolCollection | string[], options?: Partial<RDKitGetMCSOpt>): MCSResult {
+    getMCS(
+      mols: MolCollection | string[],
+      options?: Partial<RDKitGetMCSOpt>,
+    ): MCSResult {
       const isArray = Array.isArray(mols);
       const collection = isArray ? MolCollection.fromArray(mols, mod) : mols;
 
@@ -171,7 +181,9 @@ export async function initRDKit(options?: InitRDKitOptions): Promise<RDKit> {
         ...parsed,
         get qmol(): Mol | null {
           if (cachedQmol !== undefined) return cachedQmol;
-          const s = Array.isArray(parsed.smarts) ? parsed.smarts[0] : parsed.smarts;
+          const s = Array.isArray(parsed.smarts)
+            ? parsed.smarts[0]
+            : parsed.smarts;
           if (!s) {
             cachedQmol = null;
             return null;
@@ -185,7 +197,9 @@ export async function initRDKit(options?: InitRDKitOptions): Promise<RDKit> {
 
     getRxn(input: string, options?: Partial<RDKitRxnDetails>): Reaction | null {
       try {
-        const jsRxn = options ? mod.get_rxn(input, JSON.stringify(options)) : mod.get_rxn(input);
+        const jsRxn = options
+          ? mod.get_rxn(input, JSON.stringify(options))
+          : mod.get_rxn(input);
         if (!jsRxn) return null;
         return new Reaction(jsRxn, mod);
       } catch {
