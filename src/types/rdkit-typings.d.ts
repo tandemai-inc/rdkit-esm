@@ -444,10 +444,9 @@ export interface JSReaction extends Pick<
   | 'get_svg'
   | 'get_svg_with_highlights'
 > {
-  is_AliasOf(rxn: JSReaction): boolean;
   is_Deleted(): boolean;
-  deleteLater(): boolean;
   clone(): JSReaction;
+  run_reactants(reactants: MolList, maxProducts: number): EmscriptenVector<MolList>;
 }
 
 /**
@@ -587,12 +586,15 @@ export interface MolList {
   size: () => number;
 }
 
-/** Emscripten vector<string> wrapper */
-export interface StringList {
+/** Emscripten vector<T> wrapper — raw std::vector binding with get/size/delete */
+export interface EmscriptenVector<T> {
   size(): number;
-  get(i: number): string;
+  get(i: number): T;
   delete(): void;
 }
+
+/** Emscripten vector<string> wrapper */
+export interface StringList extends EmscriptenVector<string> {}
 
 // constructor interfaces
 

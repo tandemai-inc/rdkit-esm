@@ -4,11 +4,13 @@ import wasmUrl from './minimalib/RDKit_minimal.wasm?url';
 
 import { Mol } from './mol.ts';
 import { MolCollection } from './mol-list.ts';
+import { Reaction } from './reaction.ts';
 import type { RDKitModule } from './types/rdkit-typings.d.ts';
 import type {
   RDKitGetMolOpt,
   RDKitGetMCSOpt,
   RDKitMCSResult,
+  RDKitRxnDetails,
 } from './types/rdkit-json-based-typings.d.ts';
 
 /**
@@ -74,6 +76,15 @@ export interface RDKit {
    * @returns An MCSResult with match info and a lazy `qmol` getter
    */
   getMCS(mols: MolCollection | string[], options?: Partial<RDKitGetMCSOpt>): MCSResult;
+
+  /**
+   * Creates a Reaction from a reaction SMARTS, SMILES, or RXN block.
+   *
+   * @param input - Reaction SMARTS, SMILES, or RXN block string
+   * @param options - Reaction parsing options
+   * @returns A Reaction instance, or null if the input is invalid
+   */
+  getRxn(input: string, options?: Partial<RDKitRxnDetails>): Reaction | null;
 
   /** Returns the RDKit version string */
   version(): string;
@@ -170,6 +181,16 @@ export async function initRDKit(options?: InitRDKitOptions): Promise<RDKit> {
           return cachedQmol;
         },
       };
+    },
+
+    getRxn(input: string, options?: Partial<RDKitRxnDetails>): Reaction | null {
+      try {
+        const jsRxn = options ? mod.get_rxn(input, JSON.stringify(options)) : mod.get_rxn(input);
+        if (!jsRxn) return null;
+        return new Reaction(jsRxn, mod);
+      } catch {
+        return null;
+      }
     },
 
     version(): string {
