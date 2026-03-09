@@ -1,0 +1,15 @@
+export type InChI_Flags =
+  | 'DoNotAddH'
+  | 'SNon'
+  | 'SRel'
+  | 'SRac'
+  | 'SUCF'
+  | 'ChiralFlagON'
+  | 'ChiralFlagOff'
+  | 'SUU'
+  | 'SLUUD'
+  | 'FixedH'
+  | 'RecMet'
+  | 'KET'
+  | '15H'
+  | 'AuxNone';

@@ -59,6 +59,11 @@ describe('Mol - string representations', () => {
     expect(inchi).toMatch(/^InChI=/);
   });
 
+  it('getInchikey returns InChI key', () => {
+    using mol = rdkit.getMol('CN1CC[C@]23C4=C5C=CC(O)=C4O[C@H]2[C@@H](O)C=C[C@H]3[C@H]1C5')!;
+    expect(mol.getInchikey()).toBe('BQJCRHHNABKAKU-KBQPJGBKSA-N');
+  });
+
   it('getJson returns parsed molecule JSON', () => {
     using mol = rdkit.getMol('c1ccccc1')!;
     const json = mol.getJson();

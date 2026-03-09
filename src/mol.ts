@@ -15,6 +15,7 @@ import type {
   RDKitAtomPairFPOptions,
 } from './types/rdkit-json-based-typings.d.ts';
 import { MolCollection } from './mol-list.ts';
+import type { InChI_Flags } from './types/inchi';
 
 /**
  * A wrapper around RDKit's JSMol object providing a typed, camelCase API.
@@ -110,11 +111,21 @@ export class Mol implements Disposable {
   /**
    * Returns the InChI string
    * @param args - Optional InChI CLI arguments
-   * @example mol.getInchi("-FixedH -RecMet -SaveOpt -SUU -SLUUD")
+   * @example mol.getInchi(["FixedH", "RecMet", "SaveOpt", "SUU", "SLUUD"])
    */
-  getInchi(args?: string): string {
+  getInchi(args?: InChI_Flags[]): string {
     const mol = this.jsMol;
-    return args ? mol.get_inchi(args) : mol.get_inchi();
+    return args ? mol.get_inchi(`-${args.join(' -')}`) : mol.get_inchi();
+  }
+
+  /**
+   * Returns the InChIKey string
+   * @param args - Optional InChI CLI arguments
+   * @example mol.getInchi(["FixedH", "RecMet", "SaveOpt", "SUU", "SLUUD"])
+   */
+  getInchikey(args?: InChI_Flags[]): string {
+    const inchi = this.getInchi(args);
+    return this.#module.get_inchikey_for_inchi(inchi);
   }
 
   /** Returns the parsed JSON representation of the molecule */
