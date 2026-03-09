@@ -364,10 +364,52 @@ export type RDKitRemoveHsOptions = {
   removeNontetrahedralNeighbors: boolean;
 };
 
-export type RDKitAlignedCoordsOpt = {
+export type RDKitAlignedCoordsOptions = {
   useCoordGen: boolean;
   referenceSmarts: string;
   allowRGroups: boolean;
   acceptFailure: boolean;
   alignOnly: boolean;
+};
+
+export type RDKitMolZipOptions = {
+  Label: string;
+  AtomSymbols: string[];
+  AtomProperty: string;
+  EnforceValenceRules: boolean;
+  GenerateCoordinates: boolean;
+  AlignCoordinates: boolean;
+};
+
+export type RDKitGetRgdOptions = {
+  labels:
+    | 'IsotopeLabels'
+    | 'AtomMapLabels'
+    | 'MDLRGroupLabels'
+    | 'DummyAtomLabels'
+    | 'AtomIndexLabels'
+    | 'AutoDetect'
+    | 'RelabelDuplicateLabels';
+  /**
+   * choose where the rlabels are stored on the decomposition
+   * @default "AtomMap | MDLRGroup"
+   * */
+  rgroupLabelling: 'AtomMap' | 'Isotope' | 'MDLRGroup';
+  alignment: 'None' | 'NoAlignment' | 'MCS';
+  scoreMethod: 'Match' | 'FingerprintVariance';
+  matchingStrategy: 'Greedy' | 'GreedyChunks' | 'Exhaustive' | 'NoSymmetrization' | 'GA';
+  /**
+   * only allow rgroup decomposition at the specified rgroups
+   */
+  onlyMatchAtRGroups: boolean;
+  removeAllHydrogenRGroupsAndLabels: boolean;
+  removeHydrogensPostMatch: boolean;
+  allowNonTerminalRGroups: boolean;
+  doTautomers: boolean;
+  doEnumeration: boolean;
+  allowMultipleRGroupsOnUnlabelled: boolean;
+  allowMultipleCoresInSameMol: boolean;
+  includeTargetMolInResults: boolean;
+  timeout: number;
+  chunkSize: number;
 };

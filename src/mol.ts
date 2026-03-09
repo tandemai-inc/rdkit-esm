@@ -7,12 +7,12 @@ import type {
   RDKitJson,
   RDKitStereoTags,
   RDKitRemoveHsOptions,
-  RDKitAlignedCoordsOpt,
   RDKitMorganFPOptions,
   RDKitPatternFPOptions,
   RDKitTopologicalTorsionFPOptions,
   RDKitRdkitFpOptions,
   RDKitAtomPairFPOptions,
+  RDKitAlignedCoordsOptions,
 } from './types/rdkit-json-based-typings.d.ts';
 import { MolCollection } from './mol-list.ts';
 import type { InChI_Flags } from './types/inchi';
@@ -448,7 +448,7 @@ export class Mol implements Disposable {
    * @param template - Template molecule to align to
    * @param options - Alignment options
    */
-  generateAlignedCoords(template: Mol, options?: Partial<RDKitAlignedCoordsOpt>): string {
+  generateAlignedCoords(template: Mol, options?: Partial<RDKitAlignedCoordsOptions>): string {
     return this.jsMol.generate_aligned_coords(template.jsMol, JSON.stringify(options ?? {}));
   }
 

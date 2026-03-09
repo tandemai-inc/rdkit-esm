@@ -14,7 +14,7 @@ export type {
   RDKitJson,
   RDKitStereoTags,
   RDKitRemoveHsOptions,
-  RDKitAlignedCoordsOpt,
+  RDKitAlignedCoordsOptions,
   RDKitMorganFPOptions,
   RDKitPatternFPOptions,
   RDKitTopologicalTorsionFPOptions,

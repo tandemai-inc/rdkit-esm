@@ -607,6 +607,14 @@ interface MolListConstructor {
   new (): MolList;
 }
 
+interface RGroupDecomposition {
+  add(mol: JSMol): number;
+  process(): void;
+  get_rgroups_as_columns(): { [key: 'Core' | `R${number}`]: MolList };
+  get_rgroups_as_rows(): { [key: 'Core' | `R${number}`]: JSMol }[];
+  delete(): void;
+}
+
 /** The main RDKit module */
 export interface RDKitModule {
   SubstructLibrary: SubstructLibraryConstructor;
@@ -664,6 +672,21 @@ export interface RDKitModule {
   get_mcs_as_mol(list: MolList, details_json?: string): JSMol;
 
   get_mcs_as_smarts(list: MolList, details_json?: string): string;
+
+  /**
+   * Zip two molecules together using dummy attachments by default,
+   * or specified labels in the details_json argument
+   * @param mol1
+   * @param mol2
+   * @param details_json
+   * @example
+   * const mol1 = RDKitModule.get_mol("F/C=C/[*:1]");
+   * const mol2 = RDKitModule.get_mol("[*:1]F");
+   * const mol = RDKitModule.molzip(mol1, mol2); // returns the molecule represented by "F/C=C/F"
+   */
+  molzip(mol1: JSMol, mol2: JSMol, details_json?: string): JSMol;
+
+  get_rgd(core: JSMol, details_json?: string): RGroupDecomposition;
 
   /**
    * Get the version number of the RDKit module
