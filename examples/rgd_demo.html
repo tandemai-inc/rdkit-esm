@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>R-Group Decomposition Demo</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family: system-ui, sans-serif;
+        color: #1a1a1a;
+        padding: 2rem;
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+      h1 {
+        color: #044484;
+        margin-bottom: 0.25rem;
+      }
+      #version {
+        color: #666;
+        font-size: 0.9rem;
+        margin-bottom: 1.5rem;
+      }
+      #loading {
+        color: #888;
+      }
+      table {
+        border-collapse: collapse;
+      }
+      td {
+        text-align: center;
+        padding: 4px;
+        vertical-align: bottom;
+      }
+      .legend {
+        font-size: 0.8rem;
+        color: #444;
+        font-family: monospace;
+      }
+      .options {
+        margin: 0.75rem 0;
+        display: flex;
+        gap: 1.5rem;
+        align-items: center;
+      }
+      label {
+        cursor: pointer;
+        user-select: none;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>R-Group Decomposition Demo</h1>
+    <div id="version"><span id="loading">Loading WASM module...</span></div>
+
+    <div class="options">
+      <label><input type="radio" name="output" value="svg" checked /> SVG</label>
+      <label><input type="radio" name="output" value="canvas" /> Canvas</label>
+    </div>
+
+    <div id="tableDiv"></div>
+
+    <!--
+      This demo imports the built ESM library from ../dist/.
+      Serve with any HTTP server, e.g.: npx serve . (from repo root)
+      Then open: http://localhost:3000/examples/rgd_demo.html
+    -->
+    <script type="module" src="./rgd_demo.js"></script>
+  </body>
+</html>

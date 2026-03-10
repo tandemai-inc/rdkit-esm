@@ -1,16 +1,18 @@
 import initRDKitModule from '../MinimalLib/dist/RDKit_minimal.js';
 // @ts-expect-error -- Vite/Rolldown ?url import directive
-import wasmUrl from './MinimalLib/dist/RDKit_minimal.wasm?url';
+import wasmUrl from '../MinimalLib/dist/RDKit_minimal.wasm?url';
 
 import { Mol } from './mol.ts';
 import { MolCollection } from './mol-list.ts';
 import { Reaction } from './reaction.ts';
 import type { RDKitModule } from './types/rdkit-typings.d.ts';
+import { decomposeRGroups, type RGDRow } from './rgd.ts';
 import type {
   RDKitGetMolOpt,
   RDKitGetMCSOpt,
   RDKitMCSResult,
   RDKitRxnDetails,
+  RDKitGetRgdOptions,
 } from './types/rdkit-json-based-typings.d.ts';
 
 /**
@@ -85,6 +87,25 @@ export interface RDKit {
    * @returns A Reaction instance, or null if the input is invalid
    */
   getRxn(input: string, options?: Partial<RDKitRxnDetails>): Reaction | null;
+
+  /**
+   * Performs R-Group Decomposition on a set of molecules against one or more cores.
+   *
+   * **WARNING:** The caller is responsible for deleting each `Mol` in the
+   * returned rows (via `.delete()` or `using`) to avoid memory leaks.
+   *
+   * @param core - Core structure(s): a SMARTS string, an array of SMARTS strings,
+   *   a Mol instance, or a MolCollection
+   * @param molecules - Molecules to decompose: an array of strings or a MolCollection
+   * @param options - R-Group decomposition options
+   * @returns An array of rows, one per molecule. Each row maps R-group labels
+   *   (`Core`, `R1`, `R2`, …) to Mol instances.
+   */
+  getRGD(
+    core: string | string[] | Mol | MolCollection,
+    molecules: string[] | MolCollection,
+    options?: Partial<RDKitGetRgdOptions>,
+  ): RGDRow[] | null;
 
   /** Returns the RDKit version string */
   version(): string;
@@ -191,6 +212,14 @@ export async function initRDKit(options?: InitRDKitOptions): Promise<RDKit> {
       } catch {
         return null;
       }
+    },
+
+    getRGD(
+      core: string | string[] | Mol | MolCollection,
+      molecules: string[] | MolCollection,
+      options?: Partial<RDKitGetRgdOptions>,
+    ): RGDRow[] | null {
+      return decomposeRGroups(core, molecules, options, mod);
     },
 
     version(): string {

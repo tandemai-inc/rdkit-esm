@@ -609,7 +609,7 @@ interface MolListConstructor {
 
 interface RGroupDecomposition {
   add(mol: JSMol): number;
-  process(): void;
+  process(): boolean;
   get_rgroups_as_columns(): { [key: 'Core' | `R${number}`]: MolList };
   get_rgroups_as_rows(): { [key: 'Core' | `R${number}`]: JSMol }[];
   delete(): void;
@@ -686,7 +686,7 @@ export interface RDKitModule {
    */
   molzip(mol1: JSMol, mol2: JSMol, details_json?: string): JSMol;
 
-  get_rgd(core: JSMol, details_json?: string): RGroupDecomposition;
+  get_rgd(core: JSMol | MolList, details_json?: string): RGroupDecomposition;
 
   /**
    * Get the version number of the RDKit module
