@@ -1,4 +1,4 @@
-import type { MolList, RDKitModule } from './types/rdkit-typings.d.ts';
+import type { MolList, RDKitModule } from './types/rdkit-typings';
 import { Mol } from './mol.ts';
 
 /**

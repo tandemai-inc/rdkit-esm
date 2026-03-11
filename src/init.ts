@@ -3,7 +3,7 @@ import initRDKitModule from '../MinimalLib/dist/RDKit_minimal.js';
 import wasmUrl from '../MinimalLib/dist/RDKit_minimal.wasm?url';
 
 import { Mol } from './mol.ts';
-import { MolCollection } from './mol-list.ts';
+import { MolCollection } from './mol-collection.ts';
 import { Reaction } from './reaction.ts';
 import type { RDKitModule } from './types/rdkit-typings.d.ts';
 import { decomposeRGroups, type RGDRow } from './rgd.ts';

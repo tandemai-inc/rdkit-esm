@@ -1,7 +1,7 @@
 import type { JSReaction, RDKitModule } from './types/rdkit-typings.d.ts';
 import type { RDKitDepictionDetails } from './types/rdkit-json-based-typings.d.ts';
 import { Mol } from './mol.ts';
-import { MolCollection } from './mol-list.ts';
+import { MolCollection } from './mol-collection.ts';
 
 /**
  * A wrapper around RDKit's JSReaction object providing a typed, camelCase API.

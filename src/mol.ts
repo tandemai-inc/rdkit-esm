@@ -14,7 +14,7 @@ import type {
   RDKitAtomPairFPOptions,
   RDKitAlignedCoordsOptions,
 } from './types/rdkit-json-based-typings.d.ts';
-import { MolCollection } from './mol-list.ts';
+import { MolCollection } from './mol-collection.ts';
 import type { InChI_Flags } from './types/inchi';
 
 /**

@@ -1,7 +1,7 @@
 import type { JSMol, MolList, RDKitModule } from './types/rdkit-typings.d.ts';
 import type { RDKitGetRgdOptions } from './types/rdkit-json-based-typings.d.ts';
 import { Mol } from './mol.ts';
-import { MolCollection } from './mol-list.ts';
+import { MolCollection } from './mol-collection.ts';
 
 /**
  * A row from R-Group Decomposition, mapping labels like `Core`, `R1`, `R2`, …
