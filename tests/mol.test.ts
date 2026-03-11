@@ -47,6 +47,12 @@ describe('Mol - string representations', () => {
     expect(molblock).toContain('V2000');
   });
 
+  it('getV2KMolblock with options', () => {
+    using mol = rdkit.getMol('c1ccccc1')!;
+    const molblock = mol.getV2KMolblock();
+    expect(molblock).toContain('V2000');
+  });
+
   it('getV3KMolblock returns V3000 Molfile', () => {
     using mol = rdkit.getMol('c1ccccc1')!;
     const molblock = mol.getV3KMolblock();

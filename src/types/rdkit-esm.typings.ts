@@ -1,4 +1,4 @@
-import type { CxSmilesField, RDKitGetSmilesOptions } from './rdkit-json-based-typings';
+import type { CxSmilesField, RDKitGetSmilesOptions } from './rdkit-minimalib-json-typings';
 
 /** Wrapper-level CX SMILES options with ergonomic `fields` array */
 export type RDKitGetCxSmilesOptions = RDKitGetSmilesOptions & {

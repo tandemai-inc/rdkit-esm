@@ -214,6 +214,8 @@ export type RDKitGetMolBlockOptions = {
   useMolBlockWedging: boolean;
   /** @default false */
   addChiralHs: boolean;
+  /** @default 'AUTO' */
+  forceMDLVersion: 'AUTO' | 'V2000' | 'V3000';
 };
 
 export type RDKitGetSmilesOptions = {

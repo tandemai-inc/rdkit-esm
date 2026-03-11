@@ -42,6 +42,12 @@ export interface JSMol {
   /** Returns the V3000 Molfile string
    * @param RDKitGetMolBlockOpt as a stringifyed JSON
    */
+  get_v2Kmolblock(): string;
+  get_v2Kmolblock(options: JSONString): string;
+
+  /** Returns the V3000 Molfile string
+   * @param RDKitGetMolBlockOpt as a stringifyed JSON
+   */
   get_v3Kmolblock(): string;
   get_v3Kmolblock(options: JSONString): string;
 

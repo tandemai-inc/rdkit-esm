@@ -1,4 +1,4 @@
-import type { JSMol, RDKitModule } from './types/rdkit-typings.d.ts';
+import type { JSMol, RDKitModule } from './types/rdkit-minimalib-typings';
 import type {
   RDKitGetMolBlockOptions,
   RDKitDepictionDetails,
@@ -14,7 +14,7 @@ import type {
   RDKitAtomPairFPOptions,
   RDKitAlignedCoordsOptions,
   RDKitGetSmilesOptions,
-} from './types/rdkit-json-based-typings.d.ts';
+} from './types/rdkit-minimalib-json-typings';
 import { MolCollection } from './mol-collection.ts';
 import type { InChI_Flags } from './types/inchi';
 import type { RDKitGetCxSmilesOptions } from './types/rdkit-esm.typings.ts';
@@ -102,6 +102,15 @@ export class Mol implements Disposable {
   getMolblock(options?: Partial<RDKitGetMolBlockOptions>): string {
     const mol = this.jsMol;
     return options ? mol.get_molblock(JSON.stringify(options)) : mol.get_molblock();
+  }
+
+  /**
+   * Returns the V3000 Molfile string
+   * @param options - Molblock generation options
+   */
+  getV2KMolblock(options?: Partial<RDKitGetMolBlockOptions>): string {
+    const mol = this.jsMol;
+    return options ? mol.get_v2Kmolblock(JSON.stringify(options)) : mol.get_v2Kmolblock();
   }
 
   /**

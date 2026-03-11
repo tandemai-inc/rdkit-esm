@@ -1,5 +1,5 @@
-import type { JSMol, MolList, RDKitModule } from './types/rdkit-typings.d.ts';
-import type { RDKitGetRgdOptions } from './types/rdkit-json-based-typings.d.ts';
+import type { JSMol, MolList, RDKitModule } from './types/rdkit-minimalib-typings';
+import type { RDKitGetRgdOptions } from './types/rdkit-minimalib-json-typings';
 import { Mol } from './mol.ts';
 import { MolCollection } from './mol-collection.ts';
 

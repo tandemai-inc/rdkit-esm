@@ -1,5 +1,5 @@
-import type { JSReaction, RDKitModule } from './types/rdkit-typings.d.ts';
-import type { RDKitDepictionDetails } from './types/rdkit-json-based-typings.d.ts';
+import type { JSReaction, RDKitModule } from './types/rdkit-minimalib-typings';
+import type { RDKitDepictionDetails } from './types/rdkit-minimalib-json-typings';
 import { Mol } from './mol.ts';
 import { MolCollection } from './mol-collection.ts';
 

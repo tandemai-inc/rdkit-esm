@@ -26,6 +26,6 @@ export type {
   RDKitRxnDetails,
   RDKitGetRgdOptions,
   RDKitGetSmilesOptions,
-} from './types/rdkit-json-based-typings.d.ts';
+} from './types/rdkit-minimalib-json-typings';
 
-export type { RDKitModule, JSMol, JSReaction, MolList } from './types/rdkit-typings.d.ts';
+export type { RDKitModule, JSMol, JSReaction, MolList } from './types/rdkit-minimalib-typings';

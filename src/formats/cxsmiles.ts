@@ -1,5 +1,5 @@
 import type { RDKitGetCxSmilesOptions } from '../types/rdkit-esm.typings';
-import type { RDKitGetCXSmilesRawOptions } from '../types/rdkit-json-based-typings';
+import type { RDKitGetCXSmilesRawOptions } from '../types/rdkit-minimalib-json-typings';
 
 /**
  * Converts wrapper-level CX SMILES options to the raw JSON format expected

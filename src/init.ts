@@ -5,7 +5,7 @@ import wasmUrl from '../MinimalLib/dist/RDKit_minimal.wasm?url';
 import { Mol } from './mol.ts';
 import { MolCollection } from './mol-collection.ts';
 import { Reaction } from './reaction.ts';
-import type { RDKitModule } from './types/rdkit-typings.d.ts';
+import type { RDKitModule } from './types/rdkit-minimalib-typings';
 import { decomposeRGroups, type RGDRow } from './rgd.ts';
 import type {
   RDKitGetMolOpt,
@@ -13,7 +13,7 @@ import type {
   RDKitMCSResult,
   RDKitRxnDetails,
   RDKitGetRgdOptions,
-} from './types/rdkit-json-based-typings.d.ts';
+} from './types/rdkit-minimalib-json-typings';
 
 /**
  * Resolves the WASM URL for the current environment.
