@@ -92,6 +92,113 @@ describe('Mol - string representations', () => {
   });
 });
 
+const COLCHICINE_MOLBLOCK = `
+     RDKit          2D
+
+ 29 31  0  0  0  0  0  0  0  0999 V2000
+    6.4602    1.0300    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0
+    5.3062    1.9883    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0
+    3.8993    1.4680    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0
+    2.7453    2.4262    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0
+    1.3384    1.9059    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0
+    1.0856    0.4273    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0
+    2.2396   -0.5309    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0
+    1.9868   -2.0094    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0
+    3.1408   -2.9677    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0
+    3.6465   -0.0106    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0
+    4.8005   -0.9688    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0
+    4.5477   -2.4474    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0
+   -0.2280   -0.2968    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0
+    0.1857   -1.7387    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0
+   -0.6836   -2.9611    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0
+   -2.1813   -3.0436    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0
+   -2.7569   -4.4288    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0
+   -4.2442   -4.6230    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0
+   -3.1797   -1.9240    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0
+   -4.6215   -2.3378    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0
+   -2.9268   -0.4455    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0
+   -1.6132    0.2787    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0
+   -2.0269    1.7205    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0
+   -3.5055    1.9733    0.0000 N   0  0  0  0  0  0  0  0  0  0  0  0
+   -4.0258    3.3802    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0
+   -5.5043    3.6330    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0
+   -3.0675    4.5342    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0
+   -1.1576    2.9429    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0
+    0.3401    3.0254    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0
+  1  2  1  0
+  2  3  1  0
+  3  4  2  0
+  4  5  1  0
+  5  6  2  0
+  6  7  1  0
+  7  8  1  0
+  8  9  1  0
+  7 10  2  0
+ 10 11  1  0
+ 11 12  1  0
+  6 13  1  0
+ 13 14  2  0
+ 14 15  1  0
+ 15 16  2  0
+ 16 17  1  0
+ 17 18  1  0
+ 16 19  1  0
+ 19 20  2  0
+ 19 21  1  0
+ 21 22  2  0
+ 23 22  1  1
+ 23 24  1  0
+ 24 25  1  0
+ 25 26  1  0
+ 25 27  2  0
+ 23 28  1  0
+ 28 29  1  0
+ 10  3  1  0
+ 22 13  1  0
+ 29  5  1  0
+M  END
+`;
+
+describe('Mol - CX SMILES options', () => {
+  it('getCxSmiles default returns wedging info', () => {
+    using mol = rdkit.getMol(COLCHICINE_MOLBLOCK)!;
+    expect(mol.getCxSmiles()).toContain('wU:22.24|');
+  });
+
+  it('getCxSmiles with restoreBondDirOption true changes wedging', () => {
+    using mol = rdkit.getMol(COLCHICINE_MOLBLOCK)!;
+    expect(mol.getCxSmiles({ restoreBondDirOption: true })).toContain('wU:22.23|');
+  });
+
+  it('getCxSmiles with restoreBondDirOption clear keeps original wedging', () => {
+    using mol = rdkit.getMol(COLCHICINE_MOLBLOCK)!;
+    expect(mol.getCxSmiles({ restoreBondDirOption: 'clear' })).toContain('wU:22.24|');
+  });
+
+  it('getCxSmiles with ALL_BUT_COORDS excludes coordinates', () => {
+    using mol = rdkit.getMol(COLCHICINE_MOLBLOCK)!;
+    const withCoords = mol.getCxSmiles({ fields: ['ALL'] }); // same as default (without the `fields` property)
+    const withoutCoords = mol.getCxSmiles({ fields: ['ALL_BUT_COORDS'] });
+    // With ALL, the CX block contains coordinate data (semicolons separate coords)
+    const cxBlockWithCoords = withCoords.split(' |')[1] ?? '';
+    expect(cxBlockWithCoords).toMatch(/\(\d/);
+    // With ALL_BUT_COORDS, no coordinate data in the CX block
+    const cxBlockWithout = withoutCoords.split(' |')[1] ?? '';
+    expect(cxBlockWithout).not.toMatch(/\(\d/);
+  });
+
+  it('getCxSmiles with doIsomericSmiles false strips stereo', () => {
+    using mol = rdkit.getMol(COLCHICINE_MOLBLOCK)!;
+    const noStereo = mol.getCxSmiles({
+      doIsomericSmiles: false,
+      fields: ['ALL_BUT_COORDS'],
+    });
+    // Colchicine without stereo info should not have @ or / or \ characters in the SMILES part
+    const smilesPart = noStereo.split(' ')[0];
+    expect(smilesPart).not.toContain('@');
+  });
+});
+
 describe('Mol - SVG', () => {
   it('getSvg returns SVG string with defaults', () => {
     using mol = rdkit.getMol('c1ccccc1')!;

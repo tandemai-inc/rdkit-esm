@@ -205,7 +205,7 @@ export type RDKitGetMolOpt = {
   mergeQueryHs: boolean;
 };
 
-export type RDKitGetMolBlockOpt = {
+export type RDKitGetMolBlockOptions = {
   /** @default true */
   includeStereo: boolean;
   /** @default true */
@@ -216,7 +216,7 @@ export type RDKitGetMolBlockOpt = {
   addChiralHs: boolean;
 };
 
-export type RDKitGetSmilesOpt = {
+export type RDKitGetSmilesOptions = {
   /** Include stereochemistry and isotope information @default true */
   doIsomericSmiles: boolean;
   /**
@@ -246,7 +246,38 @@ export type RDKitGetSmilesOpt = {
   doRandom: boolean;
 };
 
-export type RDKitGetMCSOpt = {
+/**
+ * Raw CX SMILES options as accepted by the RDKit MinimalLib JSON API.
+ * Each `CX_*` flag is a boolean that enables the corresponding CX extension field.
+ */
+export type RDKitGetCXSmilesRawOptions = RDKitGetSmilesOptions & CXSmilesOptions;
+
+type CXSmilesOptions = { [K in CxSmilesField as `CX_${K}`]: boolean } & {
+  /** @default RestoreBondDirOptionClear */
+  restoreBondDirOption: 'RestoreBondDirOptionTrue' | 'RestoreBondDirOptionClear';
+};
+
+/** CX extension field names (without the `CX_` prefix) */
+export type CxSmilesField =
+  | 'NONE'
+  | 'ATOM_LABELS'
+  | 'MOLFILE_VALUES'
+  | 'COORDS'
+  | 'RADICALS'
+  | 'ATOM_PROPS'
+  | 'LINKNODES'
+  | 'ENHANCEDSTEREO'
+  | 'SGROUPS'
+  | 'POLYMER'
+  | 'BOND_CFG'
+  | 'BOND_ATROPISOMER'
+  | 'COORDINATE_BONDS'
+  | 'HYDROGEN_BONDS'
+  | 'ZERO_BONDS'
+  | 'ALL'
+  | 'ALL_BUT_COORDS';
+
+export type RDKitGetMCSOptions = {
   MaximizeBonds: boolean;
   Threshold: number;
   Timeout: number;

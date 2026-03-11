@@ -8,7 +8,7 @@ export { Reaction } from './reaction.ts';
 // Re-export useful types for consumers
 export type {
   RDKitGetMolOpt,
-  RDKitGetMolBlockOpt,
+  RDKitGetMolBlockOptions,
   RDKitDepictionDetails,
   RDKitSubstructMatch,
   RDKitDescriptors,
@@ -21,10 +21,11 @@ export type {
   RDKitTopologicalTorsionFPOptions,
   RDKitRdkitFpOptions,
   RDKitAtomPairFPOptions,
-  RDKitGetMCSOpt,
+  RDKitGetMCSOptions,
   RDKitMCSResult,
   RDKitRxnDetails,
   RDKitGetRgdOptions,
+  RDKitGetSmilesOptions,
 } from './types/rdkit-json-based-typings.d.ts';
 
 export type { RDKitModule, JSMol, JSReaction, MolList } from './types/rdkit-typings.d.ts';

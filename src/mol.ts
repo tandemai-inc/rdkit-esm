@@ -1,6 +1,6 @@
 import type { JSMol, RDKitModule } from './types/rdkit-typings.d.ts';
 import type {
-  RDKitGetMolBlockOpt,
+  RDKitGetMolBlockOptions,
   RDKitDepictionDetails,
   RDKitSubstructMatch,
   RDKitDescriptors,
@@ -13,10 +13,12 @@ import type {
   RDKitRdkitFpOptions,
   RDKitAtomPairFPOptions,
   RDKitAlignedCoordsOptions,
-  RDKitGetSmilesOpt,
+  RDKitGetSmilesOptions,
 } from './types/rdkit-json-based-typings.d.ts';
 import { MolCollection } from './mol-collection.ts';
 import type { InChI_Flags } from './types/inchi';
+import type { RDKitGetCxSmilesOptions } from './types/rdkit-esm.typings.ts';
+import { buildCxSmilesRawOptions } from './formats/cxsmiles.ts';
 
 /**
  * A wrapper around RDKit's JSMol object providing a typed, camelCase API.
@@ -72,30 +74,32 @@ export class Mol implements Disposable {
   // -- String representations --
 
   /** Returns the canonical SMILES string */
-  getSmiles(options?: RDKitGetSmilesOpt): string {
+  getSmiles(options?: RDKitGetSmilesOptions): string {
     return options ? this.jsMol.get_smiles(JSON.stringify(options)) : this.jsMol.get_smiles();
   }
 
   /** Returns the Chemaxon Extended SMILES string */
-  getCxSmiles(options?: RDKitGetSmilesOpt): string {
-    return options ? this.jsMol.get_cxsmiles(JSON.stringify(options)) : this.jsMol.get_cxsmiles();
+  getCxSmiles(options?: Partial<RDKitGetCxSmilesOptions>): string {
+    if (!options) return this.jsMol.get_cxsmiles();
+    return this.jsMol.get_cxsmiles(JSON.stringify(buildCxSmilesRawOptions(options)));
   }
 
   /** Returns the SMARTS string */
-  getSmarts(options?: RDKitGetSmilesOpt): string {
+  getSmarts(options?: RDKitGetSmilesOptions): string {
     return options ? this.jsMol.get_smarts(JSON.stringify(options)) : this.jsMol.get_smarts();
   }
 
   /** Returns the Chemaxon Extended SMARTS string */
-  getCxSmarts(options?: RDKitGetSmilesOpt): string {
-    return options ? this.jsMol.get_cxsmarts(JSON.stringify(options)) : this.jsMol.get_cxsmarts();
+  getCxSmarts(options?: Partial<RDKitGetCxSmilesOptions>): string {
+    if (!options) return this.jsMol.get_cxsmarts();
+    return this.jsMol.get_cxsmarts(JSON.stringify(buildCxSmilesRawOptions(options)));
   }
 
   /**
    * Returns the V2000 Molfile string
    * @param options - Molblock generation options
    */
-  getMolblock(options?: Partial<RDKitGetMolBlockOpt>): string {
+  getMolblock(options?: Partial<RDKitGetMolBlockOptions>): string {
     const mol = this.jsMol;
     return options ? mol.get_molblock(JSON.stringify(options)) : mol.get_molblock();
   }
@@ -104,7 +108,7 @@ export class Mol implements Disposable {
    * Returns the V3000 Molfile string
    * @param options - Molblock generation options
    */
-  getV3KMolblock(options?: Partial<RDKitGetMolBlockOpt>): string {
+  getV3KMolblock(options?: Partial<RDKitGetMolBlockOptions>): string {
     const mol = this.jsMol;
     return options ? mol.get_v3Kmolblock(JSON.stringify(options)) : mol.get_v3Kmolblock();
   }

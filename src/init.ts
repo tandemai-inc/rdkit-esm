@@ -9,7 +9,7 @@ import type { RDKitModule } from './types/rdkit-typings.d.ts';
 import { decomposeRGroups, type RGDRow } from './rgd.ts';
 import type {
   RDKitGetMolOpt,
-  RDKitGetMCSOpt,
+  RDKitGetMCSOptions,
   RDKitMCSResult,
   RDKitRxnDetails,
   RDKitGetRgdOptions,
@@ -77,7 +77,7 @@ export interface RDKit {
    * @param options - MCS algorithm options
    * @returns An MCSResult with match info and a lazy `qmol` getter
    */
-  getMCS(mols: MolCollection | string[], options?: Partial<RDKitGetMCSOpt>): MCSResult;
+  getMCS(mols: MolCollection | string[], options?: Partial<RDKitGetMCSOptions>): MCSResult;
 
   /**
    * Creates a Reaction from a reaction SMARTS, SMILES, or RXN block.
@@ -173,7 +173,7 @@ export async function initRDKit(options?: InitRDKitOptions): Promise<RDKit> {
       return new MolCollection(new mod.MolList(), mod);
     },
 
-    getMCS(mols: MolCollection | string[], options?: Partial<RDKitGetMCSOpt>): MCSResult {
+    getMCS(mols: MolCollection | string[], options?: Partial<RDKitGetMCSOptions>): MCSResult {
       const isArray = Array.isArray(mols);
       const collection = isArray ? MolCollection.fromArray(mols, mod) : mols;
 
