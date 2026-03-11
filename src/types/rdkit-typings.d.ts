@@ -20,18 +20,20 @@ export interface JSMol {
   // string representations
 
   /** Returns the SMILES string */
-  get_smiles(): string;
+  get_smiles(details_json?: JSONString): string;
 
   /** Returns the Chemaxon Extended SMILES string */
-  get_cxsmiles(): string;
+  get_cxsmiles(details_json?: JSONString): string;
 
   /** Returns the SMARTS string */
-  get_smarts(): string;
+  get_smarts(details_json?: JSONString): string;
 
   /** Returns the Chemaxon Extended SMARTS string */
-  get_cxsmarts(): string;
+  get_cxsmarts(details_json?: JSONString): string;
 
-  /** Returns the V2000 Molfile string
+  /**
+   * Returns the V2000 Molfile string, unless the molecule contains V3000 features,
+   * in which case it returns a V3000 Molfile string
    * @param RDKitGetMolBlockOpt as a stringifyed JSON
    */
   get_molblock(): string;

@@ -13,6 +13,7 @@ import type {
   RDKitRdkitFpOptions,
   RDKitAtomPairFPOptions,
   RDKitAlignedCoordsOptions,
+  RDKitGetSmilesOpt,
 } from './types/rdkit-json-based-typings.d.ts';
 import { MolCollection } from './mol-collection.ts';
 import type { InChI_Flags } from './types/inchi';
@@ -71,23 +72,23 @@ export class Mol implements Disposable {
   // -- String representations --
 
   /** Returns the canonical SMILES string */
-  getSmiles(): string {
-    return this.jsMol.get_smiles();
+  getSmiles(options?: RDKitGetSmilesOpt): string {
+    return options ? this.jsMol.get_smiles(JSON.stringify(options)) : this.jsMol.get_smiles();
   }
 
   /** Returns the Chemaxon Extended SMILES string */
-  getCxSmiles(): string {
-    return this.jsMol.get_cxsmiles();
+  getCxSmiles(options?: RDKitGetSmilesOpt): string {
+    return options ? this.jsMol.get_cxsmiles(JSON.stringify(options)) : this.jsMol.get_cxsmiles();
   }
 
   /** Returns the SMARTS string */
-  getSmarts(): string {
-    return this.jsMol.get_smarts();
+  getSmarts(options?: RDKitGetSmilesOpt): string {
+    return options ? this.jsMol.get_smarts(JSON.stringify(options)) : this.jsMol.get_smarts();
   }
 
   /** Returns the Chemaxon Extended SMARTS string */
-  getCxSmarts(): string {
-    return this.jsMol.get_cxsmarts();
+  getCxSmarts(options?: RDKitGetSmilesOpt): string {
+    return options ? this.jsMol.get_cxsmarts(JSON.stringify(options)) : this.jsMol.get_cxsmarts();
   }
 
   /**

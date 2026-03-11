@@ -216,6 +216,36 @@ export type RDKitGetMolBlockOpt = {
   addChiralHs: boolean;
 };
 
+export type RDKitGetSmilesOpt = {
+  /** Include stereochemistry and isotope information @default true */
+  doIsomericSmiles: boolean;
+  /**
+   * Kekulize the molecule before generating the SMILES and output
+   * single/double bonds. NOTE that the output is not canonical and that this
+   * will throw an exception if the molecule cannot be kekulized.
+   * @default false
+   */
+  doKekule: boolean;
+  /**
+   * Make sure the SMILES starts at the specified atom. The resulting SMILES
+   * is not canonical and the value of the canonical parameter will be ignored.
+   * @default -1
+   */
+  rootedAtAtom: number;
+  /** Generate canonical SMILES @default true */
+  canonical: boolean;
+  /** Include symbols for all bonds @default false */
+  allBondsExplicit: boolean;
+  /** Provide hydrogen counts for every atom @default false */
+  allHsExplicit: boolean;
+  /**
+   * Randomize the output order. The resulting SMILES is not canonical and
+   * the value of the canonical parameter will be ignored.
+   * @default false
+   */
+  doRandom: boolean;
+};
+
 export type RDKitGetMCSOpt = {
   MaximizeBonds: boolean;
   Threshold: number;
