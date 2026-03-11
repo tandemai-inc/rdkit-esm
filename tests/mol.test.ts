@@ -54,9 +54,18 @@ describe('Mol - string representations', () => {
   });
 
   it('getInchi returns InChI string', () => {
-    using mol = rdkit.getMol('c1ccccc1')!;
+    using mol = rdkit.getMol('C(CC(=O)O)C(=O)C(=O)O')!; // alpha-ketoglutaric acid
     const inchi = mol.getInchi();
-    expect(inchi).toMatch(/^InChI=/);
+    expect(inchi).toBe('InChI=1S/C5H6O5/c6-3(5(9)10)1-2-4(7)8/h1-2H2,(H,7,8)(H,9,10)');
+  });
+
+  it('getInchi accepts options', () => {
+    using ketoMol = rdkit.getMol('C(CC(=O)O)C(=O)C(=O)O')!; // alpha-ketoglutaric acid
+    const ketoInchi = ketoMol.getInchi(['KET']);
+    expect(ketoInchi).toBe('InChI=1/C5H6O5/c6-3(5(9)10)1-2-4(7)8/h2H2,(H2,1,6)(H,7,8)(H,9,10)');
+    using enolMol = rdkit.getMol('C(CC(=O)O)=C(O)C(=O)O')!;
+    const enolInchi = enolMol.getInchi(['KET']);
+    expect(enolInchi).toBe(ketoInchi); // same InChI for both tautomers
   });
 
   it('getInchikey returns InChI key', () => {
@@ -92,16 +101,16 @@ describe('Mol - substructure', () => {
     using mol = rdkit.getMol('c1ccc(O)cc1')!;
     using query = rdkit.getMol('c1ccccc1')!;
     const match = mol.getSubstructMatch(query);
-    expect(match.atoms).toBeInstanceOf(Array);
-    expect(match.bonds).toBeInstanceOf(Array);
+    expect(match.atoms).toEqual([0, 1, 2, 3, 5, 6]);
+    expect(match.bonds).toEqual([0, 1, 2, 4, 5, 6]);
     expect(match.atoms.length).toBe(6);
   });
 
   it('getSubstructMatch with SMARTS string', () => {
     using mol = rdkit.getMol('c1ccc(O)cc1')!;
     const match = mol.getSubstructMatch('[OH]');
-    expect(match.atoms).toBeInstanceOf(Array);
-    expect(match.atoms.length).toBeGreaterThan(0);
+    expect(match.atoms).toEqual([4]);
+    expect(match.atoms.length).toBe(1);
   });
 
   it('getSubstructMatches returns all matches', () => {
@@ -376,7 +385,10 @@ describe('Mol - property list', () => {
   it('getPropList with options', () => {
     using mol = rdkit.getMol('c1ccccc1')!;
     mol.setProp('myKey', 'myValue');
-    const list = mol.getPropList({ includePrivate: true, includeComputed: true });
+    const list = mol.getPropList({
+      includePrivate: true,
+      includeComputed: true,
+    });
     expect(list).toBeInstanceOf(Array);
     expect(list).toContain('myKey');
   });
