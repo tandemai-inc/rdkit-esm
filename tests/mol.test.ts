@@ -66,6 +66,17 @@ describe('Mol - string representations', () => {
     using enolMol = rdkit.getMol('C(CC(=O)O)=C(O)C(=O)O')!;
     const enolInchi = enolMol.getInchi(['KET']);
     expect(enolInchi).toBe(ketoInchi); // same InChI for both tautomers
+
+    // FixedH
+    using protomer1 = rdkit.getMol('C1C[NH+]=CO1')!;
+    using protomer2 = rdkit.getMol('C1CN=C[OH+]1')!;
+    const fhixedHInchi1 = protomer1.getInchi(['FixedH']);
+    const stdInchi1 = protomer1.getInchi();
+    const fhixedHInchi2 = protomer2.getInchi(['FixedH']);
+    const stdInchi2 = protomer2.getInchi();
+
+    expect(fhixedHInchi1).not.toBe(fhixedHInchi2);
+    expect(stdInchi1).toBe(stdInchi2);
   });
 
   it('getInchikey returns InChI key', () => {
