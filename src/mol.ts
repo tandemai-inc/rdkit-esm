@@ -189,7 +189,11 @@ export class Mol implements Disposable {
     const mol = this.jsMol;
     const [qmol, shouldDelete] = this.resolveQuery(query);
     try {
-      return JSON.parse(mol.get_substruct_match(qmol)) as RDKitSubstructMatch;
+      const matchJson = mol.get_substruct_match(qmol);
+      if (matchJson === '{}') {
+        return { atoms: [], bonds: [] }; // special case: no match returns '{}'!
+      }
+      return JSON.parse(matchJson);
     } finally {
       if (shouldDelete) qmol.delete();
     }
@@ -205,7 +209,11 @@ export class Mol implements Disposable {
     const mol = this.jsMol;
     const [qmol, shouldDelete] = this.resolveQuery(query);
     try {
-      return JSON.parse(mol.get_substruct_matches(qmol)) as RDKitSubstructMatch[];
+      const matchesJson = mol.get_substruct_matches(qmol);
+      if (!matchesJson.startsWith('[')) {
+        return []; // special case: no matches returns '{}'!
+      }
+      return JSON.parse(matchesJson);
     } finally {
       if (shouldDelete) qmol.delete();
     }
@@ -214,8 +222,12 @@ export class Mol implements Disposable {
   // -- Descriptors --
 
   /** Returns molecular descriptors as a typed object */
-  getDescriptors(): RDKitDescriptors {
-    return JSON.parse(this.jsMol.get_descriptors()) as RDKitDescriptors;
+  getDescriptors(): RDKitDescriptors | null {
+    try {
+      return JSON.parse(this.jsMol.get_descriptors()); // fails with dummy atoms and returns invalid JSON
+    } catch {
+      return null;
+    }
   }
 
   // -- Fingerprints --
