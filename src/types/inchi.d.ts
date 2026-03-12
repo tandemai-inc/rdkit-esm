@@ -11,5 +11,5 @@ export type InChI_Flags =
   | 'FixedH'
   | 'RecMet'
   | 'KET'
-  | '15H'
+  | '15T'
   | 'AuxNone';
