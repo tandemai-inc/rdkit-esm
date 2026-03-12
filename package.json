@@ -1,16 +1,16 @@
 {
-  "name": "rdkit-wrapper",
+  "name": "rdkit-esm",
   "version": "0.0.0",
-  "description": "A modern wrapper for RDKit.",
-  "homepage": "https://github.com/tandemai/rdkit-wrapper#readme",
+  "description": "RDKit minimal lib for the modern web.",
+  "homepage": "https://github.com/tandemai/rdkit-esm#readme",
   "bugs": {
-    "url": "https://github.com/tandemai/rdkit-wrapper/issues"
+    "url": "https://github.com/tandemai/rdkit-esm/issues"
   },
   "license": "MIT",
   "author": "Paul Pillot <paul.pillot@tandemai.com>",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/tandemai/rdkit-wrapper.git"
+    "url": "git+https://github.com/tandemai/rdkit-esm.git"
   },
   "files": [
     "dist"
