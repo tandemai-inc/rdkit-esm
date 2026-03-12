@@ -397,6 +397,11 @@ export interface JSMol {
   convert_to_aromatic_form(): void;
   convert_to_kekule_form(): void;
 
+  /** Add component to the molecule object
+   * @param options stringified JSON object with { offset: [number, number, number] }
+   */
+  combine_with(other: JSMol, options?: string): void;
+
   /** Returns a copy of the molecule */
   copy(): JSMol;
 

@@ -4,8 +4,7 @@ import { initRDKit } from '../src/index.ts';
 describe('initRDKit', () => {
   it('initializes the module and returns a version string', async () => {
     const rdkit = await initRDKit();
-    const version = rdkit.version();
-    expect(version).toMatch(/^\d+\.\d+\.\d+/);
+    expect(rdkit.version).toMatch(/^\d+\.\d+\.\d+/);
   });
 
   it('getMol returns a Mol for valid SMILES', async () => {

@@ -107,8 +107,10 @@ export interface RDKit {
     options?: Partial<RDKitGetRgdOptions>,
   ): RGDRow[] | null;
 
+  molzip(mol1: Mol, mol2: Mol): Mol | null;
+
   /** Returns the RDKit version string */
-  version(): string;
+  version: string;
 
   /** The underlying RDKitModule for direct access to the raw API */
   readonly module: RDKitModule;
@@ -222,7 +224,13 @@ export async function initRDKit(options?: InitRDKitOptions): Promise<RDKit> {
       return decomposeRGroups(core, molecules, options, mod);
     },
 
-    version(): string {
+    molzip(mol1: Mol, mol2: Mol): Mol | null {
+      const jsMol = mod.molzip(mol1.jsMol, mol2.jsMol);
+      if (!jsMol) return null;
+      return new Mol(jsMol, mod);
+    },
+
+    get version() {
       return mod.version();
     },
 

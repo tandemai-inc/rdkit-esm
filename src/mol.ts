@@ -14,6 +14,7 @@ import type {
   RDKitAtomPairFPOptions,
   RDKitAlignedCoordsOptions,
   RDKitGetSmilesOptions,
+  RDKitMolZipOptions,
 } from './types/rdkit-minimalib-json-typings';
 import { MolCollection } from './mol-collection.ts';
 import type { InChI_Flags } from './types/inchi';
@@ -435,6 +436,25 @@ export class Mol implements Disposable {
   /** Adds explicit hydrogens to the molecule in place */
   addHsInPlace(): boolean {
     return this.jsMol.add_hs_in_place();
+  }
+
+  combineWith(other: Mol, options?: { offset: [number, number, number] }): void {
+    const mol = this.jsMol;
+    if (options) {
+      mol.combine_with(other.jsMol, JSON.stringify(options));
+    } else {
+      this.jsMol.combine_with(other.jsMol);
+    }
+  }
+
+  zipWith(other: Mol, options?: RDKitMolZipOptions): void {
+    const mol = this.jsMol;
+    const newMol = options
+      ? this.#module.molzip(mol, other.jsMol, JSON.stringify(options))
+      : this.#module.molzip(mol, other.jsMol);
+    if (!newMol || !newMol.is_valid()) return;
+    mol.delete();
+    this.#jsMol = newMol;
   }
 
   // -- Coordinate generation --

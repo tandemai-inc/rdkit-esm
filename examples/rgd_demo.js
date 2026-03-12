@@ -5,7 +5,7 @@ import { initRDKit } from '../dist/index.js';
 const rdkit = await initRDKit();
 
 document.getElementById('loading').textContent = '';
-document.getElementById('version').textContent = `RDKit ${rdkit.version()}`;
+document.getElementById('version').textContent = `RDKit ${rdkit.version}`;
 
 const NAME = '_Name';
 const RGROUP_TARGET_ATOMS = '_rgroupTargetAtoms';

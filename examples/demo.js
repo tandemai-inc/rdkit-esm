@@ -5,7 +5,7 @@ import { initRDKit } from '../dist/index.js';
 const rdkit = await initRDKit();
 
 document.getElementById('loading').textContent = '';
-document.getElementById('version').textContent = `RDKit ${rdkit.version()}`;
+document.getElementById('version').textContent = `RDKit ${rdkit.version}`;
 
 const smilesInput = /** @type {HTMLInputElement} */ (document.getElementById('smiles-input'));
 const smartsInput = /** @type {HTMLInputElement} */ (document.getElementById('smarts-input'));
