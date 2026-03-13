@@ -333,6 +333,18 @@ export class Mol implements Disposable {
   // -- Properties --
 
   /**
+   * Parses a property value string, attempting JSON.parse first.
+   * Returns the parsed value on success, or the raw string on failure.
+   */
+  private parsePropValue(value: string): any {
+    try {
+      return JSON.parse(value);
+    } catch {
+      return value;
+    }
+  }
+
+  /**
    * Checks whether the molecule has a given property
    * @param key - Property name
    */
@@ -341,11 +353,12 @@ export class Mol implements Disposable {
   }
 
   /**
-   * Gets a property value from the molecule
+   * Gets a property value from the molecule.
+   * Attempts to parse the raw string as JSON; returns the raw string if parsing fails.
    * @param key - Property name
    */
-  getProp(key: string): string {
-    return this.jsMol.get_prop(key);
+  getProp(key: string): any {
+    return this.parsePropValue(this.jsMol.get_prop(key));
   }
 
   /**
@@ -366,17 +379,19 @@ export class Mol implements Disposable {
   }
 
   /**
-   * Returns the list of property names
+   * Returns a map of all property names to their parsed values.
+   * Values are parsed from JSON when possible, otherwise returned as raw strings.
    * @param options - Filter options
    */
-  getPropList(options?: { includePrivate?: boolean; includeComputed?: boolean }): string[] {
+  getPropMap(options?: { includePrivate?: boolean; includeComputed?: boolean }): Map<string, any> {
     const mol = this.jsMol;
     const sl = options
-      ? mol.get_prop_list(options.includePrivate ?? false, options.includeComputed ?? false)
+      ? mol.get_prop_list(options.includePrivate ?? true, options.includeComputed ?? true)
       : mol.get_prop_list();
-    const result: string[] = [];
+    const result = new Map<string, any>();
     for (let i = 0; i < sl.size(); i++) {
-      result.push(sl.get(i));
+      const key = sl.get(i);
+      result.set(key, this.getProp(key));
     }
     sl.delete();
     return result;

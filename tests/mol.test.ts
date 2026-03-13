@@ -345,6 +345,12 @@ describe('Mol - properties', () => {
     mol.clearProp('myKey');
     expect(mol.hasProp('myKey')).toBe(false);
   });
+
+  it('getProp returns a plain string when value is not JSON', () => {
+    using mol = rdkit.getMol('c1ccccc1')!;
+    mol.setProp('name', 'benzene');
+    expect(mol.getProp('name')).toBe('benzene');
+  });
 });
 
 describe('Mol - molecule info', () => {
@@ -504,22 +510,24 @@ describe('Mol - copy', () => {
   });
 });
 
-describe('Mol - property list', () => {
-  it('getPropList returns array', () => {
+describe('Mol - property map', () => {
+  it('getPropMap returns a Map with parsed values', () => {
     using mol = rdkit.getMol('c1ccccc1')!;
-    const list = mol.getPropList();
-    expect(list).toBeInstanceOf(Array);
+    const map = mol.getPropMap();
+    expect(map).toBeInstanceOf(Map);
+    expect(map.get('numArom')).toBe(1);
   });
 
-  it('getPropList with options', () => {
+  it('getPropMap with options includes custom props', () => {
     using mol = rdkit.getMol('c1ccccc1')!;
-    mol.setProp('myKey', 'myValue');
-    const list = mol.getPropList({
+    mol.setProp('name', 'benzene');
+    const map = mol.getPropMap({
       includePrivate: true,
       includeComputed: true,
     });
-    expect(list).toBeInstanceOf(Array);
-    expect(list).toContain('myKey');
+    expect(map).toBeInstanceOf(Map);
+    expect(map.has('name')).toBe(true);
+    expect(map.get('name')).toBe('benzene');
   });
 });
 
