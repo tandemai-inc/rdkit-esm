@@ -4,6 +4,11 @@ import { defineConfig } from 'tsdown';
 export default defineConfig({
   entry: ['src/index.ts'],
   exports: true,
-  platform: 'browser',
+  platform: 'neutral',
+  inputOptions: {
+    resolve: {
+      mainFields: [],
+    },
+  },
   plugins: [wasm()],
 });
