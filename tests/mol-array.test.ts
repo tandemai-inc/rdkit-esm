@@ -20,7 +20,7 @@ describe('MolArray', () => {
     using mol = rdkit.getMol('c1ccccc1.CC')!;
     const { mols } = mol.getFrags();
     expect(mols[0].getSmiles()).toBeTypeOf('string');
-    expect(mols[0].getNumAtoms()).toBeGreaterThan(0);
+    expect(mols[0].numAtoms).toBeGreaterThan(0);
     mols.delete();
   });
 

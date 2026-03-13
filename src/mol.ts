@@ -390,12 +390,12 @@ export class Mol implements Disposable {
   }
 
   /** Returns the number of atoms in the molecule */
-  getNumAtoms(): number {
+  get numAtoms(): number {
     return this.jsMol.get_num_atoms();
   }
 
   /** Returns the number of bonds in the molecule */
-  getNumBonds(): number {
+  get numBonds(): number {
     return this.jsMol.get_num_bonds();
   }
 

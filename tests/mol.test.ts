@@ -350,12 +350,12 @@ describe('Mol - properties', () => {
 describe('Mol - molecule info', () => {
   it('getNumAtoms returns atom count', () => {
     using mol = rdkit.getMol('c1ccccc1')!;
-    expect(mol.getNumAtoms()).toBe(6);
+    expect(mol.numAtoms).toBe(6);
   });
 
   it('getNumBonds returns bond count', () => {
     using mol = rdkit.getMol('c1ccccc1')!;
-    expect(mol.getNumBonds()).toBe(6);
+    expect(mol.numBonds).toBe(6);
   });
 
   it('hasCoords returns 0 for SMILES without coords', () => {
@@ -410,7 +410,7 @@ describe('Mol - hydrogen methods', () => {
     using mol = rdkit.getMol('c1ccccc1')!;
     const result = mol.addHsInPlace();
     expect(result).toBeTypeOf('boolean');
-    expect(mol.getNumAtoms()).toBe(12);
+    expect(mol.numAtoms).toBe(12);
   });
 
   it('removeHs returns molfile without explicit Hs', () => {
@@ -423,9 +423,9 @@ describe('Mol - hydrogen methods', () => {
   it('removeHsInPlace removes Hs in place', () => {
     using mol = rdkit.getMol('c1ccccc1')!;
     mol.addHsInPlace();
-    expect(mol.getNumAtoms()).toBe(12);
+    expect(mol.numAtoms).toBe(12);
     mol.removeHsInPlace();
-    expect(mol.getNumAtoms()).toBe(6);
+    expect(mol.numAtoms).toBe(6);
   });
 });
 
@@ -486,7 +486,7 @@ describe('Mol - fragments', () => {
     using mol = rdkit.getMol('c1ccccc1.CC')!;
     const { mappings, mols } = mol.getFrags();
     expect(mappings.atomToFrag).toBeInstanceOf(Array);
-    expect(mappings.atomToFrag.length).toBe(mol.getNumAtoms());
+    expect(mappings.atomToFrag.length).toBe(mol.numAtoms);
     expect(mappings.fragToAtoms).toBeInstanceOf(Array);
     expect(mappings.fragToAtoms.length).toBe(2);
     expect(mols.length).toBe(2);
