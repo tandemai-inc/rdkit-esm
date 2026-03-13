@@ -2,18 +2,7 @@ import initRDKitModule from '../MinimalLib/dist/RDKit_minimal.js';
 // @ts-expect-error -- Vite/Rolldown ?url import directive
 import wasmUrl from '../MinimalLib/dist/RDKit_minimal.wasm?url';
 
-import { Mol } from './mol.ts';
-import { fromMolArraytoMolList, fromStringArraytoMolList, isMolArray } from './mol-array.ts';
-import { Reaction } from './reaction.ts';
-import type { RDKitModule, MolList } from './types/rdkit-minimalib-typings';
-import { decomposeRGroups, type RGDRow } from './rgd.ts';
-import type {
-  RDKitGetMolOpt,
-  RDKitGetMCSOptions,
-  RDKitMCSResult,
-  RDKitRxnDetails,
-  RDKitGetRgdOptions,
-} from './types/rdkit-minimalib-json-typings';
+import { RDKit } from './rdkit.ts';
 
 /**
  * Resolves the WASM URL for the current environment.
@@ -39,95 +28,14 @@ export interface InitRDKitOptions {
    * By default, the WASM file is resolved relative to the bundled JS output
    * using the Vite/Rolldown `?url` import.
    */
-  locateFile?: () => string;
-}
-
-/** The main RDKit wrapper interface returned by {@link initRDKit} */
-export interface RDKit {
-  /**
-   * Creates a molecule from a variety of input formats.
-   *
-   * @param input - SMILES, SMARTS, MolFile, or JSON string
-   * @param options - Molecule parsing options
-   * @returns A Mol instance, or null if the input is invalid
-   */
-  getMol(input: string, options?: Partial<RDKitGetMolOpt>): Mol | null;
-
-  /**
-   * Creates a query molecule from a SMARTS string.
-   *
-   * @param input - SMARTS string
-   * @returns A Mol instance, or null if the input is invalid
-   */
-  getQMol(input: string): Mol | null;
-
-  /**
-   * Computes the Maximum Common Substructure (MCS) of a set of molecules.
-   *
-   * @param mols - An array of Mol instances or SMILES strings
-   * @param options - MCS algorithm options
-   * @returns An MCSResult with match info and a lazy `qmol` getter
-   */
-  getMCS(mols: Mol[] | string[], options?: Partial<RDKitGetMCSOptions>): MCSResult;
-
-  /**
-   * Creates a Reaction from a reaction SMARTS, SMILES, or RXN block.
-   *
-   * @param input - Reaction SMARTS, SMILES, or RXN block string
-   * @param options - Reaction parsing options
-   * @returns A Reaction instance, or null if the input is invalid
-   */
-  getRxn(input: string, options?: Partial<RDKitRxnDetails>): Reaction | null;
-
-  /**
-   * Performs R-Group Decomposition on a set of molecules against one or more cores.
-   *
-   * **WARNING:** The caller is responsible for deleting each `Mol` in the
-   * returned rows (via `.delete()` or `using`) to avoid memory leaks.
-   *
-   * @param core - Core structure(s): a SMARTS string, an array of SMARTS strings,
-   *   a Mol instance, or an array of Mol instances
-   * @param molecules - Molecules to decompose: an array of SMILES strings or Mol instances
-   * @param options - R-Group decomposition options
-   * @returns An array of rows, one per molecule. Each row maps R-group labels
-   *   (`Core`, `R1`, `R2`, …) to Mol instances.
-   */
-  getRGD(
-    core: string | string[] | Mol | Mol[],
-    molecules: string[] | Mol[],
-    options?: Partial<RDKitGetRgdOptions>,
-  ): RGDRow[] | null;
-
-  molzip(mol1: Mol, mol2: Mol): Mol | null;
-
-  /** Returns the RDKit version string */
-  version: string;
-
-  /** The underlying RDKitModule for direct access to the raw API */
-  readonly module: RDKitModule;
-}
-
-/** Result of a Maximum Common Substructure (MCS) computation */
-export interface MCSResult {
-  numAtoms: number;
-  numBonds: number;
-  canceled: boolean;
-  /** SMARTS string(s) — an array when the `StoreAll` option is used */
-  smarts: string | string[];
-  /**
-   * Lazily creates a query Mol from the first SMARTS.
-   * Returns null if SMARTS is empty.
-   *
-   * **WARNING:** The caller is responsible for explicitly deleting this
-   * object (via `.delete()` or `using`) to avoid memory leaks.
-   */
-  get qmol(): Mol | null;
+  locateFile: () => string;
 }
 
 /**
  * Initializes the RDKit WASM module and returns a typed wrapper.
  *
  * @param options - Initialization options
+ * @params constructor - Advanced use only. Optional custom constructor to allow extending the RDKit class
  * @returns A promise that resolves to the RDKit wrapper
  *
  * @example
@@ -135,103 +43,34 @@ export interface MCSResult {
  * const rdkit = await initRDKit();
  * const mol = rdkit.getMol('c1ccccc1');
  * ```
+ *
+ * @example with custom constructor
+ * ```ts
+ * class ExtendedRDKit extends RDKit {
+ *   constructor(mod: RDKitModule) {
+ *     super(mod);
+ *     console.log("ExtendedRDKit initialized. Version:", this.version);
+ *   }
+ * }
+ *
+ * const initExtendedRDKit = async () => {
+ *   const rdkit = await initRDKit({}, ExtendedRDKit);
+ *   return rdkit;
+ * };
+ * ```
  */
-export async function initRDKit(options?: InitRDKitOptions): Promise<RDKit> {
+export async function initRDKit(options?: Partial<InitRDKitOptions>): Promise<RDKit>;
+export async function initRDKit<T extends typeof RDKit>(
+  options: Partial<InitRDKitOptions> | undefined,
+  constructor: T,
+): Promise<InstanceType<T>>;
+export async function initRDKit(
+  options?: Partial<InitRDKitOptions>,
+  constructor: typeof RDKit = RDKit,
+): Promise<RDKit> {
   const locateFile = options?.locateFile ?? (() => resolveWasmUrl());
 
   const mod = await initRDKitModule({ locateFile });
 
-  return {
-    getMol(input: string, opts?: Partial<RDKitGetMolOpt>): Mol | null {
-      const jsMol = opts ? mod.get_mol(input, JSON.stringify(opts)) : mod.get_mol(input);
-      if (!jsMol || !jsMol.is_valid()) {
-        jsMol?.delete();
-        return null;
-      }
-      return new Mol(jsMol, mod);
-    },
-
-    getQMol(input: string): Mol | null {
-      const jsMol = mod.get_qmol(input);
-      if (!jsMol) {
-        return null;
-      }
-      return new Mol(jsMol, mod);
-    },
-
-    getMCS(mols: Mol[] | string[], options?: Partial<RDKitGetMCSOptions>): MCSResult {
-      let molList: MolList;
-
-      if (mols.length < 2) {
-        throw new Error('getMCS requires at least 2 molecules');
-      }
-
-      if (isMolArray(mols)) {
-        molList = fromMolArraytoMolList(mols, mod);
-      } else {
-        molList = fromStringArraytoMolList(mols, mod);
-      }
-
-      if (molList.size() < 2) {
-        molList.delete();
-        throw new Error('getMCS requires at least 2 valid molecules');
-      }
-
-      const json = options
-        ? mod.get_mcs_as_json(molList, JSON.stringify(options))
-        : mod.get_mcs_as_json(molList);
-
-      molList.delete();
-
-      const parsed = JSON.parse(json) as RDKitMCSResult;
-      let cachedQmol: Mol | null | undefined;
-
-      return {
-        ...parsed,
-        get qmol(): Mol | null {
-          if (cachedQmol !== undefined) return cachedQmol;
-          const s = Array.isArray(parsed.smarts) ? parsed.smarts[0] : parsed.smarts;
-          if (!s) {
-            cachedQmol = null;
-            return null;
-          }
-          const jsMol = mod.get_qmol(s);
-          cachedQmol = jsMol ? new Mol(jsMol, mod) : null;
-          return cachedQmol;
-        },
-      };
-    },
-
-    getRxn(input: string, options?: Partial<RDKitRxnDetails>): Reaction | null {
-      try {
-        const jsRxn = options ? mod.get_rxn(input, JSON.stringify(options)) : mod.get_rxn(input);
-        if (!jsRxn) return null;
-        return new Reaction(jsRxn, mod);
-      } catch {
-        return null;
-      }
-    },
-
-    getRGD(
-      core: string | string[] | Mol | Mol[],
-      molecules: string[] | Mol[],
-      options?: Partial<RDKitGetRgdOptions>,
-    ): RGDRow[] | null {
-      return decomposeRGroups(core, molecules, options, mod);
-    },
-
-    molzip(mol1: Mol, mol2: Mol): Mol | null {
-      const jsMol = mod.molzip(mol1.jsMol, mol2.jsMol);
-      if (!jsMol) return null;
-      return new Mol(jsMol, mod);
-    },
-
-    get version() {
-      return mod.version();
-    },
-
-    get module() {
-      return mod;
-    },
-  };
+  return new constructor(mod);
 }
