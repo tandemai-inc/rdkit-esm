@@ -79,7 +79,7 @@ function update() {
       }
     }
 
-    const svg = mol.getSvg(Object.keys(opts).length > 0 ? opts : undefined);
+    const svg = mol.getSVG(Object.keys(opts).length > 0 ? opts : undefined);
     drawingDiv.innerHTML = svg;
 
     // Descriptors

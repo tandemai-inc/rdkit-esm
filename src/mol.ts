@@ -31,7 +31,7 @@ import { buildCxSmilesRawOptions } from './formats/cxsmiles.ts';
  * Implements `Disposable` for use with the `using` keyword:
  * ```ts
  * using mol = rdkit.getMol('c1ccccc1')!;
- * const svg = mol.getSvg();
+ * const svg = mol.getSVG();
  * // mol is automatically deleted when the scope exits
  * ```
  */
@@ -144,7 +144,7 @@ export class Mol implements Disposable {
   }
 
   /** Returns the parsed JSON representation of the molecule */
-  getJson(): RDKitJson {
+  getJSON(): RDKitJson {
     return JSON.parse(this.jsMol.get_json()) as RDKitJson;
   }
 
@@ -163,15 +163,15 @@ export class Mol implements Disposable {
    *
    * @example
    * // Default SVG
-   * const svg = mol.getSvg();
+   * const svg = mol.getSVG();
    *
    * // Custom size with atom indices
-   * const svg = mol.getSvg({ width: 400, height: 300, addAtomIndices: true });
+   * const svg = mol.getSVG({ width: 400, height: 300, addAtomIndices: true });
    *
    * // With atom highlighting
-   * const svg = mol.getSvg({ atoms: [0, 1, 2], highlightColour: [1, 0, 0, 1] });
+   * const svg = mol.getSVG({ atoms: [0, 1, 2], highlightColour: [1, 0, 0, 1] });
    */
-  getSvg(options?: Partial<RDKitDepictionDetails>): string {
+  getSVG(options?: Partial<RDKitDepictionDetails>): string {
     const mol = this.jsMol;
     if (!options) return mol.get_svg();
     return mol.get_svg_with_highlights(JSON.stringify(options));

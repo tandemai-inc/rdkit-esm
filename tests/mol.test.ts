@@ -90,9 +90,9 @@ describe('Mol - string representations', () => {
     expect(mol.getInchikey()).toBe('BQJCRHHNABKAKU-KBQPJGBKSA-N');
   });
 
-  it('getJson returns parsed molecule JSON', () => {
+  it('getJSON returns parsed molecule JSON', () => {
     using mol = rdkit.getMol('c1ccccc1')!;
-    const json = mol.getJson();
+    const json = mol.getJSON();
     expect(json.molecules).toBeInstanceOf(Array);
     expect(json.molecules.length).toBeGreaterThan(0);
   });
@@ -206,16 +206,16 @@ describe('Mol - CX SMILES options', () => {
 });
 
 describe('Mol - SVG', () => {
-  it('getSvg returns SVG string with defaults', () => {
+  it('getSVG returns SVG string with defaults', () => {
     using mol = rdkit.getMol('c1ccccc1')!;
-    const svg = mol.getSvg();
+    const svg = mol.getSVG();
     expect(svg).toContain('<svg');
     expect(svg).toContain('</svg>');
   });
 
-  it('getSvg with custom dimensions and options', () => {
+  it('getSVG with custom dimensions and options', () => {
     using mol = rdkit.getMol('c1ccccc1')!;
-    const svg = mol.getSvg({ width: 400, height: 300, addAtomIndices: true });
+    const svg = mol.getSVG({ width: 400, height: 300, addAtomIndices: true });
     expect(svg).toContain('<svg');
   });
 });

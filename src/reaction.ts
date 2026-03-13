@@ -95,7 +95,7 @@ export class Reaction implements Disposable {
    * @param options - Drawing options including highlighting.
    *   When omitted, uses RDKit defaults.
    */
-  getSvg(options?: Partial<RDKitRxnDepictionDetails>): string {
+  getSVG(options?: Partial<RDKitRxnDepictionDetails>): string {
     const rxn = this.jsReaction;
     if (!options) return rxn.get_svg();
     return rxn.get_svg_with_highlights(JSON.stringify(options));

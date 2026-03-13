@@ -30,7 +30,7 @@ const mol = rdkit.getMol('c1ccccc1');
 if (mol) {
   mol.getSmiles(); // 'c1ccccc1'
   mol.getDescriptors(); // { exactMW: 78.047, ClogP: 1.6816, ... }
-  mol.getSvg({ width: 350, height: 300 });
+  mol.getSVG({ width: 350, height: 300 });
 
   mol.delete(); // free WASM memory when done
 }
@@ -61,11 +61,11 @@ The main entry point for creating molecules, reactions, and collections.
 
 Wraps a single molecule with a typed, camelCase API.
 
-- **String representations** — `getSmiles()`, `getCxSmiles()`, `getSmarts()`, `getMolblock()`, `getV3KMolblock()`, `getInchi()`, `getInchikey()`, `getJson()`
+- **String representations** — `getSmiles()`, `getCxSmiles()`, `getSmarts()`, `getMolblock()`, `getV3KMolblock()`, `getInchi()`, `getInchikey()`, `getJSON()`
 - **Fingerprints** — `getMorganFp()`, `getMaccsFp()`, `getPatternFp()`, `getTopologicalTorsionFp()`, `getRdkitFp()`, `getAtomPairFp()` (each also available as `…AsUint8Array()`)
 - **Descriptors** — `getDescriptors()` returns MW, ClogP, HBA, HBD, ring counts, etc.
 - **Substructure** — `getSubstructMatch(query)`, `getSubstructMatches(query)`
-- **Drawing** — `getSvg(options?)`, `drawToCanvas(canvas, ...)`
+- **Drawing** — `getSVG(options?)`, `drawToCanvas(canvas, ...)`
 - **Coordinates** — `setNewCoords()`, `generateAlignedCoords(template, options?)`
 - **Mutations** — `addHs()` / `removeHs()`, `convertToAromaticForm()` / `convertToKekuleForm()`, `combineWith()`, `zipWith()`
 - **Properties** — `hasProp()`, `getProp()`, `setProp()`, `clearProp()`, `getPropList()`
@@ -80,7 +80,7 @@ Extends `Array<Mol>` with batch lifecycle management. Returned by `getFrags()`. 
 | Method                                  | Description                                                   |
 | --------------------------------------- | ------------------------------------------------------------- |
 | `runReactants(reactants, maxProducts?)` | Run the reaction on a set of reactants. Returns product sets. |
-| `getSvg(options?)`                      | Render the reaction as SVG.                                   |
+| `getSVG(options?)`                      | Render the reaction as SVG.                                   |
 | `drawToCanvas(canvas, ...)`             | Draw the reaction to an HTML canvas.                          |
 
 ## Memory Management

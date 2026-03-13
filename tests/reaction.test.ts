@@ -65,17 +65,17 @@ describe('Reaction - runReactants', () => {
   });
 });
 
-describe('Reaction - getSvg', () => {
+describe('Reaction - getSVG', () => {
   it('returns SVG string with defaults', () => {
     using rxn = rdkit.getRxn('[CH3:1][OH:2]>>[CH2:1]=[OH0:2]')!;
-    const svg = rxn.getSvg();
+    const svg = rxn.getSVG();
     expect(svg).toContain('<svg');
     expect(svg).toContain('</svg>');
   });
 
   it('returns SVG with highlight options', () => {
     using rxn = rdkit.getRxn('[CH3:1][OH:2]>>[CH2:1]=[OH0:2]')!;
-    const svg = rxn.getSvg({ highlightByReactant: true });
+    const svg = rxn.getSVG({ highlightByReactant: true });
     expect(svg).toContain('<svg');
   });
 });
@@ -92,7 +92,7 @@ describe('Reaction - lifecycle', () => {
     {
       using rxn = rdkit.getRxn('[CH3:1][OH:2]>>[CH2:1]=[OH0:2]')!;
       rxnRef = rxn;
-      expect(rxn.getSvg()).toContain('<svg');
+      expect(rxn.getSVG()).toContain('<svg');
     }
     expect(() => rxnRef!.jsReaction).toThrow('Reaction has been deleted');
   });

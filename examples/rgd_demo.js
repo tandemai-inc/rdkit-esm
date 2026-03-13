@@ -164,7 +164,7 @@ function generateStructureDiv(row, core, { labels, width, height, useSvg }) {
   };
 
   if (useSvg) {
-    div.innerHTML = mol.getSvg(details);
+    div.innerHTML = mol.getSVG(details);
   } else {
     const canvas = document.createElement('canvas');
     canvas.width = width;
