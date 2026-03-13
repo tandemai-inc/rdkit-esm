@@ -162,10 +162,19 @@ export async function initRDKit(options?: InitRDKitOptions): Promise<RDKit> {
     getMCS(mols: Mol[] | string[], options?: Partial<RDKitGetMCSOptions>): MCSResult {
       let molList: MolList;
 
+      if (mols.length < 2) {
+        throw new Error('getMCS requires at least 2 molecules');
+      }
+
       if (isMolArray(mols)) {
         molList = fromMolArraytoMolList(mols, mod);
       } else {
         molList = fromStringArraytoMolList(mols, mod);
+      }
+
+      if (molList.size() < 2) {
+        molList.delete();
+        throw new Error('getMCS requires at least 2 valid molecules');
       }
 
       const json = options
