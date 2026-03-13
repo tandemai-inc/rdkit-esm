@@ -18,8 +18,12 @@ import type {
 } from './types/rdkit-minimalib-json-typings';
 import { MolArray } from './mol-array.ts';
 import type { InChI_Flags } from './types/inchi';
-import type { RDKitGetCxSmilesOptions } from './types/rdkit-esm.typings.ts';
+import type {
+  RDKitGetCxSmilesOptions,
+  RDKitGetUint8ArrayOptions,
+} from './types/rdkit-esm.typings.ts';
 import { buildCxSmilesRawOptions } from './formats/cxsmiles.ts';
+import { buildGetMolAsUint8ArrayOptions } from './formats/pickle.ts';
 
 /**
  * A wrapper around RDKit's JSMol object providing a typed, camelCase API.
@@ -143,13 +147,20 @@ export class Mol implements Disposable {
     return this.#module.get_inchikey_for_inchi(inchi);
   }
 
-  /** Returns the parsed JSON representation of the molecule */
+  /**
+   * Returns the serialized JSON representation of the molecule
+   * Based on the CommonChem specifications @link https://github.com/CommonChem/CommonChem
+   * */
   getJSON(): RDKitJson {
     return JSON.parse(this.jsMol.get_json()) as RDKitJson;
   }
 
-  /** Returns an unsigned integer array representation of the molecule */
-  getAsUint8Array(): Uint8Array {
+  /** Returns a binary representation of the molecule (pickle) as an unsigned integer array */
+  getAsUint8Array(options?: Partial<RDKitGetUint8ArrayOptions>): Uint8Array {
+    if (options?.properties) {
+      const rawOptions = buildGetMolAsUint8ArrayOptions(options.properties);
+      return this.jsMol.get_as_uint8array(JSON.stringify(rawOptions));
+    }
     return this.jsMol.get_as_uint8array();
   }
 

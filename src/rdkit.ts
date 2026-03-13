@@ -1,7 +1,7 @@
 import { Mol } from './mol.ts';
 import { fromMolArraytoMolList, fromStringArraytoMolList, isMolArray } from './mol-array.ts';
 import { Reaction } from './reaction.ts';
-import type { RDKitModule, MolList } from './types/rdkit-minimalib-typings';
+import type { RDKitModule, MolList, JSMol } from './types/rdkit-minimalib-typings';
 import { decomposeRGroups, type RGDRow } from './rgd.ts';
 import type {
   RDKitGetMolOpt,
@@ -54,14 +54,21 @@ export class RDKit {
    * @param options - Molecule parsing options
    * @returns A Mol instance, or null if the input is invalid
    */
-  getMol(input: string, options?: Partial<RDKitGetMolOpt>): Mol | null {
-    const jsMol = options
-      ? this.#mod.get_mol(input, JSON.stringify(options))
-      : this.#mod.get_mol(input);
-    if (!jsMol || !jsMol.is_valid()) {
-      jsMol?.delete();
-      return null;
+  getMol(input: string | Uint8Array, options?: Partial<RDKitGetMolOpt>): Mol | null {
+    let jsMol: JSMol | null;
+    if (input instanceof Uint8Array) {
+      if (options) {
+        console.warn('Options are ignored when getMol is called with a binary input (pikkle).');
+      }
+      jsMol = this.#mod.get_mol_from_uint8array(input);
+    } else {
+      jsMol = options
+        ? this.#mod.get_mol(input, JSON.stringify(options))
+        : this.#mod.get_mol(input);
     }
+
+    if (!jsMol) return null;
+
     return new Mol(jsMol, this.#mod);
   }
 

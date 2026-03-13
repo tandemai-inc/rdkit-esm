@@ -286,6 +286,22 @@ export type CxSmilesField =
   | 'ALL'
   | 'ALL_BUT_COORDS';
 
+export type RDKitGetMolAsPickleOptions = {
+  propertyFlags: Partial<{ [K in PropertyPickleOptionsKeys]: boolean }>;
+};
+
+export type PropertyPickleOptionsKeys =
+  | 'NoProps' // no data pickled, single precision coordinates
+  | 'MolProps' // only public non computed properties
+  | 'AtomProps'
+  | 'BondProps'
+  // | 'QueryAtomData' // DEPRECATED, same as AtomProps when set
+  | 'PrivateProps'
+  | 'ComputedProps'
+  | 'AllProps' // all data pickled
+  | 'CoordsAsDouble' // save coordinates in double precision
+  | 'NoConformers'; // do not include conformers or associated properties
+
 export type RDKitGetMCSOptions = {
   MaximizeBonds: boolean;
   Threshold: number;

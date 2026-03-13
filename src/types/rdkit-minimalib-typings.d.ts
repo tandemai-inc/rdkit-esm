@@ -1,6 +1,6 @@
 // Type definitons for RDKit.js
-// Project: https://github.com/rdkit/rdkit-js
-// Definitions by: adam-of-barot <https://github.com/adam-of-barot>
+// Based on Project: https://github.com/rdkit/rdkit-js
+// Adapted from definitions by: adam-of-barot <https://github.com/adam-of-barot>
 
 type JSONString = string;
 
@@ -65,7 +65,7 @@ export interface JSMol {
   // array representation
 
   /** Returns an unsigned integer array representation */
-  get_as_uint8array(): Uint8Array;
+  get_as_uint8array(options?: JSONString): Uint8Array;
 
   // SVG representations
 
@@ -639,7 +639,7 @@ export interface RDKitModule {
    * This will return null if the input is invalid.
    *
    * @param input SMILES / SMARTS / MolFile / JSON string
-   * @param details_json @type {RDKitGetMolOpt}
+   * @param details_json RDKitGetMolOpt
    */
   get_mol(input: string, details_json?: string): JSMol | null;
 
@@ -647,8 +647,9 @@ export interface RDKitModule {
    * Create a molecule from an integer array
    *
    * @param pklAsUInt8Array unsigned integer array
+   * @param details_json RDKitGetMolFromPickleOtions
    */
-  get_mol_from_uint8array(pklAsUInt8Array: Uint8Array): JSMol;
+  get_mol_from_uint8array(pklAsUInt8Array: Uint8Array, details_json?: string): JSMol;
 
   /**
    * Create a copy of a molecule
