@@ -4,21 +4,35 @@ import wasmUrl from '../MinimalLib/dist/RDKit_minimal.wasm?url';
 
 import { RDKit } from './rdkit.ts';
 
+const ENVIRONMENT_IS_NODE =
+  typeof process !== 'undefined' && process.versions != null && process.versions.node != null;
+
 /**
  * Resolves the WASM URL for the current environment.
  * In browsers, uses `import.meta.url` to resolve the WASM filename relative
  * to the JS bundle's location — works regardless of where the page is served.
- * In Node.js (e.g. vitest), the `?url` import returns a root-relative path
- * like `/src/minimalib/RDKit_minimal.wasm` which needs to be joined with cwd.
  */
 function resolveWasmUrl(): string {
   const url = wasmUrl as string;
-  const isNode =
-    typeof process !== 'undefined' && process.versions != null && process.versions.node != null;
-  if (isNode && url.startsWith('/') && !url.startsWith('//')) {
-    return process.cwd() + url;
-  }
   return new URL(url, import.meta.url).href;
+}
+
+/**
+ * In Node the emscripten module is compiled for web/worker only,
+ * so `fetch` / XHR are unavailable. Read the WASM binary from disk
+ * and hand it to the module via `wasmBinary`.
+ */
+async function loadWasmBinary(): Promise<ArrayBuffer | undefined> {
+  if (!ENVIRONMENT_IS_NODE) return undefined;
+  const { readFile } = await import('node:fs/promises');
+  const { fileURLToPath } = await import('node:url');
+  const { dirname, resolve } = await import('node:path');
+  // Resolve the .wasm path relative to this source file, not via the ?url
+  // import which produces a root-relative path that new URL() misinterprets.
+  const thisDir = dirname(fileURLToPath(import.meta.url));
+  const wasmPath = resolve(thisDir, '../MinimalLib/dist/RDKit_minimal.wasm');
+  const buf = await readFile(wasmPath);
+  return buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength);
 }
 
 /** Options for initializing the RDKit module */
@@ -69,8 +83,9 @@ export async function initRDKit(
   constructor: typeof RDKit = RDKit,
 ): Promise<RDKit> {
   const locateFile = options?.locateFile ?? (() => resolveWasmUrl());
+  const wasmBinary = await loadWasmBinary();
 
-  const mod = await initRDKitModule({ locateFile });
+  const mod = await initRDKitModule({ locateFile, wasmBinary });
 
   return new constructor(mod);
 }
