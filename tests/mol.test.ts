@@ -248,11 +248,16 @@ describe('Mol - substructure', () => {
 describe('Mol - descriptors', () => {
   it('getDescriptors returns typed object', () => {
     using mol = rdkit.getMol('c1ccccc1')!;
-    const desc = mol.getDescriptors();
+    const desc = mol.getDescriptors()!;
     expect(desc.exactmw).toBeTypeOf('number');
     expect(desc.NumAromaticRings).toBeTypeOf('number');
     expect(desc.NumAromaticRings).toBe(1);
     expect(desc.NumHeavyAtoms).toBe(6);
+  });
+  it('getDescriptors returns null for molecule with queries', () => {
+    using mol = rdkit.getQMol('c1ccccc1')!;
+    const desc = mol.getDescriptors();
+    expect(desc).toBeNull();
   });
 });
 
@@ -477,15 +482,15 @@ describe('Mol - abbreviations', () => {
 });
 
 describe('Mol - fragments', () => {
-  it('getFrags returns fragment info and MolCollection', () => {
+  it('getFrags returns fragment mappings and MolArray', () => {
     using mol = rdkit.getMol('c1ccccc1.CC')!;
-    const frags = mol.getFrags();
-    expect(frags.frags).toBeInstanceOf(Array);
-    expect(frags.frags.length).toBe(mol.getNumAtoms());
-    expect(frags.fragsMolAtomMapping).toBeInstanceOf(Array);
-    expect(frags.fragsMolAtomMapping.length).toBe(2);
-    expect(frags.mols.size()).toBe(2);
-    frags.mols.delete();
+    const { mappings, mols } = mol.getFrags();
+    expect(mappings.atomToFrag).toBeInstanceOf(Array);
+    expect(mappings.atomToFrag.length).toBe(mol.getNumAtoms());
+    expect(mappings.fragToAtoms).toBeInstanceOf(Array);
+    expect(mappings.fragToAtoms.length).toBe(2);
+    expect(mols.length).toBe(2);
+    mols.delete();
   });
 });
 

@@ -85,24 +85,30 @@ describe('getRGD', () => {
     deleteRows(rows);
   });
 
-  it('decomposes with MolCollection cores', () => {
-    using cores = rdkit.getMolCollection(['C1CCNCCC1', 'C1CCOCCC1']);
-    const rows = rdkit.getRGD(cores, ['C1CCNC(Cl)CC1', 'C1CCOC(Cl)CC1']);
+  it('decomposes with Mol[] cores', () => {
+    const core1 = rdkit.getMol('C1CCNCCC1')!;
+    const core2 = rdkit.getMol('C1CCOCCC1')!;
+    const rows = rdkit.getRGD([core1, core2], ['C1CCNC(Cl)CC1', 'C1CCOC(Cl)CC1']);
     if (!rows) {
       throw new Error('getRGD returned null');
     }
     expect(rows.length).toBe(2);
     deleteRows(rows);
+    core1.delete();
+    core2.delete();
   });
 
-  it('decomposes with MolCollection molecules', () => {
-    using mols = rdkit.getMolCollection(['c1ccc(Cl)cc1', 'c1ccc(F)cc1']);
-    const rows = rdkit.getRGD('c1ccc([*:1])cc1', mols);
+  it('decomposes with Mol[] molecules', () => {
+    const mol1 = rdkit.getMol('c1ccc(Cl)cc1')!;
+    const mol2 = rdkit.getMol('c1ccc(F)cc1')!;
+    const rows = rdkit.getRGD('c1ccc([*:1])cc1', [mol1, mol2]);
     if (!rows) {
       throw new Error('getRGD returned null');
     }
     expect(rows.length).toBe(2);
     deleteRows(rows);
+    mol1.delete();
+    mol2.delete();
   });
 
   it('accepts options', () => {

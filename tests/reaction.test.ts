@@ -34,17 +34,16 @@ describe('Reaction - runReactants', () => {
     }
   });
 
-  it('runs a reaction with MolCollection reactants', () => {
+  it('runs a reaction with Mol[] reactants', () => {
     using rxn = rdkit.getRxn('[#6:1][O:2]>>[#6:1]=[O:2]')!;
-    using coll = rdkit.getMolCollection(['CC(C)O']);
-    const products = rxn.runReactants(coll);
+    const reactant = rdkit.getMol('CC(C)O')!;
+    const products = rxn.runReactants([reactant]);
     expect(products.length).toBeGreaterThan(0);
     expect(products[0][0].getSmiles()).toBe('CC(C)=O');
     for (const set of products) {
-      for (const mol of set) {
-        mol.delete();
-      }
+      set.delete();
     }
+    reactant.delete();
   });
 
   it('returns multiple product sets for multiple matches', () => {
@@ -52,9 +51,7 @@ describe('Reaction - runReactants', () => {
     const products = rxn.runReactants(['c1ccc(O)cc1O']);
     expect(products.length).toBeGreaterThan(1);
     for (const set of products) {
-      for (const mol of set) {
-        mol.delete();
-      }
+      set.delete();
     }
   });
 
@@ -63,9 +60,7 @@ describe('Reaction - runReactants', () => {
     const products = rxn.runReactants(['c1ccc(O)cc1O'], 1);
     expect(products.length).toBe(1);
     for (const set of products) {
-      for (const mol of set) {
-        mol.delete();
-      }
+      set.delete();
     }
   });
 });

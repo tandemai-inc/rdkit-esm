@@ -46,17 +46,16 @@ Loads the WASM module and returns the main interface. **Must be awaited** before
 
 The main entry point for creating molecules, reactions, and collections.
 
-| Method                              | Description                                                                            |
-| ----------------------------------- | -------------------------------------------------------------------------------------- |
-| `getMol(input, options?)`           | Create a `Mol` from SMILES, SMARTS, MolFile, or JSON. Returns `null` on invalid input. |
-| `getQMol(input)`                    | Create a query `Mol` from a SMARTS string or a query MolFile.                          |
-| `getMolCollection(molStrings?)`     | Create a `MolCollection`, optionally from an array of SMILES or other formats.         |
-| `getRxn(input, options?)`           | Create a `Reaction` from reaction SMARTS, SMILES, or an RXN block.                     |
-| `getMCS(mols, options?)`            | Compute the Maximum Common Substructure across a set of molecules.                     |
-| `getRGD(core, molecules, options?)` | R-Group Decomposition against one or more core structures.                             |
-| `molzip(mol1, mol2)`                | Combine two molecules.                                                                 |
-| `version`                           | RDKit version string.                                                                  |
-| `module`                            | Raw `RDKitModule` for direct WASM access.                                              |
+| Method                              | Description                                                                                |
+| ----------------------------------- | ------------------------------------------------------------------------------------------ |
+| `getMol(input, options?)`           | Create a `Mol` from SMILES, SMARTS, MolFile, or JSON. Returns `null` on invalid input.     |
+| `getQMol(input)`                    | Create a query `Mol` from a SMARTS string or a query MolFile.                              |
+| `getRxn(input, options?)`           | Create a `Reaction` from reaction SMARTS, SMILES, or an RXN block.                         |
+| `getMCS(mols, options?)`            | Compute the Maximum Common Substructure across a set of molecules (`Mol[]` or `string[]`). |
+| `getRGD(core, molecules, options?)` | R-Group Decomposition against one or more core structures.                                 |
+| `molzip(mol1, mol2)`                | Combine two molecules.                                                                     |
+| `version`                           | RDKit version string.                                                                      |
+| `module`                            | Raw `RDKitModule` for direct WASM access.                                                  |
 
 ### `Mol`
 
@@ -72,16 +71,9 @@ Wraps a single molecule with a typed, camelCase API.
 - **Properties** — `hasProp()`, `getProp()`, `setProp()`, `clearProp()`, `getPropList()`
 - **Info** — `isValid()`, `getNumAtoms()`, `getNumBonds()`, `hasCoords()`, `getStereoTags()`
 
-### `MolCollection`
+### `MolArray`
 
-An iterable collection of molecules.
-
-| Method                | Description                                              |
-| --------------------- | -------------------------------------------------------- |
-| `at(i)`               | Get molecule at index (returns `null` if out of bounds). |
-| `push(mol)`           | Append a molecule, returns new size.                     |
-| `size()`              | Number of molecules.                                     |
-| `[Symbol.iterator]()` | Iterate over molecules with `for...of`.                  |
+Extends `Array<Mol>` with batch lifecycle management. Returned by `getFrags()`. Call `.delete()` to free all contained molecules at once. Supports all standard array methods (indexing, iteration, `map`, `filter`, ...).
 
 ### `Reaction`
 
@@ -93,7 +85,7 @@ An iterable collection of molecules.
 
 ## Memory Management
 
-RDKit objects live in WASM memory and **must** be freed explicitly to avoid leaks. Call `.delete()` on every `Mol`, `MolCollection`, and `Reaction` when you are done with it.
+RDKit objects live in WASM memory and **must** be freed explicitly to avoid leaks. Call `.delete()` on every `Mol`, `MolArray`, and `Reaction` when you are done with it.
 
 ```ts
 const mol = rdkit.getMol('CCO');

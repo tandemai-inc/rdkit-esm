@@ -16,7 +16,7 @@ import type {
   RDKitGetSmilesOptions,
   RDKitMolZipOptions,
 } from './types/rdkit-minimalib-json-typings';
-import { MolCollection } from './mol-collection.ts';
+import { MolArray } from './mol-array.ts';
 import type { InChI_Flags } from './types/inchi';
 import type { RDKitGetCxSmilesOptions } from './types/rdkit-esm.typings.ts';
 import { buildCxSmilesRawOptions } from './formats/cxsmiles.ts';
@@ -543,69 +543,46 @@ export class Mol implements Disposable {
 
   // -- Canvas drawing --
 
-  /**
-   * Draws the molecule to an HTML5 canvas
-   * @param canvas - Target canvas element
-   * @param width - Width in pixels
-   * @param height - Height in pixels
-   */
-  drawToCanvas(canvas: HTMLCanvasElement, width: number, height: number): void;
-  /**
-   * Draws the molecule to an HTML5 canvas with highlighting options
-   * @param canvas - Target canvas element
-   * @param options - Drawing options including dimensions and highlighting
-   */
-  drawToCanvas(canvas: HTMLCanvasElement, options: Partial<RDKitDepictionDetails>): void;
-  drawToCanvas(
-    canvas: HTMLCanvasElement,
-    widthOrOptions: number | Partial<RDKitDepictionDetails>,
-    height?: number,
-  ): void {
+  drawToCanvas(canvas: HTMLCanvasElement, options?: Partial<RDKitDepictionDetails>): void {
     const mol = this.jsMol;
-    if (typeof widthOrOptions === 'number') {
-      mol.draw_to_canvas(canvas, widthOrOptions, height!);
+    if (options) {
+      mol.draw_to_canvas_with_highlights(canvas, JSON.stringify(options));
     } else {
-      mol.draw_to_canvas_with_highlights(canvas, JSON.stringify(widthOrOptions));
+      mol.draw_to_canvas(canvas, -1, -1);
     }
-  }
-
-  /**
-   * Draws the molecule to an HTML5 canvas with an offset
-   * @param canvas - Target canvas element
-   * @param offsetX - Horizontal offset in pixels
-   * @param offsetY - Vertical offset in pixels
-   * @param width - Width in pixels
-   * @param height - Height in pixels
-   */
-  drawToCanvasWithOffset(
-    canvas: HTMLCanvasElement,
-    offsetX: number,
-    offsetY: number,
-    width: number,
-    height: number,
-  ): void {
-    this.jsMol.draw_to_canvas_with_offset(canvas, offsetX, offsetY, width, height);
   }
 
   // -- Fragments --
 
   /**
    * Returns the disconnected fragments of the molecule
-   * @returns An object with fragment-to-atom mappings and a MolCollection of fragments
+   * @warning The `mols` array contains new `Mol` instances that must be
+   * manually deleted by the caller to avoid memory leaks.
+   * @returns An object with atom/fragment mappings and a `MolArray` of fragments
    */
   getFrags(): {
-    frags: number[];
-    fragsMolAtomMapping: number[][];
-    mols: MolCollection;
+    mappings: { atomToFrag: number[]; fragToAtoms: number[][] };
+    mols: MolArray;
   } {
-    const result = this.jsMol.get_frags();
-    const parsed = JSON.parse(result.mappings) as {
+    const { mappings, molList } = this.jsMol.get_frags();
+    const parsed = JSON.parse(mappings) as {
       frags: number[];
       fragsMolAtomMapping: number[][];
     };
+
+    const mols = new MolArray();
+    for (let i = 0; i < molList.size(); i++) {
+      const jsMol = molList.at(i);
+      if (jsMol) mols.push(new Mol(jsMol, this.#module));
+    }
+    molList.delete();
+
     return {
-      ...parsed,
-      mols: new MolCollection(result.molList, this.#module),
+      mappings: {
+        atomToFrag: parsed.frags,
+        fragToAtoms: parsed.fragsMolAtomMapping,
+      },
+      mols,
     };
   }
 

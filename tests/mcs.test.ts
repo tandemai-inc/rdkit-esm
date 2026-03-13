@@ -7,23 +7,6 @@ beforeAll(async () => {
   rdkit = await initRDKit();
 });
 
-describe('getMolCollection', () => {
-  it('creates empty MolCollection', () => {
-    using coll = rdkit.getMolCollection();
-    expect(coll.size()).toBe(0);
-  });
-
-  it('creates MolCollection from SMILES array', () => {
-    using coll = rdkit.getMolCollection(['c1ccccc1', 'CC', 'O']);
-    expect(coll.size()).toBe(3);
-  });
-
-  it('skips invalid SMILES', () => {
-    using coll = rdkit.getMolCollection(['c1ccccc1', 'invalid!!!', 'CC']);
-    expect(coll.size()).toBe(2);
-  });
-});
-
 describe('getMCS', () => {
   it('finds MCS from string array', () => {
     const result = rdkit.getMCS(['c1ccccc1O', 'c1ccccc1N']);
@@ -33,11 +16,14 @@ describe('getMCS', () => {
     expect(result.canceled).toBe(false);
   });
 
-  it('finds MCS from MolCollection', () => {
-    using coll = rdkit.getMolCollection(['c1ccccc1O', 'c1ccccc1N']);
-    const result = rdkit.getMCS(coll);
+  it('finds MCS from Mol array', () => {
+    const mol1 = rdkit.getMol('c1ccccc1O')!;
+    const mol2 = rdkit.getMol('c1ccccc1N')!;
+    const result = rdkit.getMCS([mol1, mol2]);
     expect(result.numAtoms).toBeGreaterThan(0);
     expect(result.smarts).toBeTypeOf('string');
+    mol1.delete();
+    mol2.delete();
   });
 
   it('accepts options', () => {

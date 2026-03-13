@@ -108,6 +108,8 @@ type ColourPalette = { [k: number]: DrawColour };
 export type RDKitDepictionDetails = {
   width: number;
   height: number;
+  offsetx: number;
+  offsety: number;
   atomLabelDeuteriumTritium: boolean;
   dummiesAreAttachments: boolean;
   circleAtoms: boolean;
@@ -173,6 +175,11 @@ export type RDKitDepictionDetails = {
   highlightAtomColors: Record<number, DrawColour>;
   highlightBondColors: Record<number, DrawColour>;
   standardColoursForHighlightedAtoms: boolean;
+};
+
+export type RDKitRxnDepictionDetails = RDKitDepictionDetails & {
+  highlightByReactant: boolean;
+  highlightColorsReactants: DrawColour[];
 };
 
 export type RDKitStereoTags = {

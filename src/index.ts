@@ -2,7 +2,7 @@ export { initRDKit } from './init.ts';
 export type { RDKit, InitRDKitOptions, MCSResult } from './init.ts';
 export type { RGDRow } from './rgd.ts';
 export { Mol } from './mol.ts';
-export { MolCollection } from './mol-collection.ts';
+export { MolArray } from './mol-array.ts';
 export { Reaction } from './reaction.ts';
 
 // Re-export useful types for consumers

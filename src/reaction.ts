@@ -1,7 +1,12 @@
-import type { JSReaction, RDKitModule } from './types/rdkit-minimalib-typings';
-import type { RDKitDepictionDetails } from './types/rdkit-minimalib-json-typings';
+import type { JSReaction, RDKitModule, MolList } from './types/rdkit-minimalib-typings';
+import type { RDKitRxnDepictionDetails } from './types/rdkit-minimalib-json-typings';
 import { Mol } from './mol.ts';
-import { MolCollection } from './mol-collection.ts';
+import {
+  fromMolArraytoMolList,
+  fromStringArraytoMolList,
+  isMolArray,
+  MolArray,
+} from './mol-array.ts';
 
 /**
  * A wrapper around RDKit's JSReaction object providing a typed, camelCase API.
@@ -45,26 +50,29 @@ export class Reaction implements Disposable {
    * **WARNING:** The caller is responsible for deleting each returned `Mol`
    * (via `.delete()` or `using`) to avoid memory leaks.
    *
-   * @param reactants - A MolCollection or an array of molecule strings
+   * @param reactants - An array of Mol instances or molecule strings
    *   (SMILES, MolBlocks, etc.)
    * @param maxProducts - Maximum number of product sets to return (default: 1000)
    * @returns An array of product sets, where each set is an array of Mol instances
    */
-  runReactants(reactants: MolCollection | string[], maxProducts = 1000): Mol[][] {
-    const isArray = Array.isArray(reactants);
-    const collection = isArray ? MolCollection.fromArray(reactants, this.#module) : reactants;
+  runReactants(reactants: Mol[] | string[], maxProducts = 1000): MolArray[] {
+    let molList: MolList;
 
-    const products = this.jsReaction.run_reactants(collection.molList, maxProducts);
-
-    if (isArray) {
-      collection.delete();
+    if (isMolArray(reactants)) {
+      molList = fromMolArraytoMolList(reactants, this.#module);
+    } else {
+      molList = fromStringArraytoMolList(reactants, this.#module);
     }
 
-    const result: Mol[][] = [];
+    const products = this.jsReaction.run_reactants(molList, maxProducts);
+
+    molList.delete();
+
+    const result = [];
     for (let i = 0; i < products.size(); i++) {
       const productSet = products.get(i);
       if (!productSet) continue;
-      const mols: Mol[] = [];
+      const mols = new MolArray();
       productSet.reset();
       while (!productSet.at_end()) {
         const jsMol = productSet.next();
@@ -87,7 +95,7 @@ export class Reaction implements Disposable {
    * @param options - Drawing options including highlighting.
    *   When omitted, uses RDKit defaults.
    */
-  getSvg(options?: Partial<RDKitDepictionDetails>): string {
+  getSvg(options?: Partial<RDKitRxnDepictionDetails>): string {
     const rxn = this.jsReaction;
     if (!options) return rxn.get_svg();
     return rxn.get_svg_with_highlights(JSON.stringify(options));
@@ -96,28 +104,16 @@ export class Reaction implements Disposable {
   // -- Canvas drawing --
 
   /**
-   * Draws the reaction to an HTML5 canvas
-   * @param canvas - Target canvas element
-   * @param width - Width in pixels
-   * @param height - Height in pixels
-   */
-  drawToCanvas(canvas: HTMLCanvasElement, width: number, height: number): void;
-  /**
    * Draws the reaction to an HTML5 canvas with highlighting options
    * @param canvas - Target canvas element
    * @param options - Drawing options including dimensions and highlighting
    */
-  drawToCanvas(canvas: HTMLCanvasElement, options: Partial<RDKitDepictionDetails>): void;
-  drawToCanvas(
-    canvas: HTMLCanvasElement,
-    widthOrOptions: number | Partial<RDKitDepictionDetails>,
-    height?: number,
-  ): void {
+  drawToCanvas(canvas: HTMLCanvasElement, options: Partial<RDKitRxnDepictionDetails>): void {
     const rxn = this.jsReaction;
-    if (typeof widthOrOptions === 'number') {
-      rxn.draw_to_canvas(canvas, widthOrOptions, height!);
+    if (!options) {
+      rxn.draw_to_canvas(canvas, -1, -1);
     } else {
-      rxn.draw_to_canvas_with_highlights(canvas, JSON.stringify(widthOrOptions));
+      rxn.draw_to_canvas_with_highlights(canvas, JSON.stringify(options));
     }
   }
 

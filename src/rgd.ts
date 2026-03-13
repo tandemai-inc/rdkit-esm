@@ -1,7 +1,7 @@
 import type { JSMol, MolList, RDKitModule } from './types/rdkit-minimalib-typings';
 import type { RDKitGetRgdOptions } from './types/rdkit-minimalib-json-typings';
 import { Mol } from './mol.ts';
-import { MolCollection } from './mol-collection.ts';
+import { fromMolArraytoMolList, fromStringArraytoMolList, isMolArray } from './mol-array.ts';
 
 /**
  * A row from R-Group Decomposition, mapping labels like `Core`, `R1`, `R2`, …
@@ -20,16 +20,16 @@ export type RGDRow = Record<string, Mol>;
  * returned rows (via `.delete()` or `using`) to avoid memory leaks.
  *
  * @param core - Core structure(s): a SMARTS string, an array of SMARTS strings,
- *   a Mol instance, or a MolCollection
- * @param molecules - Molecules to decompose: an array of strings or a MolCollection
+ *   a Mol instance, or an array of Mol instances
+ * @param molecules - Molecules to decompose: an array of SMILES strings or Mol instances
  * @param options - R-Group decomposition options
  * @param module - The RDKit WASM module
  * @returns An array of rows, one per molecule. Each row maps R-group labels
  *   (`Core`, `R1`, `R2`, …) to Mol instances.
  */
 export function decomposeRGroups(
-  core: string | string[] | Mol | MolCollection,
-  molecules: string[] | MolCollection,
+  core: string | string[] | Mol | Mol[],
+  molecules: string[] | Mol[],
   options: Partial<RDKitGetRgdOptions> | undefined,
   module: RDKitModule,
 ): RGDRow[] | null {
@@ -44,44 +44,31 @@ export function decomposeRGroups(
     }
     resolvedCore = qmol;
     deleteCore = true;
-  } else if (Array.isArray(core)) {
-    const coreList = new module.MolList();
-    for (const s of core) {
-      const qmol = module.get_qmol(s);
-      if (qmol) {
-        coreList.append(qmol);
-        qmol.delete();
-      }
-    }
-    resolvedCore = coreList;
-    deleteCore = true;
   } else if (core instanceof Mol) {
     resolvedCore = core.jsMol;
+  } else if (isMolArray(core)) {
+    resolvedCore = fromMolArraytoMolList(core, module);
+    deleteCore = true;
   } else {
-    resolvedCore = core.molList;
+    resolvedCore = fromStringArraytoMolList(core, module, true); // isQuery
+    deleteCore = true;
   }
 
   // Create RGD — always pass options JSON (empty object if none provided)
   const rgd = module.get_rgd(resolvedCore, JSON.stringify(options ?? {}));
 
-  // Add molecules — create each mol individually so we own the lifecycle
-  if (Array.isArray(molecules)) {
+  // Add molecules
+  if (isMolArray(molecules)) {
+    for (const mol of molecules) {
+      rgd.add(mol.jsMol);
+    }
+  } else {
     for (const s of molecules) {
       const jsMol = module.get_mol(s);
       if (jsMol && jsMol.is_valid()) {
         rgd.add(jsMol);
       }
       jsMol?.delete();
-    }
-  } else {
-    // MolCollection: next() returns references, don't delete them
-    const molList = molecules.molList;
-    molList.reset();
-    while (!molList.at_end()) {
-      const jsMol = molList.next();
-      if (jsMol) {
-        rgd.add(jsMol);
-      }
     }
   }
 
@@ -100,7 +87,7 @@ export function decomposeRGroups(
   // Cleanup
   rgd.delete();
   if (deleteCore) {
-    (resolvedCore as { delete(): void }).delete();
+    resolvedCore.delete();
   }
 
   return result;

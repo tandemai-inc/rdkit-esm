@@ -3,9 +3,9 @@ import initRDKitModule from '../MinimalLib/dist/RDKit_minimal.js';
 import wasmUrl from '../MinimalLib/dist/RDKit_minimal.wasm?url';
 
 import { Mol } from './mol.ts';
-import { MolCollection } from './mol-collection.ts';
+import { fromMolArraytoMolList, fromStringArraytoMolList, isMolArray } from './mol-array.ts';
 import { Reaction } from './reaction.ts';
-import type { RDKitModule } from './types/rdkit-minimalib-typings';
+import type { RDKitModule, MolList } from './types/rdkit-minimalib-typings';
 import { decomposeRGroups, type RGDRow } from './rgd.ts';
 import type {
   RDKitGetMolOpt,
@@ -62,22 +62,13 @@ export interface RDKit {
   getQMol(input: string): Mol | null;
 
   /**
-   * Creates a MolCollection, optionally populated from SMILES strings.
-   *
-   * @param smiles - Optional array of SMILES strings to populate the collection.
-   *   Invalid SMILES are silently skipped.
-   * @returns A new MolCollection instance
-   */
-  getMolCollection(smiles?: string[]): MolCollection;
-
-  /**
    * Computes the Maximum Common Substructure (MCS) of a set of molecules.
    *
-   * @param mols - A MolCollection or an array of SMILES strings
+   * @param mols - An array of Mol instances or SMILES strings
    * @param options - MCS algorithm options
    * @returns An MCSResult with match info and a lazy `qmol` getter
    */
-  getMCS(mols: MolCollection | string[], options?: Partial<RDKitGetMCSOptions>): MCSResult;
+  getMCS(mols: Mol[] | string[], options?: Partial<RDKitGetMCSOptions>): MCSResult;
 
   /**
    * Creates a Reaction from a reaction SMARTS, SMILES, or RXN block.
@@ -95,15 +86,15 @@ export interface RDKit {
    * returned rows (via `.delete()` or `using`) to avoid memory leaks.
    *
    * @param core - Core structure(s): a SMARTS string, an array of SMARTS strings,
-   *   a Mol instance, or a MolCollection
-   * @param molecules - Molecules to decompose: an array of strings or a MolCollection
+   *   a Mol instance, or an array of Mol instances
+   * @param molecules - Molecules to decompose: an array of SMILES strings or Mol instances
    * @param options - R-Group decomposition options
    * @returns An array of rows, one per molecule. Each row maps R-group labels
    *   (`Core`, `R1`, `R2`, …) to Mol instances.
    */
   getRGD(
-    core: string | string[] | Mol | MolCollection,
-    molecules: string[] | MolCollection,
+    core: string | string[] | Mol | Mol[],
+    molecules: string[] | Mol[],
     options?: Partial<RDKitGetRgdOptions>,
   ): RGDRow[] | null;
 
@@ -168,24 +159,20 @@ export async function initRDKit(options?: InitRDKitOptions): Promise<RDKit> {
       return new Mol(jsMol, mod);
     },
 
-    getMolCollection(input?: string[]): MolCollection {
-      if (input) {
-        return MolCollection.fromArray(input, mod);
-      }
-      return new MolCollection(new mod.MolList(), mod);
-    },
+    getMCS(mols: Mol[] | string[], options?: Partial<RDKitGetMCSOptions>): MCSResult {
+      let molList: MolList;
 
-    getMCS(mols: MolCollection | string[], options?: Partial<RDKitGetMCSOptions>): MCSResult {
-      const isArray = Array.isArray(mols);
-      const collection = isArray ? MolCollection.fromArray(mols, mod) : mols;
+      if (isMolArray(mols)) {
+        molList = fromMolArraytoMolList(mols, mod);
+      } else {
+        molList = fromStringArraytoMolList(mols, mod);
+      }
 
       const json = options
-        ? mod.get_mcs_as_json(collection.molList, JSON.stringify(options))
-        : mod.get_mcs_as_json(collection.molList);
+        ? mod.get_mcs_as_json(molList, JSON.stringify(options))
+        : mod.get_mcs_as_json(molList);
 
-      if (isArray) {
-        collection.delete();
-      }
+      molList.delete();
 
       const parsed = JSON.parse(json) as RDKitMCSResult;
       let cachedQmol: Mol | null | undefined;
@@ -217,8 +204,8 @@ export async function initRDKit(options?: InitRDKitOptions): Promise<RDKit> {
     },
 
     getRGD(
-      core: string | string[] | Mol | MolCollection,
-      molecules: string[] | MolCollection,
+      core: string | string[] | Mol | Mol[],
+      molecules: string[] | Mol[],
       options?: Partial<RDKitGetRgdOptions>,
     ): RGDRow[] | null {
       return decomposeRGroups(core, molecules, options, mod);
