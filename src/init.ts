@@ -4,9 +4,6 @@ import wasmUrl from '../MinimalLib/dist/RDKit_minimal.wasm?url';
 
 import { RDKit } from './rdkit.ts';
 
-const ENVIRONMENT_IS_NODE =
-  typeof process !== 'undefined' && process.versions != null && process.versions.node != null;
-
 /**
  * Resolves the WASM URL for the current environment.
  * In browsers, uses `import.meta.url` to resolve the WASM filename relative
@@ -15,24 +12,6 @@ const ENVIRONMENT_IS_NODE =
 function resolveWasmUrl(): string {
   const url = wasmUrl as string;
   return new URL(url, import.meta.url).href;
-}
-
-/**
- * In Node the emscripten module is compiled for web/worker only,
- * so `fetch` / XHR are unavailable. Read the WASM binary from disk
- * and hand it to the module via `wasmBinary`.
- */
-async function loadWasmBinary(): Promise<ArrayBuffer | undefined> {
-  if (!ENVIRONMENT_IS_NODE) return undefined;
-  const { readFile } = await import('node:fs/promises');
-  const { fileURLToPath } = await import('node:url');
-  const { dirname, resolve } = await import('node:path');
-  // Resolve the .wasm path relative to this source file, not via the ?url
-  // import which produces a root-relative path that new URL() misinterprets.
-  const thisDir = dirname(fileURLToPath(import.meta.url));
-  const wasmPath = resolve(thisDir, '../MinimalLib/dist/RDKit_minimal.wasm');
-  const buf = await readFile(wasmPath);
-  return buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength);
 }
 
 /** Options for initializing the RDKit module */
@@ -83,9 +62,28 @@ export async function initRDKit(
   constructor: typeof RDKit = RDKit,
 ): Promise<RDKit> {
   const locateFile = options?.locateFile ?? (() => resolveWasmUrl());
-  const wasmBinary = await loadWasmBinary();
+  const moduleArgs: Record<string, unknown> = { locateFile };
 
-  const mod = await initRDKitModule({ locateFile, wasmBinary });
+  // The emscripten module is compiled for web/worker only — in Node there is
+  // no fetch/XHR so we read the WASM binary from disk and pass it directly.
+  if (typeof process !== 'undefined' && process.versions?.node) {
+    const fs = await import('node:fs');
+    const { fileURLToPath } = await import('node:url');
+    const wasmFileUrl = locateFile();
+    let wasmPath = wasmFileUrl.startsWith('file://')
+      ? fileURLToPath(wasmFileUrl)
+      : wasmFileUrl;
+    // In dev (vitest), the ?url import returns a root-relative path like
+    // /MinimalLib/dist/RDKit_minimal.wasm which new URL() maps to the
+    // filesystem root. Fall back to resolving from cwd in that case.
+    if (!fs.existsSync(wasmPath)) {
+      const { join } = await import('node:path');
+      wasmPath = join(process.cwd(), wasmPath);
+    }
+    moduleArgs.wasmBinary = fs.readFileSync(wasmPath);
+  }
+
+  const mod = await initRDKitModule(moduleArgs);
 
   return new constructor(mod);
 }
