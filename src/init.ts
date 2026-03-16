@@ -70,9 +70,7 @@ export async function initRDKit(
     const fs = await import('node:fs');
     const { fileURLToPath } = await import('node:url');
     const wasmFileUrl = locateFile();
-    let wasmPath = wasmFileUrl.startsWith('file://')
-      ? fileURLToPath(wasmFileUrl)
-      : wasmFileUrl;
+    let wasmPath = wasmFileUrl.startsWith('file://') ? fileURLToPath(wasmFileUrl) : wasmFileUrl;
     // In dev (vitest), the ?url import returns a root-relative path like
     // /MinimalLib/dist/RDKit_minimal.wasm which new URL() maps to the
     // filesystem root. Fall back to resolving from cwd in that case.

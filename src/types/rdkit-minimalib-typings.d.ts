@@ -665,7 +665,6 @@ export interface RDKitModule {
    * @param input SMARTS string
    */
   get_qmol(input: string): JSMol | null;
-  get_qmol(input: string, details_json?: string): JSMol | null;
 
   /**
    * Create a reaction instance
