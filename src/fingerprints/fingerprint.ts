@@ -1,5 +1,5 @@
-import { hammingWeight } from './bitops';
-import type { FingerprintType } from './fingerprints.types';
+import { hammingWeight } from "./bitops";
+import type { FingerprintType } from "./fingerprints.types";
 
 export class Fingerprint {
   public readonly nBits: number;
@@ -39,8 +39,8 @@ export class Fingerprint {
   toString() {
     const pieces: string[] = [];
     for (const byte of this.fpU8) {
-      pieces.push(...byte.toString(2).split('').reverse());
+      pieces.push(...byte.toString(2).padStart(8, "0").split("").reverse());
     }
-    return pieces.join('').substring(0, this.nBits);
+    return pieces.join("").substring(0, this.nBits);
   }
 }
