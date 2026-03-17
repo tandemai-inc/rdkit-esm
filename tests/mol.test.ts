@@ -265,71 +265,50 @@ describe('Mol - fingerprints', () => {
   it('getMorganFp returns fingerprint string', () => {
     using mol = rdkit.getMol('c1ccccc1')!;
     const fp = mol.getMorganFp();
-    expect(fp).toBeTypeOf('string');
-    expect(fp.length).toBeGreaterThan(0);
+    expect(fp.toString()).toBeTypeOf('string');
+    expect(fp.nBits).toBeGreaterThan(0);
   });
 
   it('getMorganFp with options', () => {
     using mol = rdkit.getMol('c1ccccc1')!;
     const fp = mol.getMorganFp({ radius: 3 });
-    expect(fp).toBeTypeOf('string');
-    expect(fp.length).toBeGreaterThan(0);
+    expect(fp.toString()).toBeTypeOf('string');
+    expect(fp.nBits).toBeGreaterThan(0);
   });
 
   it('getPatternFp returns fingerprint string', () => {
     using mol = rdkit.getMol('c1ccccc1')!;
     const fp = mol.getPatternFp();
-    expect(fp).toBeTypeOf('string');
-    expect(fp.length).toBeGreaterThan(0);
+    expect(fp.toString()).toBeTypeOf('string');
+    expect(fp.nBits).toBeGreaterThan(0);
   });
 
   it('getTopologicalTorsionFp returns fingerprint string', () => {
     using mol = rdkit.getMol('c1ccccc1')!;
     const fp = mol.getTopologicalTorsionFp();
-    expect(fp).toBeTypeOf('string');
-    expect(fp.length).toBeGreaterThan(0);
+    expect(fp.toString()).toBeTypeOf('string');
+    expect(fp.nBits).toBeGreaterThan(0);
   });
 
   it('getRdkitFp returns fingerprint string', () => {
     using mol = rdkit.getMol('c1ccccc1')!;
     const fp = mol.getRdkitFp();
-    expect(fp).toBeTypeOf('string');
-    expect(fp.length).toBeGreaterThan(0);
+    expect(fp.toString()).toBeTypeOf('string');
+    expect(fp.nBits).toBeGreaterThan(0);
   });
 
   it('getAtomPairFp returns fingerprint string', () => {
     using mol = rdkit.getMol('c1ccccc1')!;
     const fp = mol.getAtomPairFp();
-    expect(fp).toBeTypeOf('string');
-    expect(fp.length).toBeGreaterThan(0);
+    expect(fp.toString()).toBeTypeOf('string');
+    expect(fp.nBits).toBeGreaterThan(0);
   });
 
   it('getMaccsFp returns fingerprint string', () => {
     using mol = rdkit.getMol('c1ccccc1')!;
     const fp = mol.getMaccsFp();
-    expect(fp).toBeTypeOf('string');
-    expect(fp.length).toBeGreaterThan(0);
-  });
-
-  it('getMorganFpAsUint8Array returns Uint8Array', () => {
-    using mol = rdkit.getMol('c1ccccc1')!;
-    const fp = mol.getMorganFpAsUint8Array();
-    expect(fp).toBeInstanceOf(Uint8Array);
-    expect(fp.length).toBeGreaterThan(0);
-  });
-
-  it('getPatternFpAsUint8Array returns Uint8Array', () => {
-    using mol = rdkit.getMol('c1ccccc1')!;
-    const fp = mol.getPatternFpAsUint8Array();
-    expect(fp).toBeInstanceOf(Uint8Array);
-    expect(fp.length).toBeGreaterThan(0);
-  });
-
-  it('getMaccsFpAsUint8Array returns Uint8Array', () => {
-    using mol = rdkit.getMol('c1ccccc1')!;
-    const fp = mol.getMaccsFpAsUint8Array();
-    expect(fp).toBeInstanceOf(Uint8Array);
-    expect(fp.length).toBeGreaterThan(0);
+    expect(fp.toString()).toBeTypeOf('string');
+    expect(fp.nBits).toBeGreaterThan(0);
   });
 });
 
