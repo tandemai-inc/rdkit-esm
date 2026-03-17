@@ -38,7 +38,7 @@
     "@typescript/native-preview": "7.0.0-dev.20260307.1",
     "@vitest/coverage-v8": "^4.0.18",
     "bumpp": "^10.3.2",
-    "oxfmt": "^0.36.0",
+    "oxfmt": "^0.41.0",
     "rolldown-plugin-wasm": "^0.2.1",
     "tsdown": "^0.18.1",
     "typescript": "^5.9.3",
