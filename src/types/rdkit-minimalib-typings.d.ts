@@ -115,7 +115,7 @@ export interface JSMol {
    * You can also specify the following options
    * (passed as a stringified JSON object)
    * @param {number} radius fingerprint radius
-   * @param {number} len fingerprint length
+   * @param {number} nBits fingerprint length
    */
   get_morgan_fp(options: JSONString): string;
 
@@ -130,7 +130,7 @@ export interface JSMol {
    * You can also specify the following options
    * (passed as a stringified JSON object)
    * @param {number} radius fingerprint radius
-   * @param {number} fplen fingerprint length
+   * @param {number} nBits fingerprint length
    */
   get_morgan_fp_as_uint8array(options: JSONString): Uint8Array;
 
@@ -144,7 +144,7 @@ export interface JSMol {
    *
    * you can also specify the following options
    * (passed as a stringified JSON object)
-   * @param {number} len fingerprint length
+   * @param {number} nBits fingerprint length
    */
   get_pattern_fp(options: JSONString): string;
 
@@ -158,7 +158,7 @@ export interface JSMol {
    *
    * you can also specify the following options
    * (passed as a stringified JSON object)
-   * @param {number} fplen fingerprint length
+   * @param {number} nBits fingerprint length
    */
   get_pattern_fp_as_uint8array(options: JSONString): Uint8Array;
 
@@ -172,7 +172,7 @@ export interface JSMol {
    *
    * you can also specify the following options
    * (passed as a stringified JSON object)
-   * @param {number} len fingerprint length
+   * @param {number} nBits fingerprint length
    */
   get_topological_torsion_fp(options: JSONString): string;
 
@@ -186,7 +186,7 @@ export interface JSMol {
    *
    * you can also specify the following options
    * (passed as a stringified JSON object)
-   * @param {number} fplen fingerprint length
+   * @param {number} nBits fingerprint length
    */
   get_topological_torsion_fp_as_uint8array(options: JSONString): Uint8Array;
 
@@ -200,7 +200,7 @@ export interface JSMol {
    *
    * you can also specify the following options
    * (passed as a stringified JSON object)
-   * @param {number} len fingerprint length
+   * @param {number} nBits fingerprint length
    */
   get_rdkit_fp(options: JSONString): string;
 
@@ -214,7 +214,7 @@ export interface JSMol {
    *
    * you can also specify the following options
    * (passed as a stringified JSON object)
-   * @param {number} fplen fingerprint length
+   * @param {number} nBits fingerprint length
    */
   get_rdkit_fp_as_uint8array(options: JSONString): Uint8Array;
 
@@ -228,7 +228,7 @@ export interface JSMol {
    *
    * you can also specify the following options
    * (passed as a stringified JSON object)
-   * @param {number} len fingerprint length
+   * @param {number} nBits fingerprint length
    */
   get_atom_pair_fp(options: JSONString): string;
 
@@ -242,7 +242,7 @@ export interface JSMol {
    *
    * you can also specify the following options
    * (passed as a stringified JSON object)
-   * @param {number} fplen fingerprint length
+   * @param {number} nBits fingerprint length
    */
   get_atom_pair_fp_as_uint8array(options: JSONString): Uint8Array;
 
@@ -256,7 +256,7 @@ export interface JSMol {
    *
    * you can also specify the following options
    * (passed as a stringified JSON object)
-   * @param {number} len fingerprint length
+   * @param {number} nBits fingerprint length
    */
   get_maccs_fp(options: JSONString): string;
 

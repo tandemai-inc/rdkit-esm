@@ -24,6 +24,7 @@ import type {
 } from './types/rdkit-esm.typings.ts';
 import { buildCxSmilesRawOptions } from './formats/cxsmiles.ts';
 import { buildGetMolAsUint8ArrayOptions } from './formats/pickle.ts';
+import { Fingerprint } from './fingerprints/fingerprint.ts';
 
 /**
  * A wrapper around RDKit's JSMol object providing a typed, camelCase API.
@@ -247,87 +248,54 @@ export class Mol implements Disposable {
    * Returns the Morgan fingerprint as a bit string
    * @param options - Fingerprint options
    */
-  getMorganFp(options?: Partial<RDKitMorganFPOptions>): string {
+  getMorganFp(options?: Partial<RDKitMorganFPOptions>) {
     const mol = this.jsMol;
-    return options ? mol.get_morgan_fp(JSON.stringify(options)) : mol.get_morgan_fp();
+    const u8 = options
+      ? mol.get_morgan_fp_as_uint8array(JSON.stringify(options))
+      : mol.get_morgan_fp_as_uint8array();
+    return new Fingerprint(u8, options?.nBits, 'Morgan');
   }
 
   /** Returns the pattern fingerprint as a bit string */
-  getPatternFp(options?: Partial<RDKitPatternFPOptions>): string {
+  getPatternFp(options?: Partial<RDKitPatternFPOptions>) {
     const mol = this.jsMol;
-    return options ? mol.get_pattern_fp(JSON.stringify(options)) : mol.get_pattern_fp();
+    const u8 = options
+      ? mol.get_pattern_fp_as_uint8array(JSON.stringify(options))
+      : mol.get_pattern_fp_as_uint8array();
+    return new Fingerprint(u8, options?.nBits, 'Pattern');
   }
 
   /** Returns the topological torsion fingerprint as a bit string */
-  getTopologicalTorsionFp(options?: Partial<RDKitTopologicalTorsionFPOptions>): string {
+  getTopologicalTorsionFp(options?: Partial<RDKitTopologicalTorsionFPOptions>) {
     const mol = this.jsMol;
-    return options
-      ? mol.get_topological_torsion_fp(JSON.stringify(options))
-      : mol.get_topological_torsion_fp();
+    const u8 = options
+      ? mol.get_topological_torsion_fp_as_uint8array(JSON.stringify(options))
+      : mol.get_topological_torsion_fp_as_uint8array();
+    return new Fingerprint(u8, options?.nBits, 'TopologicalTorsion');
   }
 
   /** Returns the RDKit fingerprint as a bit string */
-  getRdkitFp(options?: Partial<RDKitRdkitFpOptions>): string {
+  getRdkitFp(options?: Partial<RDKitRdkitFpOptions>) {
     const mol = this.jsMol;
-    return options ? mol.get_rdkit_fp(JSON.stringify(options)) : mol.get_rdkit_fp();
+    const u8 = options
+      ? mol.get_rdkit_fp_as_uint8array(JSON.stringify(options))
+      : mol.get_rdkit_fp_as_uint8array();
+    return new Fingerprint(u8, options?.nBits, 'RDKit');
   }
 
   /** Returns the atom pair fingerprint as a bit string */
-  getAtomPairFp(options?: Partial<RDKitAtomPairFPOptions>): string {
+  getAtomPairFp(options?: Partial<RDKitAtomPairFPOptions>) {
     const mol = this.jsMol;
-    return options ? mol.get_atom_pair_fp(JSON.stringify(options)) : mol.get_atom_pair_fp();
+    const u8 = options
+      ? mol.get_atom_pair_fp_as_uint8array(JSON.stringify(options))
+      : mol.get_atom_pair_fp_as_uint8array();
+    return new Fingerprint(u8, options?.nBits, 'AtomPair');
   }
 
   /** Returns the MACCS fingerprint as a bit string (fixed 167-bit) */
-  getMaccsFp(): string {
-    return this.jsMol.get_maccs_fp();
-  }
-
-  /** Returns the Morgan fingerprint as a Uint8Array */
-  getMorganFpAsUint8Array(options?: Partial<RDKitMorganFPOptions>): Uint8Array {
-    const mol = this.jsMol;
-    return options
-      ? mol.get_morgan_fp_as_uint8array(JSON.stringify(options))
-      : mol.get_morgan_fp_as_uint8array();
-  }
-
-  /** Returns the pattern fingerprint as a Uint8Array */
-  getPatternFpAsUint8Array(options?: Partial<RDKitPatternFPOptions>): Uint8Array {
-    const mol = this.jsMol;
-    return options
-      ? mol.get_pattern_fp_as_uint8array(JSON.stringify(options))
-      : mol.get_pattern_fp_as_uint8array();
-  }
-
-  /** Returns the topological torsion fingerprint as a Uint8Array */
-  getTopologicalTorsionFpAsUint8Array(
-    options?: Partial<RDKitTopologicalTorsionFPOptions>,
-  ): Uint8Array {
-    const mol = this.jsMol;
-    return options
-      ? mol.get_topological_torsion_fp_as_uint8array(JSON.stringify(options))
-      : mol.get_topological_torsion_fp_as_uint8array();
-  }
-
-  /** Returns the RDKit fingerprint as a Uint8Array */
-  getRdkitFpAsUint8Array(options?: Partial<RDKitRdkitFpOptions>): Uint8Array {
-    const mol = this.jsMol;
-    return options
-      ? mol.get_rdkit_fp_as_uint8array(JSON.stringify(options))
-      : mol.get_rdkit_fp_as_uint8array();
-  }
-
-  /** Returns the atom pair fingerprint as a Uint8Array */
-  getAtomPairFpAsUint8Array(options?: Partial<RDKitAtomPairFPOptions>): Uint8Array {
-    const mol = this.jsMol;
-    return options
-      ? mol.get_atom_pair_fp_as_uint8array(JSON.stringify(options))
-      : mol.get_atom_pair_fp_as_uint8array();
-  }
-
-  /** Returns the MACCS fingerprint as a Uint8Array */
-  getMaccsFpAsUint8Array(): Uint8Array {
-    return this.jsMol.get_maccs_fp_as_uint8array();
+  getMaccsFp() {
+    const u8 = this.jsMol.get_maccs_fp_as_uint8array();
+    return new Fingerprint(u8, 167, 'MACCS');
   }
 
   // -- Properties --

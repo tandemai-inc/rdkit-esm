@@ -10,6 +10,7 @@ import type {
   RDKitRxnDetails,
   RDKitGetRgdOptions,
 } from './types/rdkit-minimalib-json-typings';
+import { computeFingerprintSimilarity } from './fingerprints/bitops.ts';
 
 /** Result of a Maximum Common Substructure (MCS) computation */
 export interface MCSResult {
@@ -181,6 +182,10 @@ export class RDKit {
     const jsMol = this.#mod.molzip(mol1.jsMol, mol2.jsMol);
     if (!jsMol) return null;
     return new Mol(jsMol, this.#mod);
+  }
+
+  computeFingerprintsSimilarity(...args: Parameters<typeof computeFingerprintSimilarity>): number {
+    return computeFingerprintSimilarity(...args);
   }
 
   /** Returns the RDKit version string */

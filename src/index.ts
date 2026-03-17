@@ -6,6 +6,7 @@ export type { RGDRow } from './rgd.ts';
 export { Mol } from './mol.ts';
 export { MolArray } from './mol-array.ts';
 export { Reaction } from './reaction.ts';
+export { Fingerprint } from './fingerprints/fingerprint.ts';
 
 // Re-export useful types for consumers
 export type {
