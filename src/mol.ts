@@ -488,8 +488,18 @@ export class Mol implements Disposable {
    * @param template - Template molecule to align to
    * @param options - Alignment options
    */
-  generateAlignedCoords(template: Mol, options?: Partial<RDKitAlignedCoordsOptions>): string {
-    return this.jsMol.generate_aligned_coords(template.jsMol, JSON.stringify(options ?? {}));
+  generateAlignedCoords(
+    template: Mol,
+    options?: Partial<RDKitAlignedCoordsOptions>,
+  ): RDKitSubstructMatch {
+    const matchJson = this.jsMol.generate_aligned_coords(
+      template.jsMol,
+      JSON.stringify(options ?? {}),
+    );
+    if (matchJson === '' || matchJson === '{}') {
+      return { atoms: [], bonds: [] }; // special case: no match returns '{}'!
+    }
+    return JSON.parse(matchJson);
   }
 
   // -- Depiction --
