@@ -28,4 +28,12 @@ describe('Fingerprint similarity', () => {
     const sim = rdkit.computeFingerprintsSimilarity(fpA, fpB, 'tanimoto');
     expect(sim).toBeCloseTo(0.4264705882352941, 10);
   });
+
+  it('returns a string representation of fingerprints', () => {
+    using mol = rdkit.getMol(ESOMEPRAZOLE)!;
+    const fp = mol.getRdkitFp();
+    const txt = `${fp}`;
+    expect(txt).toBe(fp.toString());
+    expect(txt.length).toBe(fp.nBits);
+  });
 });
