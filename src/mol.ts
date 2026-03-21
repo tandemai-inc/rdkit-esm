@@ -379,6 +379,11 @@ export class Mol implements Disposable {
     return this.jsMol.get_num_atoms();
   }
 
+  /** Returns the number of heavy atoms in the molecule (excluding hydrogens and dummy atoms) */
+  get numHeavyAtoms(): number {
+    return this.jsMol.get_num_atoms(true);
+  }
+
   /** Returns the number of bonds in the molecule */
   get numBonds(): number {
     return this.jsMol.get_num_bonds();
@@ -387,6 +392,11 @@ export class Mol implements Disposable {
   /** Returns 0 if no coords, 2 for 2D, 3 for 3D */
   hasCoords(): 0 | 2 | 3 {
     return this.jsMol.has_coords();
+  }
+
+  /** Returns the coordinates of each atom in the molecule as an array of [x, y, z] tuples */
+  getCoords(): [number, number, number][] {
+    return this.jsMol.get_coords();
   }
 
   /** Returns stereo tags (CIP codes) for the molecule */

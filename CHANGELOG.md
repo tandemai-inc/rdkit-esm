@@ -3,6 +3,7 @@
 ## [vX.X.X] Unreleased
 
 - condenseAbbreviations returns a substructure match
+- add `numHeavyAtoms` getter and `getCoords()` to Mol class
 
 ## [v0.4.3]
 
