@@ -503,6 +503,39 @@ export interface JSMol {
     width: number,
     height: number,
   ): void;
+
+  // PNG I/O
+
+  /**
+   * Embeds molecule data (pickle, SMILES, molblock) into a PNG.
+   * Returns the updated PNG as a Uint8Array.
+   *
+   * @param png PNG data as Uint8Array
+   */
+  add_to_png_blob(png: Uint8Array): Uint8Array;
+  /** @see add_to_png_blob */
+  add_to_png_blob(png: Uint8Array, details: JSONString): Uint8Array;
+
+  // coordinates
+
+  /**
+   * Returns the 3D atom coordinates of the molecule's conformer.
+   * Each entry is a `[x, y, z]` triple.
+   */
+  get_coords(): [number, number, number][];
+
+  // MMPA fragmentation
+
+  /**
+   * Performs MMPA (Matched Molecular Pairs Analysis) fragmentation.
+   * Returns cores and sidechains as two `MolList` objects.
+   * Requires RDKit built with `RDK_BUILD_MINIMAL_LIB_MMPA`.
+   *
+   * @param minCuts minimum number of cuts
+   * @param maxCuts maximum number of cuts
+   * @param maxCutBonds maximum number of bonds that can be cut
+   */
+  get_mmpa_frags(minCuts: number, maxCuts: number, maxCutBonds: number): { cores: MolList; sidechains: MolList };
 }
 
 export interface JSReaction extends Pick<
@@ -571,7 +604,7 @@ export interface SubstructLibrary {
    *
    * @param i index of the molecule
    */
-  get_pattern_fp(i: number): Uint8Array;
+  get_pattern_fp_as_uint8array(i: number): Uint8Array;
 
   /**
    * Get a molecule from the library
@@ -620,6 +653,29 @@ export interface SubstructLibrary {
    * @param numThreads number of threads to use
    */
   count_matches(q: JSMol, useChirality: boolean, numThreads: number): number;
+
+  /** Return the number of molecules in the library */
+  size(): number;
+
+  /**
+   * Get all molecules from the library matching the substructure query.
+   * Returns matching indices as a Uint32Array (more efficient than `get_matches`).
+   *
+   * @param q query molecule
+   */
+  get_matches_as_uint32array(q: JSMol): Uint32Array;
+  /**
+   * @param q query molecule
+   * @param maxResults maximum number of results
+   */
+  get_matches_as_uint32array(q: JSMol, maxResults: number): Uint32Array;
+  /**
+   * @param q query molecule
+   * @param useChirality set to true to enable chiral substructure searching
+   * @param numThreads number of threads to use
+   * @param maxResults maximum number of results
+   */
+  get_matches_as_uint32array(q: JSMol, useChirality: boolean, numThreads: number, maxResults: number): Uint32Array;
 }
 
 export interface MolList {
@@ -693,6 +749,7 @@ export interface StringList extends EmscriptenVector<string> {}
 /** Returns a new SubstructLibrary instance */
 interface SubstructLibraryConstructor {
   new (): SubstructLibrary;
+  new (initialCapacity: number): SubstructLibrary;
 }
 
 interface MolListConstructor {
