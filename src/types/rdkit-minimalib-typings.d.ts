@@ -316,8 +316,9 @@ export interface JSMol {
    * ```
    * @param maxCoverage maximum fraction of the molecule that can be covered by abbreviations
    * @param areLinkers if true, definitions are treated as linker abbreviations (first atom must be a dummy `*`)
+   * @private This method is not exposed
    */
-  condense_abbreviations_from_defs(definitions: string, maxCoverage: number, areLinkers: boolean): string;
+  //condense_abbreviations_from_defs(definitions: string, maxCoverage: number, areLinkers: boolean): string;
 
   // coord generation
 
@@ -821,8 +822,6 @@ export interface RDKitModule {
   set_log_capture(logLevel: LogLevel): RDKitJSLog;
 
   allow_non_tetrahedral_chirality: (allow: boolean) => boolean;
-
-
 }
 
 type LogLevel = 'rdApp.debug' | 'rdApp.info' | 'rdApp.warning' | 'rdApp.error' | 'rdApp.*';

@@ -18,3 +18,21 @@ export type RDKitGetUint8ArrayOptions = {
    */
   properties: PropertyPickleOptionsKeys[];
 };
+
+// The following is not exposed
+// export type AbbreviationDefinition = {
+//     label: string;
+//     smarts: string;
+//   } | {
+//     label: string;
+//     smarts: string;
+//     displayLabel: string;
+//     displayLabelW: string;
+//   }
+
+export type RDKitCondenseAbbreviationsOptions = {
+  /** @default 0.4 */
+  maxCoverage: number;
+  /** @default false */
+  useLinkers: boolean;
+};

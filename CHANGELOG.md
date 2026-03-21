@@ -1,5 +1,9 @@
 # Changelog
 
+## [vX.X.X] Unreleased
+
+- condenseAbbreviations returns a substructure match
+
 ## [v0.4.3]
 
 - RDKit minimalib typings feature complete

@@ -281,9 +281,9 @@ export type RDKitDepictionDetails = {
   forceCoords: boolean;
   /** Draw wavy bonds for double bonds with unspecified stereo */
   wavyBonds: boolean;
-  /** Return atom drawing coordinates in the output JSON 
+  /** Return atom drawing coordinates in the output JSON
    * IMPORTANT: this changes the output format in the case of get_svg...()
-  */
+   */
   returnDrawCoords: boolean;
 };
 

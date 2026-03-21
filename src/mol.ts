@@ -21,7 +21,9 @@ import type { InChI_Flags } from './types/inchi';
 import type {
   RDKitGetCxSmilesOptions,
   RDKitGetUint8ArrayOptions,
+  RDKitCondenseAbbreviationsOptions,
 } from './types/rdkit-esm.typings.ts';
+import { DEFAULT_MAX_COVERAGE, DEFAULT_USE_LINKERS } from './abbreviations/abbreviations.ts';
 import { buildCxSmilesRawOptions } from './formats/cxsmiles.ts';
 import { buildGetMolAsUint8ArrayOptions } from './formats/pickle.ts';
 import { Fingerprint } from './fingerprints/fingerprint.ts';
@@ -535,14 +537,12 @@ export class Mol implements Disposable {
    * Condenses functional group abbreviations in the molecule
    * @param options - Abbreviation options
    */
-  condenseAbbreviations(options?: { maxCoverage?: number; useLinkers?: boolean }): string {
+  condenseAbbreviations(options?: Partial<RDKitCondenseAbbreviationsOptions>): RDKitSubstructMatch {
     const mol = this.jsMol;
-    if (!options) return mol.condense_abbreviations();
-    const { maxCoverage, useLinkers } = options;
-    if (maxCoverage !== undefined && useLinkers !== undefined) {
-      return mol.condense_abbreviations(maxCoverage, useLinkers);
-    }
-    return mol.condense_abbreviations();
+    const { maxCoverage = DEFAULT_MAX_COVERAGE, useLinkers = DEFAULT_USE_LINKERS } = options ?? {};
+    const raw = mol.condense_abbreviations(maxCoverage, useLinkers);
+
+    return JSON.parse(raw) as RDKitSubstructMatch;
   }
 
   // -- Canvas drawing --
