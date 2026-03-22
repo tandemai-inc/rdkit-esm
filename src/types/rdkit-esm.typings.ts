@@ -30,6 +30,15 @@ export type RDKitGetUint8ArrayOptions = {
 //     displayLabelW: string;
 //   }
 
+export interface RDKitConfigureOptions {
+  /** Switch between RDKit's built-in coordinate generator and CoordGen. */
+  preferCoordgen: boolean;
+  /** Use the legacy stereo perception algorithm. */
+  useLegacyStereoPerception: boolean;
+  /** Perceive chirality on non-tetrahedral stereocenters (square-planar, trigonal-bipyramidal, etc.). */
+  allowNonTetrahedralChirality: boolean;
+}
+
 export type RDKitCondenseAbbreviationsOptions = {
   /** @default 0.4 */
   maxCoverage: number;

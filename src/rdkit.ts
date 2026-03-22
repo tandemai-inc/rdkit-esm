@@ -11,6 +11,7 @@ import type {
   RDKitGetRgdOptions,
 } from './types/rdkit-minimalib-json-typings';
 import { computeFingerprintSimilarity } from './fingerprints/bitops.ts';
+import type { RDKitConfigureOptions } from './types/rdkit-esm.typings.ts';
 
 /** Result of a Maximum Common Substructure (MCS) computation */
 export interface MCSResult extends Disposable {
@@ -197,6 +198,24 @@ export class RDKit {
 
   computeFingerprintsSimilarity(...args: Parameters<typeof computeFingerprintSimilarity>): number {
     return computeFingerprintSimilarity(...args);
+  }
+
+  /**
+   * Applies global configuration options to the RDKit module.
+   *
+   * @param options - One or more options to configure
+   */
+  configure(options: Partial<RDKitConfigureOptions>): void {
+    const { preferCoordgen, useLegacyStereoPerception, allowNonTetrahedralChirality } = options;
+    if (preferCoordgen !== undefined) {
+      this.#mod.prefer_coordgen(preferCoordgen);
+    }
+    if (useLegacyStereoPerception !== undefined) {
+      this.#mod.use_legacy_stereo_perception(useLegacyStereoPerception);
+    }
+    if (allowNonTetrahedralChirality !== undefined) {
+      this.#mod.allow_non_tetrahedral_chirality(allowNonTetrahedralChirality);
+    }
   }
 
   /** Returns the RDKit version string */

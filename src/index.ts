@@ -2,6 +2,7 @@ export { initRDKit } from './init.ts';
 export type { InitRDKitOptions } from './init.ts';
 export { RDKit } from './rdkit.ts';
 export type { MCSResult } from './rdkit.ts';
+export type { RDKitConfigureOptions } from './types/rdkit-esm.typings.ts';
 export type { RGDRow } from './rgd.ts';
 export { Mol } from './mol.ts';
 export { MolArray } from './mol-array.ts';

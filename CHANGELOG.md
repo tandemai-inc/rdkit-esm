@@ -4,6 +4,8 @@
 
 - condenseAbbreviations returns a substructure match
 - add `numHeavyAtoms` getter and `getCoords()` to Mol class
+- add `delete()` to returned objects containing reference to WASM instances
+- add `configure()` to main rdkit class for coordgen/legacy stereo/non tetrahedral stereo settings
 
 ## [v0.4.3]
 
