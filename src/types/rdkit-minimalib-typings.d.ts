@@ -17,6 +17,9 @@ export interface JSMol {
    */
   delete(): void;
 
+  /** Returns true if the underlying C++ object has already been deleted (added by Emscripten) */
+  isDeleted(): boolean;
+
   // string representations
 
   /** Returns the SMILES string */

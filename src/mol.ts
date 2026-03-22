@@ -574,10 +574,7 @@ export class Mol implements Disposable {
    * manually deleted by the caller to avoid memory leaks.
    * @returns An object with atom/fragment mappings and a `MolArray` of fragments
    */
-  getFrags(): {
-    mappings: { atomToFrag: number[]; fragToAtoms: number[][] };
-    mols: MolArray;
-  } {
+  getFrags() {
     const { mappings, molList } = this.jsMol.get_frags();
     const parsed = JSON.parse(mappings) as {
       frags: number[];
@@ -597,6 +594,10 @@ export class Mol implements Disposable {
         fragToAtoms: parsed.fragsMolAtomMapping,
       },
       mols,
+      delete: () => mols.delete(),
+      [Symbol.dispose]() {
+        mols.delete();
+      }
     };
   }
 
@@ -608,6 +609,11 @@ export class Mol implements Disposable {
   }
 
   // -- Lifecycle --
+
+  /** Returns true if the underlying C++ object has been deleted */
+  get isDeleted(): boolean {
+    return this.#jsMol === null || this.#jsMol.isDeleted();
+  }
 
   /**
    * Deletes the underlying C++ molecule object from memory.

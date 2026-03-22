@@ -13,7 +13,7 @@ import type {
 import { computeFingerprintSimilarity } from './fingerprints/bitops.ts';
 
 /** Result of a Maximum Common Substructure (MCS) computation */
-export interface MCSResult {
+export interface MCSResult extends Disposable {
   numAtoms: number;
   numBonds: number;
   canceled: boolean;
@@ -27,6 +27,7 @@ export interface MCSResult {
    * object (via `.delete()` or `using`) to avoid memory leaks.
    */
   get qmol(): Mol | null;
+  delete(): void;
 }
 
 /**
@@ -135,6 +136,16 @@ export class RDKit {
         cachedQmol = jsMol ? new Mol(jsMol, mod) : null;
         return cachedQmol;
       },
+      delete() {
+        if (cachedQmol && !cachedQmol.isDeleted) {
+          cachedQmol.delete();
+        }
+      },
+      [Symbol.dispose]() {
+        if (cachedQmol && !cachedQmol.isDeleted) {
+          cachedQmol.delete();
+        }
+      }
     };
   }
 
