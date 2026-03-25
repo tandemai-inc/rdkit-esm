@@ -538,7 +538,11 @@ export interface JSMol {
    * @param maxCuts maximum number of cuts
    * @param maxCutBonds maximum number of bonds that can be cut
    */
-  get_mmpa_frags(minCuts: number, maxCuts: number, maxCutBonds: number): { cores: MolList; sidechains: MolList };
+  get_mmpa_frags(
+    minCuts: number,
+    maxCuts: number,
+    maxCutBonds: number,
+  ): { cores: MolList; sidechains: MolList };
 }
 
 export interface JSReaction extends Pick<
@@ -678,7 +682,12 @@ export interface SubstructLibrary {
    * @param numThreads number of threads to use
    * @param maxResults maximum number of results
    */
-  get_matches_as_uint32array(q: JSMol, useChirality: boolean, numThreads: number, maxResults: number): Uint32Array;
+  get_matches_as_uint32array(
+    q: JSMol,
+    useChirality: boolean,
+    numThreads: number,
+    maxResults: number,
+  ): Uint32Array;
 }
 
 export interface MolList {
@@ -884,7 +893,7 @@ export interface RDKitModule {
   allow_non_tetrahedral_chirality: (allow: boolean) => boolean;
 }
 
-type LogLevel = 'rdApp.debug' | 'rdApp.info' | 'rdApp.warning' | 'rdApp.error' | 'rdApp.*';
+export type LogLevel = 'rdApp.debug' | 'rdApp.info' | 'rdApp.warning' | 'rdApp.error' | 'rdApp.*';
 
 type RDKitJSLog = {
   get_buffer(): string;

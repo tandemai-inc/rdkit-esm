@@ -2,12 +2,23 @@ export { initRDKit } from './init.ts';
 export type { InitRDKitOptions } from './init.ts';
 export { RDKit } from './rdkit.ts';
 export type { MCSResult } from './rdkit.ts';
-export type { RDKitConfigureOptions } from './types/rdkit-esm.typings.ts';
+export { RDKitParseError } from './logger.ts';
+export type {
+  RDKitConfigureOptions,
+  RDKitParseErrorEvent,
+  RDKitParseOperation,
+  RDKitFailCallback,
+  RDKitEvents,
+  RDKitGetMolOptions,
+  RDKitGetQMolOptions,
+  RDKitGetRxnOptions,
+} from './types/rdkit-esm.typings.ts';
 export type { RGDRow } from './rgd.ts';
 export { Mol } from './mol.ts';
 export { MolArray } from './mol-array.ts';
 export { Reaction } from './reaction.ts';
 export { Fingerprint } from './fingerprints/fingerprint.ts';
+export { isRDKitParseError } from './logger.ts';
 
 // Re-export useful types for consumers
 export type {

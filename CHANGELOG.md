@@ -2,6 +2,7 @@
 
 ## [vX.X.X] Unreleased
 
+- errors interception: console.log `configure({ enableLogging: bool })`, event listener `addErrorListener(cb: (e: Error))`, throwOnError opt-in
 - condenseAbbreviations returns a substructure match
 - add `numHeavyAtoms` getter and `getCoords()` to Mol class
 - add `delete()` to returned objects containing reference to WASM instances

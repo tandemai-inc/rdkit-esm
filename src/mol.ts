@@ -597,7 +597,7 @@ export class Mol implements Disposable {
       delete: () => mols.delete(),
       [Symbol.dispose]() {
         mols.delete();
-      }
+      },
     };
   }
 

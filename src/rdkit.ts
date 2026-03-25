@@ -1,17 +1,23 @@
 import { Mol } from './mol.ts';
 import { fromMolArraytoMolList, fromStringArraytoMolList, isMolArray } from './mol-array.ts';
 import { Reaction } from './reaction.ts';
-import type { RDKitModule, MolList, JSMol } from './types/rdkit-minimalib-typings';
+import type { RDKitModule, MolList, JSMol, JSReaction } from './types/rdkit-minimalib-typings';
 import { decomposeRGroups, type RGDRow } from './rgd.ts';
 import type {
-  RDKitGetMolOpt,
   RDKitGetMCSOptions,
   RDKitMCSResult,
-  RDKitRxnDetails,
   RDKitGetRgdOptions,
 } from './types/rdkit-minimalib-json-typings';
 import { computeFingerprintSimilarity } from './fingerprints/bitops.ts';
-import type { RDKitConfigureOptions } from './types/rdkit-esm.typings.ts';
+import { RDKitLogger, RDKitParseError } from './logger.ts';
+import type {
+  RDKitConfigureOptions,
+  RDKitEvents,
+  RDKitFailCallback,
+  RDKitGetMolOptions,
+  RDKitGetQMolOptions,
+  RDKitGetRxnOptions,
+} from './types/rdkit-esm.typings.ts';
 
 /** Result of a Maximum Common Substructure (MCS) computation */
 export interface MCSResult extends Disposable {
@@ -43,11 +49,17 @@ export interface MCSResult extends Disposable {
  * ```
  */
 export class RDKit {
-  #mod: RDKitModule;
+  readonly #mod: RDKitModule;
+  readonly #logger: RDKitLogger;
+  readonly events: RDKitEvents;
 
   /** @internal */
   constructor(mod: RDKitModule) {
     this.#mod = mod;
+    this.#logger = new RDKitLogger(mod);
+    this.events = {
+      addErrorListener: (cb: RDKitFailCallback) => this.#logger.addCallback(cb),
+    };
   }
 
   /**
@@ -55,9 +67,17 @@ export class RDKit {
    *
    * @param input - SMILES, SMARTS, MolFile, or JSON string
    * @param options - Molecule parsing options
-   * @returns A Mol instance, or null if the input is invalid
+   * @returns A Mol instance, or null if the input is invalid.
+   *   Pass `{ throwOnError: true }` to throw a {@link RDKitParseError} instead.
    */
-  getMol(input: string | Uint8Array, options?: Partial<RDKitGetMolOpt>): Mol | null {
+  getMol(
+    input: string | Uint8Array,
+    options?: Partial<RDKitGetMolOptions> & { throwOnError: true },
+  ): Mol;
+  getMol(input: string | Uint8Array, options?: Partial<RDKitGetMolOptions>): Mol | null {
+    const { throwOnError = false, ...wasmOptions } = options ?? {};
+    this.#logger.reset(throwOnError);
+
     let jsMol: JSMol | null;
     if (input instanceof Uint8Array) {
       if (options) {
@@ -65,13 +85,16 @@ export class RDKit {
       }
       jsMol = this.#mod.get_mol_from_uint8array(input);
     } else {
-      jsMol = options
-        ? this.#mod.get_mol(input, JSON.stringify(options))
-        : this.#mod.get_mol(input);
+      jsMol =
+        Object.keys(wasmOptions).length > 0
+          ? this.#mod.get_mol(input, JSON.stringify(wasmOptions))
+          : this.#mod.get_mol(input);
     }
 
-    if (!jsMol) return null;
-
+    if (!jsMol) {
+      this.#logger.handleError(input, 'getMol');
+      return null;
+    }
     return new Mol(jsMol, this.#mod);
   }
 
@@ -79,11 +102,17 @@ export class RDKit {
    * Creates a query molecule from a SMARTS string.
    *
    * @param input - SMARTS string
-   * @returns A Mol instance, or null if the input is invalid
+   * @returns A Mol instance, or null if the input is invalid.
+   *   Pass `{ throwOnError: true }` to throw a {@link RDKitParseError} instead.
    */
-  getQMol(input: string): Mol | null {
+  getQMol(input: string, options?: Partial<RDKitGetQMolOptions> & { throwOnError: true }): Mol;
+  getQMol(input: string, options?: Partial<RDKitGetQMolOptions>): Mol | null {
+    const { throwOnError = false } = options ?? {};
+    this.#logger.reset(throwOnError);
+
     const jsMol = this.#mod.get_qmol(input);
     if (!jsMol) {
+      this.#logger.handleError(input, 'getQMol');
       return null;
     }
     return new Mol(jsMol, this.#mod);
@@ -146,7 +175,7 @@ export class RDKit {
         if (cachedQmol && !cachedQmol.isDeleted) {
           cachedQmol.delete();
         }
-      }
+      },
     };
   }
 
@@ -155,18 +184,29 @@ export class RDKit {
    *
    * @param input - Reaction SMARTS, SMILES, or RXN block string
    * @param options - Reaction parsing options
-   * @returns A Reaction instance, or null if the input is invalid
+   * @returns A Reaction instance, or null if the input is invalid.
+   *   Pass `{ throwOnError: true }` to throw a {@link RDKitParseError} instead.
    */
-  getRxn(input: string, options?: Partial<RDKitRxnDetails>): Reaction | null {
+  getRxn(input: string, options: Partial<RDKitGetRxnOptions> & { throwOnError: true }): Reaction;
+  getRxn(input: string, options?: Partial<RDKitGetRxnOptions>): Reaction | null {
+    const { throwOnError = false, ...wasmOptions } = options ?? {};
+    this.#logger.reset(throwOnError);
+
+    let jsRxn: JSReaction | null = null;
     try {
-      const jsRxn = options
-        ? this.#mod.get_rxn(input, JSON.stringify(options))
-        : this.#mod.get_rxn(input);
-      if (!jsRxn) return null;
-      return new Reaction(jsRxn, this.#mod);
+      jsRxn =
+        Object.keys(wasmOptions).length > 0
+          ? this.#mod.get_rxn(input, JSON.stringify(wasmOptions))
+          : this.#mod.get_rxn(input);
     } catch {
+      jsRxn = null;
+    }
+
+    if (!jsRxn) {
+      this.#logger.handleError(input, 'getRxn');
       return null;
     }
+    return new Reaction(jsRxn, this.#mod);
   }
 
   /**
@@ -206,16 +246,18 @@ export class RDKit {
    * @param options - One or more options to configure
    */
   configure(options: Partial<RDKitConfigureOptions>): void {
-    const { preferCoordgen, useLegacyStereoPerception, allowNonTetrahedralChirality } = options;
-    if (preferCoordgen !== undefined) {
-      this.#mod.prefer_coordgen(preferCoordgen);
-    }
-    if (useLegacyStereoPerception !== undefined) {
+    const {
+      preferCoordgen,
+      useLegacyStereoPerception,
+      allowNonTetrahedralChirality,
+      enableLogging,
+    } = options;
+    if (preferCoordgen !== undefined) this.#mod.prefer_coordgen(preferCoordgen);
+    if (useLegacyStereoPerception !== undefined)
       this.#mod.use_legacy_stereo_perception(useLegacyStereoPerception);
-    }
-    if (allowNonTetrahedralChirality !== undefined) {
+    if (allowNonTetrahedralChirality !== undefined)
       this.#mod.allow_non_tetrahedral_chirality(allowNonTetrahedralChirality);
-    }
+    if (enableLogging !== undefined) this.#logger.setEnableLogging(enableLogging);
   }
 
   /** Returns the RDKit version string */
