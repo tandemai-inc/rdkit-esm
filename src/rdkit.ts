@@ -74,6 +74,7 @@ export class RDKit {
     input: string | Uint8Array,
     options?: Partial<RDKitGetMolOptions> & { throwOnError: true },
   ): Mol;
+  getMol(input: string | Uint8Array, options?: Partial<RDKitGetMolOptions>): Mol | null ;
   getMol(input: string | Uint8Array, options?: Partial<RDKitGetMolOptions>): Mol | null {
     const { throwOnError = false, ...wasmOptions } = options ?? {};
     this.#logger.reset(throwOnError);
@@ -106,6 +107,7 @@ export class RDKit {
    *   Pass `{ throwOnError: true }` to throw a {@link RDKitParseError} instead.
    */
   getQMol(input: string, options?: Partial<RDKitGetQMolOptions> & { throwOnError: true }): Mol;
+  getQMol(input: string, options?: Partial<RDKitGetQMolOptions>): Mol | null;
   getQMol(input: string, options?: Partial<RDKitGetQMolOptions>): Mol | null {
     const { throwOnError = false } = options ?? {};
     this.#logger.reset(throwOnError);
@@ -188,6 +190,7 @@ export class RDKit {
    *   Pass `{ throwOnError: true }` to throw a {@link RDKitParseError} instead.
    */
   getRxn(input: string, options: Partial<RDKitGetRxnOptions> & { throwOnError: true }): Reaction;
+  getRxn(input: string, options?: Partial<RDKitGetRxnOptions>): Reaction | null;
   getRxn(input: string, options?: Partial<RDKitGetRxnOptions>): Reaction | null {
     const { throwOnError = false, ...wasmOptions } = options ?? {};
     this.#logger.reset(throwOnError);

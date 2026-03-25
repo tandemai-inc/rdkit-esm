@@ -15,6 +15,13 @@ describe('getMol', () => {
     mol!.delete();
   });
 
+  it('getMol returns a Mol with specified options', () => {
+    using mol = rdkit.getMol('C1=CC=CC=C1', { setAromaticity: false});
+    expect(mol).not.toBeNull();
+    const json = mol!.getJSON();
+    expect(json.molecules[0].extensions[0].aromaticAtoms).toBeUndefined();
+  })
+
   it('getMol returns null for invalid SMILES', () => {
     const mol = rdkit.getMol('not_a_molecule');
     expect(mol).toBeNull();
