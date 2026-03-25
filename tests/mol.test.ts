@@ -453,16 +453,22 @@ describe('Mol - abbreviations', () => {
   it('condenseAbbreviations returns string', () => {
     using mol = rdkit.getMol('c1ccccc1C(=O)O')!;
     const result = mol.condenseAbbreviations();
-    expect(result).toBeTypeOf('string');
+    expect(result).toEqual({
+      atoms: [0, 1, 2, 3, 4, 5, 6],
+      bonds: [0, 1, 2, 3, 4, 5, 8],
+    });
   });
 
   it('condenseAbbreviations with options', () => {
     using mol = rdkit.getMol('c1ccccc1C(=O)O')!;
     const result = mol.condenseAbbreviations({
       maxCoverage: 0.4,
-      useLinkers: false,
+      useLinkers: true,
     });
-    expect(result).toBeTypeOf('string');
+    expect(result).toEqual({
+      atoms: [0, 1, 2, 3, 4, 5, 6, 7, 8],
+      bonds: [0, 1, 2, 3, 4, 5, 6, 7, 8],
+    });
   });
 });
 

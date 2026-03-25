@@ -2,6 +2,8 @@ import type {
   CxSmilesField,
   PropertyPickleOptionsKeys,
   RDKitGetSmilesOptions,
+  RDKitGetMolOpt,
+  RDKitRxnDetails,
 } from './rdkit-minimalib-json-typings';
 
 /** Wrapper-level CX SMILES options with ergonomic `fields` array */
@@ -17,4 +19,52 @@ export type RDKitGetUint8ArrayOptions = {
    * @default: when `properties` is omitted, all data properties are included except the computed properties.
    */
   properties: PropertyPickleOptionsKeys[];
+};
+
+// The following is not exposed
+// export type AbbreviationDefinition = {
+//     label: string;
+//     smarts: string;
+//   } | {
+//     label: string;
+//     smarts: string;
+//     displayLabel: string;
+//     displayLabelW: string;
+//   }
+
+export type RDKitConfigureOptions = {
+  /** Switch between RDKit's built-in coordinate generator and CoordGen. */
+  preferCoordgen: boolean;
+  /** Use the legacy stereo perception algorithm. */
+  useLegacyStereoPerception: boolean;
+  /** Perceive chirality on non-tetrahedral stereocenters (square-planar, trigonal-bipyramidal, etc.). */
+  allowNonTetrahedralChirality: boolean;
+  /** When true, RDKit error messages also appear in the console (uses set_log_tee).
+   *  Default: false (capture-only when a fail listener is set). */
+  enableLogging: boolean;
+};
+
+export type RDKitParseOperation = 'getMol' | 'getQMol' | 'getRxn';
+
+export type RDKitParseErrorEvent = {
+  input: string | Uint8Array;
+  message: string;
+  operation: RDKitParseOperation;
+};
+
+export type RDKitFailCallback = (event: RDKitParseErrorEvent) => void;
+
+export type RDKitEvents = {
+  addErrorListener(callback: RDKitFailCallback): () => void;
+};
+
+export type RDKitGetMolOptions = RDKitGetMolOpt & { throwOnError: boolean };
+export type RDKitGetQMolOptions = { throwOnError: boolean };
+export type RDKitGetRxnOptions = RDKitRxnDetails & { throwOnError: boolean };
+
+export type RDKitCondenseAbbreviationsOptions = {
+  /** @default 0.4 */
+  maxCoverage: number;
+  /** @default false */
+  useLinkers: boolean;
 };

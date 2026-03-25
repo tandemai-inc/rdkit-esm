@@ -14,8 +14,20 @@ describe('getRxn', () => {
   });
 
   it('returns null for invalid reaction', () => {
-    const rxn = rdkit.getRxn('Z>>C');
+    using rxn = rdkit.getRxn('Z>>C');
     expect(rxn).toBeNull();
+  });
+
+  it('applies options correctly', () => {
+    using rxn = rdkit.getRxn('Brc1ccccc1.OB(O)c1ccccc1>>c1ccccc1c2ccccc2', { useSmiles: true })!;
+    expect(rxn).not.toBeNull();
+    const svgFromSmiles = rxn.getSVG();
+
+    using rxn2 = rdkit.getRxn('Brc1ccccc1.OB(O)c1ccccc1>>c1ccccc1c2ccccc2', { useSmiles: false })!;
+    expect(rxn2).not.toBeNull();
+    const svgFromSmarts = rxn2.getSVG();
+
+    expect(svgFromSmiles).not.toBe(svgFromSmarts);
   });
 });
 
@@ -36,14 +48,13 @@ describe('Reaction - runReactants', () => {
 
   it('runs a reaction with Mol[] reactants', () => {
     using rxn = rdkit.getRxn('[#6:1][O:2]>>[#6:1]=[O:2]')!;
-    const reactant = rdkit.getMol('CC(C)O')!;
+    using reactant = rdkit.getMol('CC(C)O')!;
     const products = rxn.runReactants([reactant]);
     expect(products.length).toBeGreaterThan(0);
     expect(products[0][0].getSmiles()).toBe('CC(C)=O');
     for (const set of products) {
       set.delete();
     }
-    reactant.delete();
   });
 
   it('returns multiple product sets for multiple matches', () => {

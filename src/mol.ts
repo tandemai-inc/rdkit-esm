@@ -21,7 +21,9 @@ import type { InChI_Flags } from './types/inchi';
 import type {
   RDKitGetCxSmilesOptions,
   RDKitGetUint8ArrayOptions,
+  RDKitCondenseAbbreviationsOptions,
 } from './types/rdkit-esm.typings.ts';
+import { DEFAULT_MAX_COVERAGE, DEFAULT_USE_LINKERS } from './abbreviations/abbreviations.ts';
 import { buildCxSmilesRawOptions } from './formats/cxsmiles.ts';
 import { buildGetMolAsUint8ArrayOptions } from './formats/pickle.ts';
 import { Fingerprint } from './fingerprints/fingerprint.ts';
@@ -377,6 +379,11 @@ export class Mol implements Disposable {
     return this.jsMol.get_num_atoms();
   }
 
+  /** Returns the number of heavy atoms in the molecule (excluding hydrogens and dummy atoms) */
+  get numHeavyAtoms(): number {
+    return this.jsMol.get_num_atoms(true);
+  }
+
   /** Returns the number of bonds in the molecule */
   get numBonds(): number {
     return this.jsMol.get_num_bonds();
@@ -385,6 +392,11 @@ export class Mol implements Disposable {
   /** Returns 0 if no coords, 2 for 2D, 3 for 3D */
   hasCoords(): 0 | 2 | 3 {
     return this.jsMol.has_coords();
+  }
+
+  /** Returns the coordinates of each atom in the molecule as an array of [x, y, z] tuples */
+  getCoords(): [number, number, number][] {
+    return this.jsMol.get_coords();
   }
 
   /** Returns stereo tags (CIP codes) for the molecule */
@@ -535,14 +547,12 @@ export class Mol implements Disposable {
    * Condenses functional group abbreviations in the molecule
    * @param options - Abbreviation options
    */
-  condenseAbbreviations(options?: { maxCoverage?: number; useLinkers?: boolean }): string {
+  condenseAbbreviations(options?: Partial<RDKitCondenseAbbreviationsOptions>): RDKitSubstructMatch {
     const mol = this.jsMol;
-    if (!options) return mol.condense_abbreviations();
-    const { maxCoverage, useLinkers } = options;
-    if (maxCoverage !== undefined && useLinkers !== undefined) {
-      return mol.condense_abbreviations(maxCoverage, useLinkers);
-    }
-    return mol.condense_abbreviations();
+    const { maxCoverage = DEFAULT_MAX_COVERAGE, useLinkers = DEFAULT_USE_LINKERS } = options ?? {};
+    const raw = mol.condense_abbreviations(maxCoverage, useLinkers);
+
+    return JSON.parse(raw) as RDKitSubstructMatch;
   }
 
   // -- Canvas drawing --
@@ -564,10 +574,7 @@ export class Mol implements Disposable {
    * manually deleted by the caller to avoid memory leaks.
    * @returns An object with atom/fragment mappings and a `MolArray` of fragments
    */
-  getFrags(): {
-    mappings: { atomToFrag: number[]; fragToAtoms: number[][] };
-    mols: MolArray;
-  } {
+  getFrags() {
     const { mappings, molList } = this.jsMol.get_frags();
     const parsed = JSON.parse(mappings) as {
       frags: number[];
@@ -587,6 +594,10 @@ export class Mol implements Disposable {
         fragToAtoms: parsed.fragsMolAtomMapping,
       },
       mols,
+      delete: () => mols.delete(),
+      [Symbol.dispose]() {
+        mols.delete();
+      },
     };
   }
 
@@ -598,6 +609,11 @@ export class Mol implements Disposable {
   }
 
   // -- Lifecycle --
+
+  /** Returns true if the underlying C++ object has been deleted */
+  get isDeleted(): boolean {
+    return this.#jsMol === null || this.#jsMol.isDeleted();
+  }
 
   /**
    * Deletes the underlying C++ molecule object from memory.

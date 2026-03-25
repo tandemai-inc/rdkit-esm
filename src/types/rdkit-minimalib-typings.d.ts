@@ -17,6 +17,9 @@ export interface JSMol {
    */
   delete(): void;
 
+  /** Returns true if the underlying C++ object has already been deleted (added by Emscripten) */
+  isDeleted(): boolean;
+
   // string representations
 
   /** Returns the SMILES string */
@@ -265,10 +268,60 @@ export interface JSMol {
    */
   get_maccs_fp_as_uint8array(): Uint8Array;
 
+  /**
+   * Returns the Avalon fingerprint as string.
+   * Requires RDKit to be built with Avalon support (RDK_BUILD_AVALON_SUPPORT).
+   */
+  get_avalon_fp(): string;
+
+  /**
+   * Returns the Avalon fingerprint as string.
+   * Requires RDKit to be built with Avalon support (RDK_BUILD_AVALON_SUPPORT).
+   * @param options stringified JSON with fingerprint options (nBits, isQuery, bitFlags)
+   */
+  get_avalon_fp(options: JSONString): string;
+
+  /**
+   * Returns the Avalon fingerprint as an unsigned integer array.
+   * Requires RDKit to be built with Avalon support (RDK_BUILD_AVALON_SUPPORT).
+   */
+  get_avalon_fp_as_uint8array(): Uint8Array;
+
+  /**
+   * Returns the Avalon fingerprint as an unsigned integer array.
+   * Requires RDKit to be built with Avalon support (RDK_BUILD_AVALON_SUPPORT).
+   * @param options stringified JSON with fingerprint options (nBits, isQuery, bitFlags)
+   */
+  get_avalon_fp_as_uint8array(options: JSONString): Uint8Array;
+
   // abbreviation methods
 
   condense_abbreviations(): string;
   condense_abbreviations(maxCoverage: number, useLinkers: boolean): string;
+
+  /**
+   * Condense abbreviations using custom definitions.
+   *
+   * @param definitions Plain text string (NOT JSON). Each line defines one abbreviation as
+   *   tab/space-separated columns:
+   *   `label  SMARTS  [displayLabel  [displayLabelW]]`
+   *   - `label` — abbreviation identifier (e.g. `tBu`)
+   *   - `SMARTS` — SMARTS pattern; first atom is the attachment point (e.g. `C(C)(C)C`)
+   *   - `displayLabel` — label shown on the right side; may include HTML tags like `<sub>` (optional)
+   *   - `displayLabelW` — label shown on the left/west side (optional)
+   * @example
+   * ```
+   * const defs = [
+   *   "tBu    C(C)(C)C    tBu",
+   *   "CF3    C(F)(F)F    CF<sub>3</sub>    F<sub>3</sub>C",
+   * ].join("\n");
+   * mol.condense_abbreviations_from_defs(defs, 0.4, false);
+   * ```
+   * @param maxCoverage maximum fraction of the molecule that can be covered by abbreviations
+   * @param areLinkers if true, definitions are treated as linker abbreviations (first atom must be a dummy `*`)
+   * @private This method is not exposed
+   */
+  //condense_abbreviations_from_defs(definitions: string, maxCoverage: number, areLinkers: boolean): string;
 
   // coord generation
 
@@ -285,7 +338,13 @@ export interface JSMol {
   /** Returns true if the molecule's structure is valid */
   is_valid(): boolean;
 
+  /** Returns the total number of atoms in the molecule */
   get_num_atoms(): number;
+  /**
+   * Returns the number of atoms in the molecule
+   * @param heavyOnly if true, only heavy (non-hydrogen) atoms are counted
+   */
+  get_num_atoms(heavyOnly: boolean): number;
   get_num_bonds(): number;
 
   /** Check is the molecule has any 2D coordinates generated */
@@ -447,6 +506,43 @@ export interface JSMol {
     width: number,
     height: number,
   ): void;
+
+  // PNG I/O
+
+  /**
+   * Embeds molecule data (pickle, SMILES, molblock) into a PNG.
+   * Returns the updated PNG as a Uint8Array.
+   *
+   * @param png PNG data as Uint8Array
+   */
+  add_to_png_blob(png: Uint8Array): Uint8Array;
+  /** @see add_to_png_blob */
+  add_to_png_blob(png: Uint8Array, details: JSONString): Uint8Array;
+
+  // coordinates
+
+  /**
+   * Returns the 3D atom coordinates of the molecule's conformer.
+   * Each entry is a `[x, y, z]` triple.
+   */
+  get_coords(): [number, number, number][];
+
+  // MMPA fragmentation
+
+  /**
+   * Performs MMPA (Matched Molecular Pairs Analysis) fragmentation.
+   * Returns cores and sidechains as two `MolList` objects.
+   * Requires RDKit built with `RDK_BUILD_MINIMAL_LIB_MMPA`.
+   *
+   * @param minCuts minimum number of cuts
+   * @param maxCuts maximum number of cuts
+   * @param maxCutBonds maximum number of bonds that can be cut
+   */
+  get_mmpa_frags(
+    minCuts: number,
+    maxCuts: number,
+    maxCutBonds: number,
+  ): { cores: MolList; sidechains: MolList };
 }
 
 export interface JSReaction extends Pick<
@@ -495,6 +591,29 @@ export interface SubstructLibrary {
   add_trusted_smiles(smi: string): number;
 
   /**
+   * Add a molecule to the library with a pre-computed pattern fingerprint.
+   * Skips fingerprint computation — use when you already have the fingerprint.
+   *
+   * @param smi SMILES string (trusted to be valid)
+   * @param patternFp pre-computed pattern fingerprint as Uint8Array
+   */
+  add_trusted_smiles_and_pattern_fp(smi: string, patternFp: Uint8Array): number;
+
+  /**
+   * Get the stored SMILES string for a molecule in the library
+   *
+   * @param i index of the molecule
+   */
+  get_trusted_smiles(i: number): string;
+
+  /**
+   * Get the pattern fingerprint for a molecule in the library
+   *
+   * @param i index of the molecule
+   */
+  get_pattern_fp_as_uint8array(i: number): Uint8Array;
+
+  /**
    * Get a molecule from the library
    *
    * @param i index of the molecule
@@ -541,6 +660,34 @@ export interface SubstructLibrary {
    * @param numThreads number of threads to use
    */
   count_matches(q: JSMol, useChirality: boolean, numThreads: number): number;
+
+  /** Return the number of molecules in the library */
+  size(): number;
+
+  /**
+   * Get all molecules from the library matching the substructure query.
+   * Returns matching indices as a Uint32Array (more efficient than `get_matches`).
+   *
+   * @param q query molecule
+   */
+  get_matches_as_uint32array(q: JSMol): Uint32Array;
+  /**
+   * @param q query molecule
+   * @param maxResults maximum number of results
+   */
+  get_matches_as_uint32array(q: JSMol, maxResults: number): Uint32Array;
+  /**
+   * @param q query molecule
+   * @param useChirality set to true to enable chiral substructure searching
+   * @param numThreads number of threads to use
+   * @param maxResults maximum number of results
+   */
+  get_matches_as_uint32array(
+    q: JSMol,
+    useChirality: boolean,
+    numThreads: number,
+    maxResults: number,
+  ): Uint32Array;
 }
 
 export interface MolList {
@@ -614,6 +761,7 @@ export interface StringList extends EmscriptenVector<string> {}
 /** Returns a new SubstructLibrary instance */
 interface SubstructLibraryConstructor {
   new (): SubstructLibrary;
+  new (initialCapacity: number): SubstructLibrary;
 }
 
 interface MolListConstructor {
@@ -720,8 +868,8 @@ export interface RDKitModule {
    */
   use_legacy_stereo_perception(value: boolean): void;
 
-  enable_logging(): void;
-  disable_logging(): void;
+  enable_logging(logName?: string): boolean;
+  disable_logging(logName?: string): boolean;
   /**
    * Create a JSLog handle object and log messages to its buffer and the browser console
    *
@@ -741,9 +889,11 @@ export interface RDKitModule {
    */
 
   set_log_capture(logLevel: LogLevel): RDKitJSLog;
+
+  allow_non_tetrahedral_chirality: (allow: boolean) => boolean;
 }
 
-type LogLevel = 'rdApp.debug' | 'rdApp.info' | 'rdApp.warning' | 'rdApp.error' | 'rdApp.*';
+export type LogLevel = 'rdApp.debug' | 'rdApp.info' | 'rdApp.warning' | 'rdApp.error' | 'rdApp.*';
 
 type RDKitJSLog = {
   get_buffer(): string;

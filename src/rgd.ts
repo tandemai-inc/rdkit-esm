@@ -10,6 +10,29 @@ import { fromMolArraytoMolList, fromStringArraytoMolList, isMolArray } from './m
 export type RGDRow = Record<string, Mol>;
 
 /**
+ * The result of an R-Group Decomposition, as an array of {@link RGDRow} with
+ * batch lifecycle management.
+ *
+ * Call {@link delete} (or use the `using` keyword) to delete every `Mol`
+ * in all rows at once.
+ */
+export class RGDResult extends Array<RGDRow> implements Disposable {
+  /** Deletes every non-deleted Mol across all rows */
+  delete(): void {
+    for (const row of this) {
+      for (const mol of Object.values(row)) {
+        if (!mol.isDeleted) mol.delete();
+      }
+    }
+  }
+
+  /** Disposable support — allows use with the `using` keyword */
+  [Symbol.dispose](): void {
+    this.delete();
+  }
+}
+
+/**
  * Performs R-Group Decomposition on a set of molecules against one or more cores.
  *
  * This is a one-shot helper that handles all the boilerplate of the raw RDKit
@@ -32,7 +55,7 @@ export function decomposeRGroups(
   molecules: string[] | Mol[],
   options: Partial<RDKitGetRgdOptions> | undefined,
   module: RDKitModule,
-): RGDRow[] | null {
+): RGDResult | null {
   // Resolve core to JSMol or MolList
   let resolvedCore: JSMol | MolList;
   let deleteCore = false;
@@ -76,13 +99,14 @@ export function decomposeRGroups(
 
   // Extract rows and wrap JSMol values as Mol
   const rawRows = rgd.get_rgroups_as_rows();
-  const result: RGDRow[] = rawRows.map((row: Record<string, JSMol>) => {
+  const result = new RGDResult();
+  for (const row of rawRows as Record<string, JSMol>[]) {
     const wrappedRow: RGDRow = {};
     for (const [label, jsMol] of Object.entries(row)) {
       wrappedRow[label] = new Mol(jsMol, module);
     }
-    return wrappedRow;
-  });
+    result.push(wrappedRow);
+  }
 
   // Cleanup
   rgd.delete();
