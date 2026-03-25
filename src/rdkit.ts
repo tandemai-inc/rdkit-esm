@@ -74,7 +74,7 @@ export class RDKit {
     input: string | Uint8Array,
     options?: Partial<RDKitGetMolOptions> & { throwOnError: true },
   ): Mol;
-  getMol(input: string | Uint8Array, options?: Partial<RDKitGetMolOptions>): Mol | null ;
+  getMol(input: string | Uint8Array, options?: Partial<RDKitGetMolOptions>): Mol | null;
   getMol(input: string | Uint8Array, options?: Partial<RDKitGetMolOptions>): Mol | null {
     const { throwOnError = false, ...wasmOptions } = options ?? {};
     this.#logger.reset(throwOnError);

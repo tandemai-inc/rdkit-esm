@@ -2,6 +2,8 @@
 
 ## [vX.X.X] Unreleased
 
+## [v0.5.0]
+
 - errors interception: console.log `configure({ enableLogging: bool })`, event listener `addErrorListener(cb: (e: Error))`, throwOnError opt-in
 - condenseAbbreviations returns a substructure match
 - add `numHeavyAtoms` getter and `getCoords()` to Mol class

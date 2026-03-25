@@ -28,7 +28,7 @@ describe('getRxn', () => {
     const svgFromSmarts = rxn2.getSVG();
 
     expect(svgFromSmiles).not.toBe(svgFromSmarts);
-  })
+  });
 });
 
 describe('Reaction - runReactants', () => {
