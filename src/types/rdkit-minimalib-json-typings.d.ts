@@ -436,10 +436,6 @@ export type RDKitGetMCSOptions = {
   AtomRingMatchesRingOnly: boolean;
   BondRingMatchesRingOnly: boolean;
   MaxDistance: number;
-  /**
-   * @alias BondCompleteRingsOnly
-   */
-  CompleteRingsOnly: boolean;
   AtomCompleteRingsOnly: boolean;
   BondCompleteRingsOnly: boolean;
   /**

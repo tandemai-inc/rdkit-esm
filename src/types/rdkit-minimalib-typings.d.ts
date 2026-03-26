@@ -771,8 +771,8 @@ interface MolListConstructor {
 interface RGroupDecomposition {
   add(mol: JSMol): number;
   process(): boolean;
-  get_rgroups_as_columns(): { [key: 'Core' | `R${number}`]: MolList };
-  get_rgroups_as_rows(): { [key: 'Core' | `R${number}`]: JSMol }[];
+  get_rgroups_as_columns(): { [key in 'Core' | `R${number}`]: MolList };
+  get_rgroups_as_rows(): { [key in 'Core' | `R${number}`]: JSMol }[];
   delete(): void;
 }
 
