@@ -1,5 +1,4 @@
 import initRDKitModule from '../MinimalLib/dist/RDKit_minimal.js';
-// @ts-expect-error -- Vite/Rolldown ?url import directive
 import wasmUrl from '../MinimalLib/dist/RDKit_minimal.wasm?url';
 
 import { RDKit } from './rdkit.ts';

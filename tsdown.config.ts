@@ -3,7 +3,7 @@ import { defineConfig } from 'tsdown';
 
 export default defineConfig({
   entry: ['src/index.ts'],
-  exports: true,
+  exports: false,
   platform: 'browser',
   format: 'esm',
   inputOptions: {
@@ -11,5 +11,10 @@ export default defineConfig({
       mainFields: [],
     },
   },
-  plugins: [wasm()],
+  plugins: [
+    wasm({
+      fileName: 'RDKit_minimal.wasm',
+      targetEnv: 'browser',
+    }),
+  ],
 });
