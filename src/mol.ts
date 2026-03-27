@@ -15,6 +15,7 @@ import type {
   RDKitAlignedCoordsOptions,
   RDKitGetSmilesOptions,
   RDKitMolZipOptions,
+  RDKitGetFragsOptions,
 } from './types/rdkit-minimalib-json-typings';
 import { MolArray } from './mol-array.ts';
 import type { InChI_Flags } from './types/inchi';
@@ -82,7 +83,7 @@ export class Mol implements Disposable {
   // -- String representations --
 
   /** Returns the canonical SMILES string */
-  getSmiles(options?: RDKitGetSmilesOptions): string {
+  getSmiles(options?: Partial<RDKitGetSmilesOptions>): string {
     return options ? this.jsMol.get_smiles(JSON.stringify(options)) : this.jsMol.get_smiles();
   }
 
@@ -93,7 +94,7 @@ export class Mol implements Disposable {
   }
 
   /** Returns the SMARTS string */
-  getSmarts(options?: RDKitGetSmilesOptions): string {
+  getSmarts(options?: Partial<RDKitGetSmilesOptions>): string {
     return options ? this.jsMol.get_smarts(JSON.stringify(options)) : this.jsMol.get_smarts();
   }
 
@@ -574,8 +575,10 @@ export class Mol implements Disposable {
    * manually deleted by the caller to avoid memory leaks.
    * @returns An object with atom/fragment mappings and a `MolArray` of fragments
    */
-  getFrags() {
-    const { mappings, molList } = this.jsMol.get_frags();
+  getFrags(options?: Partial<RDKitGetFragsOptions>) {
+    const { mappings, molList } = options
+      ? this.jsMol.get_frags(JSON.stringify(options))
+      : this.jsMol.get_frags();
     const parsed = JSON.parse(mappings) as {
       frags: number[];
       fragsMolAtomMapping: number[][];

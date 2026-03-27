@@ -2,11 +2,12 @@ import { Mol } from './mol.ts';
 import { fromMolArraytoMolList, fromStringArraytoMolList, isMolArray } from './mol-array.ts';
 import { Reaction } from './reaction.ts';
 import type { RDKitModule, MolList, JSMol, JSReaction } from './types/rdkit-minimalib-typings';
-import { decomposeRGroups, type RGDRow } from './rgd.ts';
+import { decomposeRGroups, type RGDResult } from './rgd.ts';
 import type {
   RDKitGetMCSOptions,
   RDKitMCSResult,
   RDKitGetRgdOptions,
+  RDKitMolZipOptions,
 } from './types/rdkit-minimalib-json-typings';
 import { computeFingerprintSimilarity } from './fingerprints/bitops.ts';
 import { RDKitLogger, RDKitParseError } from './logger.ts';
@@ -229,12 +230,14 @@ export class RDKit {
     core: string | string[] | Mol | Mol[],
     molecules: string[] | Mol[],
     options?: Partial<RDKitGetRgdOptions>,
-  ): RGDRow[] | null {
+  ): RGDResult | null {
     return decomposeRGroups(core, molecules, options, this.#mod);
   }
 
-  molzip(mol1: Mol, mol2: Mol): Mol | null {
-    const jsMol = this.#mod.molzip(mol1.jsMol, mol2.jsMol);
+  molzip(mol1: Mol, mol2: Mol, options?: Partial<RDKitMolZipOptions>): Mol | null {
+    const jsMol = options
+      ? this.#mod.molzip(mol1.jsMol, mol2.jsMol, JSON.stringify(options))
+      : this.#mod.molzip(mol1.jsMol, mol2.jsMol);
     if (!jsMol) return null;
     return new Mol(jsMol, this.#mod);
   }

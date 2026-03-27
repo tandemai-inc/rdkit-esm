@@ -360,7 +360,7 @@ export interface JSMol {
   get_kekule_form(): string;
 
   /** Returns the disconnected fragments of the molecule */
-  get_frags(): { mappings: JSONString; molList: MolList };
+  get_frags(details_json?: string): { mappings: JSONString; molList: MolList };
 
   /** Generate new 2D coordinates */
   set_new_coords(): boolean;

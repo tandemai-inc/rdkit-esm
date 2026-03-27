@@ -15,7 +15,7 @@
     "esModuleInterop": true,
     "isolatedModules": true,
     "verbatimModuleSyntax": true,
-    "skipLibCheck": false,
+    "skipLibCheck": false
   },
-  "include": ["src", "MinimalLib/dist/RDKit_minimal.d.ts"],
+  "include": ["src", "MinimalLib/dist/RDKit_minimal.d.ts"]
 }

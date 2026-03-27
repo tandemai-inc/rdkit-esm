@@ -36,6 +36,8 @@ export type {
   RDKitJsonExtension,
   DrawColour,
   ColourPalette,
+  ColourPaletteName,
+  DrawingExtentsInclude,
   RDKitStereoTags,
   RDKitRemoveHsOptions,
   RDKitAlignedCoordsOptions,
@@ -49,6 +51,8 @@ export type {
   RDKitRxnDetails,
   RDKitGetRgdOptions,
   RDKitGetSmilesOptions,
+  RDKitGetFragsOptions,
+  RDKitSanitizeFlags,
 } from './types/rdkit-minimalib-json-typings';
 
 export type { RDKitModule, JSMol, JSReaction, MolList } from './types/rdkit-minimalib-typings';
