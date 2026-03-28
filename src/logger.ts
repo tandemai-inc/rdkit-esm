@@ -50,20 +50,20 @@ export const isRDKitParseError = (error: unknown): error is RDKitParseError => {
  * RDKitLogger manages RDKit error capture and dispatch to listeners, as well as optional console logging.
  */
 export class RDKitLogger {
-  readonly #mod: RDKitModule;
-  #capture: RDKitJSLog | null = null;
-  #callback: RDKitFailCallback | null = null;
-  #enableLogging = false; // default: no console output
-  #throwOnError = false; // set per-call via reset(), read by handleError()
+  private readonly mod: RDKitModule;
+  private capture: RDKitJSLog | null = null;
+  private callback: RDKitFailCallback | null = null;
+  private enableLogging = false; // default: no console output
+  private throwOnError = false; // set per-call via reset(), read by handleError()
 
   constructor(mod: RDKitModule) {
-    this.#mod = mod;
+    this.mod = mod;
   }
 
-  #activate(): void {
-    if (this.#capture) return;
-    const fn = this.#enableLogging ? this.#mod.set_log_tee : this.#mod.set_log_capture;
-    this.#capture = fn('rdApp.error') ?? null;
+  private activate(): void {
+    if (this.capture) return;
+    const fn = this.enableLogging ? this.mod.set_log_tee : this.mod.set_log_capture;
+    this.capture = fn('rdApp.error') ?? null;
   }
 
   /**
@@ -71,22 +71,22 @@ export class RDKitLogger {
    * if already active; otherwise applies enable/disable_logging for the no-capture case.
    */
   setEnableLogging(enable: boolean): void {
-    this.#enableLogging = enable;
-    if (this.#capture) {
-      this.#capture.delete();
-      this.#capture = null;
-      this.#activate();
+    this.enableLogging = enable;
+    if (this.capture) {
+      this.capture.delete();
+      this.capture = null;
+      this.activate();
     } else {
-      enable ? this.#mod.enable_logging('rdApp.error') : this.#mod.disable_logging('rdApp.error');
+      enable ? this.mod.enable_logging('rdApp.error') : this.mod.disable_logging('rdApp.error');
     }
   }
 
   /** Single callback slot — replaces any previous. Returns cleanup function. */
   addCallback(fn: RDKitFailCallback): () => void {
-    this.#callback = fn;
-    this.#activate();
+    this.callback = fn;
+    this.activate();
     return () => {
-      if (this.#callback === fn) this.#callback = null;
+      if (this.callback === fn) this.callback = null;
     };
   }
 
@@ -96,10 +96,10 @@ export class RDKitLogger {
    * Fast path: no-op when neither throwOnError nor capture is active.
    */
   reset(throwOnError: boolean): void {
-    this.#throwOnError = throwOnError;
-    if (!throwOnError && !this.#capture) return;
-    if (throwOnError) this.#activate();
-    this.#capture?.clear_buffer();
+    this.throwOnError = throwOnError;
+    if (!throwOnError && !this.capture) return;
+    if (throwOnError) this.activate();
+    this.capture?.clear_buffer();
   }
 
   /**
@@ -107,10 +107,10 @@ export class RDKitLogger {
    * No-op when reset() took the fast path (capture still null).
    */
   handleError(input: string | Uint8Array, operation: RDKitParseOperation): void {
-    if (!this.#capture) return;
-    const message = this.#capture.get_buffer().trim();
-    this.#capture.clear_buffer();
-    this.#callback?.({ input, message, operation });
-    if (this.#throwOnError) throw new RDKitParseError(input, message);
+    if (!this.capture) return;
+    const message = this.capture.get_buffer().trim();
+    this.capture.clear_buffer();
+    this.callback?.({ input, message, operation });
+    if (this.throwOnError) throw new RDKitParseError(input, message);
   }
 }

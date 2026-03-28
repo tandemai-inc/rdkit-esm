@@ -21,12 +21,12 @@ import {
  * ```
  */
 export class Reaction implements Disposable {
-  #jsReaction: JSReaction | null;
-  #module: RDKitModule;
+  protected _jsReaction: JSReaction | null;
+  protected module: RDKitModule;
 
   constructor(jsReaction: JSReaction, module: RDKitModule) {
-    this.#jsReaction = jsReaction;
-    this.#module = module;
+    this._jsReaction = jsReaction;
+    this.module = module;
   }
 
   /**
@@ -34,10 +34,10 @@ export class Reaction implements Disposable {
    * @throws If the reaction has been deleted.
    */
   get jsReaction(): JSReaction {
-    if (!this.#jsReaction) {
+    if (!this._jsReaction) {
       throw new Error('Reaction has been deleted');
     }
-    return this.#jsReaction;
+    return this._jsReaction;
   }
 
   /**
@@ -59,9 +59,9 @@ export class Reaction implements Disposable {
     let molList: MolList;
 
     if (isMolArray(reactants)) {
-      molList = fromMolArraytoMolList(reactants, this.#module);
+      molList = fromMolArraytoMolList(reactants, this.module);
     } else {
-      molList = fromStringArraytoMolList(reactants, this.#module);
+      molList = fromStringArraytoMolList(reactants, this.module);
     }
 
     const products = this.jsReaction.run_reactants(molList, maxProducts);
@@ -77,7 +77,7 @@ export class Reaction implements Disposable {
       while (!productSet.at_end()) {
         const jsMol = productSet.next();
         if (!jsMol) break;
-        mols.push(new Mol(jsMol, this.#module));
+        mols.push(new Mol(jsMol, this.module));
       }
       productSet.delete();
       result.push(mols);
@@ -125,8 +125,8 @@ export class Reaction implements Disposable {
    * @see {@link https://emscripten.org/docs/porting/connecting_cpp_and_javascript/embind.html#memory-management | Emscripten docs}
    */
   delete(): void {
-    this.#jsReaction?.delete();
-    this.#jsReaction = null;
+    this._jsReaction?.delete();
+    this._jsReaction = null;
   }
 
   /** Disposable support — allows use with the `using` keyword */

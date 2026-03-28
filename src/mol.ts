@@ -44,12 +44,12 @@ import { Fingerprint } from './fingerprints/fingerprint.ts';
  * ```
  */
 export class Mol implements Disposable {
-  #jsMol: JSMol | null;
-  #module: RDKitModule;
+  protected _jsMol: JSMol | null;
+  protected module: RDKitModule;
 
   constructor(jsMol: JSMol, module: RDKitModule) {
-    this.#jsMol = jsMol;
-    this.#module = module;
+    this._jsMol = jsMol;
+    this.module = module;
   }
 
   /**
@@ -57,10 +57,10 @@ export class Mol implements Disposable {
    * @throws If the molecule has been deleted.
    */
   get jsMol(): JSMol {
-    if (!this.#jsMol) {
+    if (!this._jsMol) {
       throw new Error('Mol has been deleted');
     }
-    return this.#jsMol;
+    return this._jsMol;
   }
 
   /**
@@ -73,7 +73,7 @@ export class Mol implements Disposable {
     if (query instanceof Mol) {
       return [query.jsMol, false];
     }
-    const qmol = this.#module.get_qmol(query);
+    const qmol = this.module.get_qmol(query);
     if (!qmol) {
       throw new Error(`Invalid SMARTS query: ${query}`);
     }
@@ -148,7 +148,7 @@ export class Mol implements Disposable {
    */
   getInchikey(args?: InChI_Flags[]): string {
     const inchi = this.getInchi(args);
-    return this.#module.get_inchikey_for_inchi(inchi);
+    return this.module.get_inchikey_for_inchi(inchi);
   }
 
   /**
@@ -469,11 +469,11 @@ export class Mol implements Disposable {
   zipWith(other: Mol, options?: RDKitMolZipOptions): void {
     const mol = this.jsMol;
     const newMol = options
-      ? this.#module.molzip(mol, other.jsMol, JSON.stringify(options))
-      : this.#module.molzip(mol, other.jsMol);
+      ? this.module.molzip(mol, other.jsMol, JSON.stringify(options))
+      : this.module.molzip(mol, other.jsMol);
     if (!newMol || !newMol.is_valid()) return;
     mol.delete();
-    this.#jsMol = newMol;
+    this._jsMol = newMol;
   }
 
   // -- Coordinate generation --
@@ -587,7 +587,7 @@ export class Mol implements Disposable {
     const mols = new MolArray();
     for (let i = 0; i < molList.size(); i++) {
       const jsMol = molList.at(i);
-      if (jsMol) mols.push(new Mol(jsMol, this.#module));
+      if (jsMol) mols.push(new Mol(jsMol, this.module));
     }
     molList.delete();
 
@@ -608,14 +608,14 @@ export class Mol implements Disposable {
 
   /** Returns a copy of the molecule */
   copy(): Mol {
-    return new Mol(this.jsMol.copy(), this.#module);
+    return new Mol(this.jsMol.copy(), this.module);
   }
 
   // -- Lifecycle --
 
   /** Returns true if the underlying C++ object has been deleted */
   get isDeleted(): boolean {
-    return this.#jsMol === null || this.#jsMol.isDeleted();
+    return this._jsMol === null || this._jsMol.isDeleted();
   }
 
   /**
@@ -624,8 +624,8 @@ export class Mol implements Disposable {
    * @see {@link https://emscripten.org/docs/porting/connecting_cpp_and_javascript/embind.html#memory-management | Emscripten docs}
    */
   delete(): void {
-    this.#jsMol?.delete();
-    this.#jsMol = null;
+    this._jsMol?.delete();
+    this._jsMol = null;
   }
 
   /** Disposable support — allows use with the `using` keyword */
