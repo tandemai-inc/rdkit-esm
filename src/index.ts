@@ -12,9 +12,11 @@ export type {
   RDKitGetMolOptions,
   RDKitGetQMolOptions,
   RDKitGetRxnOptions,
+  RDKitMmpaFragsOptions,
 } from './types/rdkit-esm.typings.ts';
 export type { RGDRow } from './rgd.ts';
 export { Mol } from './mol.ts';
+export type { MMPAFragmentation, RDKitMmpaFragsResult } from './mol.ts';
 export { MolArray } from './mol-array.ts';
 export { Reaction } from './reaction.ts';
 export { Fingerprint } from './fingerprints/fingerprint.ts';

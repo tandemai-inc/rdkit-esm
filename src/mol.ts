@@ -23,11 +23,44 @@ import type {
   RDKitGetCxSmilesOptions,
   RDKitGetUint8ArrayOptions,
   RDKitCondenseAbbreviationsOptions,
+  RDKitMmpaFragsOptions,
 } from './types/rdkit-esm.typings.ts';
 import { DEFAULT_MAX_COVERAGE, DEFAULT_USE_LINKERS } from './abbreviations/abbreviations.ts';
 import { buildCxSmilesRawOptions } from './formats/cxsmiles.ts';
 import { buildGetMolAsUint8ArrayOptions } from './formats/pickle.ts';
 import { Fingerprint } from './fingerprints/fingerprint.ts';
+
+export type MMPAFragmentation = {
+  /**
+   * Core fragment with dummy atoms ([*:n]) at cut points.
+   *
+   * @remarks For single-cut fragmentations, this is the largest fragment
+   * after splitting the combined sidechains mol. This differs from the
+   * raw RDKit result, which returns no core for single-cut pairs.
+   */
+  core: Mol;
+  /**
+   * Sidechains fragment with dummy atoms ([*:n]) at cut points.
+   * For 2+ cut, this is the combined sidechains mol returned by RDKit.
+   * For single-cut, this is the smallest fragment after splitting.
+   * Distinct sidechains can be obtained with `sidechains.getFrags()`.
+   * `molzip(core, sidechains)` reconstructs the original molecule.
+   */
+  sidechains: Mol;
+};
+
+export type RDKitMmpaFragsResult = {
+  /** Core fragments. */
+  cores: MolArray;
+  /** Sidechains fragments. */
+  sidechains: MolArray;
+  /** Number of fragmentations. */
+  readonly length: number;
+  /** Iterate over fragmentations by index. */
+  [Symbol.iterator](): Iterator<MMPAFragmentation>;
+  delete(): void;
+  [Symbol.dispose](): void;
+};
 
 /**
  * A wrapper around RDKit's JSMol object providing a typed, camelCase API.
@@ -600,6 +633,82 @@ export class Mol implements Disposable {
       delete: () => mols.delete(),
       [Symbol.dispose]() {
         mols.delete();
+      },
+    };
+  }
+
+  /**
+   * Performs MMPA (Matched Molecular Pairs Analysis) fragmentation.
+   *
+   * Each fragmentation yields a `core` and `sidechains` mol, both with dummy
+   * atoms ([*:n]) at cut points. `mol.zipWith(fragmentation.sidechain, fragmentation.core)`
+   * reconstructs the original molecule.
+   *
+   * @throws If `minCuts < 1` or `maxCuts < minCuts`.
+   *
+   * @warning The returned `RDKitMmpaFragsResult` contains new `Mol` instances
+   * that must be deleted by the caller to avoid memory leaks.
+   */
+  getMmpaFrags(options: RDKitMmpaFragsOptions): RDKitMmpaFragsResult {
+    const { minCuts, maxCuts, fragmentableBondLimit } = options;
+    if (minCuts < 1) throw new Error('getMmpaFrags: minCuts must be at least 1');
+    if (maxCuts < minCuts)
+      throw new Error(`getMmpaFrags: maxCuts (${maxCuts}) must be >= minCuts (${minCuts})`);
+
+    const raw = this.jsMol.get_mmpa_frags(minCuts, maxCuts, fragmentableBondLimit);
+
+    const cores = new MolArray();
+    const sidechains = new MolArray();
+    const fragmentations: MMPAFragmentation[] = [];
+
+    if (raw?.cores && raw?.sidechains) {
+      const n = raw.cores.size();
+      for (let i = 0; i < n; i++) {
+        const rawCore = raw.cores.at(i);
+        const rawSidechain = raw.sidechains.at(i);
+        if (!rawSidechain) continue;
+
+        if (rawCore) {
+          // 2+ cut: core and sidechains come directly from RDKit
+          const core = new Mol(rawCore, this.module);
+          const sidechain = new Mol(rawSidechain, this.module);
+          cores.push(core);
+          sidechains.push(sidechain);
+          fragmentations.push({ core, sidechains: sidechain });
+        } else {
+          // 1-cut: RDKit returns no core; split combined sidechains mol
+          // Largest fragment (by atom count) becomes core, smallest becomes sidechains
+          const combined = new Mol(rawSidechain, this.module);
+          const { mols: frags } = combined.getFrags();
+          combined.delete();
+          frags.sort((a, b) => b.numAtoms - a.numAtoms);
+          const core = frags[0];
+          const sidechain = frags[1];
+          cores.push(core);
+          sidechains.push(sidechain);
+          fragmentations.push({ core, sidechains: sidechain });
+        }
+      }
+      raw.cores.delete();
+      raw.sidechains.delete();
+    }
+
+    return {
+      cores,
+      sidechains,
+      get length() {
+        return fragmentations.length;
+      },
+      *[Symbol.iterator]() {
+        yield* fragmentations;
+      },
+      delete() {
+        cores.delete();
+        sidechains.delete();
+      },
+      [Symbol.dispose]() {
+        cores.delete();
+        sidechains.delete();
       },
     };
   }

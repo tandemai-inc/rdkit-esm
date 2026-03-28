@@ -62,6 +62,18 @@ export type RDKitGetMolOptions = RDKitGetMolOpt & { throwOnError: boolean };
 export type RDKitGetQMolOptions = { throwOnError: boolean };
 export type RDKitGetRxnOptions = RDKitRxnDetails & { throwOnError: boolean };
 
+export type RDKitMmpaFragsOptions = {
+  /** Minimum number of bonds to simultaneously cut. */
+  minCuts: number;
+  /** Maximum number of bonds to simultaneously cut. */
+  maxCuts: number;
+  /**
+   * Fragmentation is aborted when the molecule has more cuttable bonds
+   * than this limit. Prevents combinatorial explosion on highly connected molecules.
+   */
+  fragmentableBondLimit: number;
+};
+
 export type RDKitCondenseAbbreviationsOptions = {
   /** @default 0.4 */
   maxCoverage: number;

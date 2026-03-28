@@ -1130,3 +1130,106 @@ describe('test_get_v3K_v2K_molblock', () => {
     expect(mb).toContain('  5  2  9  0');
   });
 });
+
+describe('test_get_mmpa_frags', () => {
+  const SMILES = 'CC(C)CCN1C(=O)CN=C(C2CCCCC2)c2ccccc21';
+
+  it('throws for minCuts < 1', () => {
+    using mol = rdkit.getMol(SMILES)!;
+    expect(() => mol.getMmpaFrags({ minCuts: 0, maxCuts: 2, fragmentableBondLimit: 20 })).toThrow();
+  });
+
+  it('throws for maxCuts < minCuts', () => {
+    using mol = rdkit.getMol(SMILES)!;
+    expect(() => mol.getMmpaFrags({ minCuts: 2, maxCuts: 1, fragmentableBondLimit: 20 })).toThrow();
+  });
+
+  it('minCuts=2 maxCuts=2: returns 11 fragmentations with expected core and sidechains SMILES', () => {
+    using mol = rdkit.getMol(SMILES)!;
+    using result = mol.getMmpaFrags({ minCuts: 2, maxCuts: 2, fragmentableBondLimit: 20 });
+
+    const expectedCores = [
+      'O=C1CN=C(C2CCCCC2)c2ccccc2N1CCC([*:1])[*:2]',
+      'CC([*:1])[*:2]',
+      'CC(C[*:2])[*:1]',
+      'CC(CC[*:2])[*:1]',
+      'CC(CCN1C(=O)CN=C([*:2])c2ccccc21)[*:1]',
+      'C([*:1])[*:2]',
+      'C(C[*:2])[*:1]',
+      'O=C1CN=C([*:2])c2ccccc2N1CC[*:1]',
+      'C([*:1])[*:2]',
+      'O=C1CN=C([*:1])c2ccccc2N1C[*:2]',
+      'O=C1CN=C([*:1])c2ccccc2N1[*:2]',
+    ];
+    const expectedSidechains = [
+      'C[*:1].C[*:2]',
+      'C[*:1].O=C1CN=C(C2CCCCC2)c2ccccc2N1CC[*:2]',
+      'C[*:1].O=C1CN=C(C2CCCCC2)c2ccccc2N1C[*:2]',
+      'C[*:1].O=C1CN=C(C2CCCCC2)c2ccccc2N1[*:2]',
+      'C1CCC([*:2])CC1.C[*:1]',
+      'CC(C)[*:1].O=C1CN=C(C2CCCCC2)c2ccccc2N1C[*:2]',
+      'CC(C)[*:1].O=C1CN=C(C2CCCCC2)c2ccccc2N1[*:2]',
+      'C1CCC([*:2])CC1.CC(C)[*:1]',
+      'CC(C)C[*:1].O=C1CN=C(C2CCCCC2)c2ccccc2N1[*:2]',
+      'C1CCC([*:1])CC1.CC(C)C[*:2]',
+      'C1CCC([*:1])CC1.CC(C)CC[*:2]',
+    ];
+
+    expect(result.length).toBe(11);
+    expect(result.cores.length).toBe(11);
+    expect(result.sidechains.length).toBe(11);
+
+    let i = 0;
+    for (const { core, sidechains } of result) {
+      expect(core.getSmiles()).toBe(expectedCores[i]);
+      expect(sidechains.getSmiles()).toBe(expectedSidechains[i]);
+      core.zipWith(sidechains);
+      expect(core.getSmiles()).toBe(SMILES);
+      i++;
+    }
+  });
+
+  it('minCuts=1 maxCuts=1: returns 5 fragmentations, cores normalized to largest fragment', () => {
+    using mol = rdkit.getMol(SMILES)!;
+    using result = mol.getMmpaFrags({ minCuts: 1, maxCuts: 1, fragmentableBondLimit: 20 });
+
+    const expectedCores = [
+      'CC(CCN1C(=O)CN=C(C2CCCCC2)c2ccccc21)[*:1]',
+      'O=C1CN=C(C2CCCCC2)c2ccccc2N1CC[*:1]',
+      'O=C1CN=C(C2CCCCC2)c2ccccc2N1C[*:1]',
+      'O=C1CN=C(C2CCCCC2)c2ccccc2N1[*:1]',
+      'CC(C)CCN1C(=O)CN=C([*:1])c2ccccc21',
+    ];
+
+    const expectedSidechains = [
+      'C[*:1]',
+      'CC(C)[*:1]',
+      'CC(C)C[*:1]',
+      'CC(C)CC[*:1]',
+      'C1CCC([*:1])CC1',
+    ];
+    // For single-cut, RDKit returns no core — wrapper assigns largest fragment as core
+    expect(result.length).toBe(5);
+    expect(result.cores.length).toBe(5);
+    expect(result.sidechains.length).toBe(5);
+
+    // Each core must have >= atoms than its sidechains
+    let i = 0;
+    for (const { core, sidechains } of result) {
+      expect(core.numAtoms).toBeGreaterThanOrEqual(sidechains.numAtoms);
+      expect(core.getSmiles()).toBe(expectedCores[i]);
+      expect(sidechains.getSmiles()).toBe(expectedSidechains[i]);
+      core.zipWith(sidechains);
+      expect(core.getSmiles()).toBe(SMILES);
+      i++;
+    }
+  });
+
+  it('returns empty result when fragmentableBondLimit is too low', () => {
+    using mol = rdkit.getMol(SMILES)!;
+    using result = mol.getMmpaFrags({ minCuts: 2, maxCuts: 2, fragmentableBondLimit: 1 });
+    expect(result.length).toBe(0);
+    expect(result.cores.length).toBe(0);
+    expect(result.sidechains.length).toBe(0);
+  });
+});
