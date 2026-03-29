@@ -1,6 +1,7 @@
 import { Mol } from './mol.ts';
 import { fromMolArraytoMolList, fromStringArraytoMolList, isMolArray } from './mol-array.ts';
 import { Reaction } from './reaction.ts';
+import { SubstructLibraryWrapper } from './substruct-library.ts';
 import type { RDKitModule, MolList, JSMol, JSReaction } from './types/rdkit-minimalib-typings';
 import { decomposeRGroups, type RGDResult } from './rgd.ts';
 import type {
@@ -18,6 +19,7 @@ import type {
   RDKitGetMolOptions,
   RDKitGetQMolOptions,
   RDKitGetRxnOptions,
+  SubstructLibraryOptions,
 } from './types/rdkit-esm.typings.ts';
 
 /** Result of a Maximum Common Substructure (MCS) computation */
@@ -232,6 +234,21 @@ export class RDKit {
     options?: Partial<RDKitGetRgdOptions>,
   ): RGDResult | null {
     return decomposeRGroups(core, molecules, options, this.mod);
+  }
+
+  /**
+   * Creates an empty {@link SubstructLibraryWrapper} for batch substructure searching.
+   *
+   * @example
+   * ```ts
+   * using lib = rdkit.createSubstructLibrary();
+   * for (const smi of smilesList) lib.add(smi);
+   * const result = lib.getMatches('C1CCCCN1'); // SMARTS query
+   * console.log(result.count, Array.from(result.indices));
+   * ```
+   */
+  createSubstructLibrary(options?: SubstructLibraryOptions): SubstructLibraryWrapper {
+    return new SubstructLibraryWrapper(this.mod, options);
   }
 
   molzip(mol1: Mol, mol2: Mol, options?: Partial<RDKitMolZipOptions>): Mol | null {

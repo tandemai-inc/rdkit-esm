@@ -13,6 +13,9 @@ export type {
   RDKitGetQMolOptions,
   RDKitGetRxnOptions,
   RDKitMmpaFragsOptions,
+  SubstructLibraryOptions,
+  SubstructLibraryAddOptions,
+  SubstructLibrarySearchOptions,
 } from './types/rdkit-esm.typings.ts';
 export type { RGDRow } from './rgd.ts';
 export { Mol } from './mol.ts';
@@ -21,8 +24,11 @@ export { MolArray } from './mol-array.ts';
 export { Reaction } from './reaction.ts';
 export { Fingerprint } from './fingerprints/fingerprint.ts';
 export { isRDKitParseError } from './logger.ts';
+export { SubstructLibraryWrapper } from './substruct-library.ts';
 
 // Re-export useful types for consumers
+export type { SubstructLibraryEntry, SubstructLibrarySearchResult } from './substruct-library.ts';
+
 export type {
   RDKitGetMolOpt,
   RDKitGetMolBlockOptions,

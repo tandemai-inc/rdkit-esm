@@ -3,7 +3,9 @@
  * These cover core chemistry data functionality: SMILES, InChI, molblock, JSON,
  * descriptors, SVG, substructure, properties, fragments, and parsing options.
  */
-import { describe, it, expect, beforeAll } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { initRDKit, type RDKit } from '../src/index.ts';
 
 let rdkit: RDKit;
@@ -1231,5 +1233,180 @@ describe('test_get_mmpa_frags', () => {
     expect(result.length).toBe(0);
     expect(result.cores.length).toBe(0);
     expect(result.sidechains.length).toBe(0);
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// test_substruct_library (ported from tests.js)
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe('test_substruct_library', () => {
+  const COMPOUNDS_SMI = join(__dirname, 'data/compounds.smi');
+  const QUERY_SMARTS = 'C1CCCCN1';
+  const EXPECTED_INDICES = new Uint32Array([39, 64, 80, 127, 128, 234, 240]);
+  const COMPOUND_SMILES = readFileSync(COMPOUNDS_SMI, 'utf8')
+    .split('\n')
+    .map((l) => l.split('\t')[0].trim())
+    .filter(Boolean);
+
+  let compoundsLib: ReturnType<typeof rdkit.createSubstructLibrary>;
+
+  beforeAll(() => {
+    compoundsLib = rdkit.createSubstructLibrary();
+    for (const smi of COMPOUND_SMILES) compoundsLib.add(smi, { trusted: true });
+  });
+
+  afterAll(() => {
+    compoundsLib.delete();
+  });
+
+  it('empty library returns no matches', () => {
+    using lib = rdkit.createSubstructLibrary();
+    const result = lib.getMatches(QUERY_SMARTS);
+    expect(result.count).toBe(0);
+    expect(result.indices.length).toBe(0);
+  });
+
+  it('empty query SMARTS matches nothing', () => {
+    using lib = rdkit.createSubstructLibrary();
+    lib.add('C', { trusted: true });
+    const result = lib.getMatches('');
+    expect(result.count).toBe(0);
+  });
+
+  it('size reflects number of added molecules', () => {
+    using lib = rdkit.createSubstructLibrary();
+    expect(lib.size).toBe(0);
+    lib.add('C', { trusted: true });
+    lib.add('CC', { trusted: true });
+    expect(lib.size).toBe(2);
+  });
+
+  it('finds expected matches in compound library (default fingerprints)', () => {
+    expect(compoundsLib.size).toBe(300);
+    const result = compoundsLib.getMatches(QUERY_SMARTS);
+    expect(result.count).toBe(EXPECTED_INDICES.length);
+    expect(result.indices).toEqual(EXPECTED_INDICES);
+  });
+
+  it('finds same matches with disableFingerprints (brute-force)', () => {
+    using lib = rdkit.createSubstructLibrary({ disableFingerprints: true });
+    for (const smi of COMPOUND_SMILES) lib.add(smi, { trusted: true });
+    const result = lib.getMatches(QUERY_SMARTS);
+    expect(result.indices).toEqual(EXPECTED_INDICES);
+  });
+
+  it('addPrecomputed round-trip produces identical results', () => {
+    // Extract SMILES + fingerprints from shared lib, rebuild in lib2
+    using lib2 = rdkit.createSubstructLibrary();
+    for (let i = 0; i < compoundsLib.size; i++) {
+      const { smiles, patternFp } = compoundsLib.at(i);
+      lib2.addPrecomputed(smiles, patternFp);
+    }
+
+    const r1 = compoundsLib.getMatches(QUERY_SMARTS);
+    const r2 = lib2.getMatches(QUERY_SMARTS);
+    expect(r2.indices).toEqual(r1.indices);
+  });
+
+  it('iterator yields entries with correct indices and smiles', () => {
+    using lib = rdkit.createSubstructLibrary();
+    lib.add('C1CCCCN1', { trusted: true });
+    lib.add('c1ccccc1', { trusted: true });
+    lib.add('CC(=O)O', { trusted: true });
+
+    const result = lib.getMatches(QUERY_SMARTS);
+    expect(result.count).toBe(1);
+
+    const entries = [...result];
+    expect(entries.length).toBe(1);
+    expect(entries[0].index).toBe(0);
+    expect(typeof entries[0].smiles).toBe('string');
+    entries[0].delete();
+  });
+
+  it('at() provides lazy mol getter that is disposable', () => {
+    using lib = rdkit.createSubstructLibrary();
+    lib.add('c1ccccc1', { trusted: true });
+
+    const entry = lib.at(0);
+    expect(entry.smiles).toBeTruthy();
+    expect(entry.patternFp).toBeTruthy();
+
+    // Accessing mol lazily creates a Mol
+    using mol = entry.mol!;
+    expect(mol).not.toBeNull();
+    expect(mol.getSmiles()).toBe('c1ccccc1');
+  });
+
+  it('respects maxResults option', () => {
+    const result = compoundsLib.getMatches(QUERY_SMARTS, { maxResults: 3 });
+    expect(result.count).toBe(3);
+    expect(result.indices).toEqual(EXPECTED_INDICES.subarray(0, 3));
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// test_substruct_library_merge_hs (ported from tests.js)
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe('test_substruct_library_merge_hs', () => {
+  const BENZENE_MOLBLOCK = `
+  MJ201100          2D
+
+  6  6  0  0  0  0  0  0  0  0999 V2000
+   -1.0491    0.7134    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0
+   -1.7635    0.3009    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0
+   -1.7635   -0.5241    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0
+   -1.0491   -0.9366    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0
+   -0.3346   -0.5241    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0
+   -0.3346    0.3009    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0
+  2  3  1  0  0  0  0
+  5  6  2  0  0  0  0
+  1  2  2  0  0  0  0
+  6  1  1  0  0  0  0
+  3  4  2  0  0  0  0
+  4  5  1  0  0  0  0
+M  END`;
+
+  it('benzene query matches benzene and toluene', () => {
+    using lib = rdkit.createSubstructLibrary();
+    using mol1 = rdkit.getMol('c1ccccc1')!;
+    using mol2 = rdkit.getMol('Cc1ccccc1')!;
+    lib.add(mol1);
+    lib.add(mol2);
+
+    using query = rdkit.getMol(BENZENE_MOLBLOCK)!;
+    const result = lib.getMatches(query);
+    expect(Array.from(result.indices)).toEqual([0, 1]);
+  });
+
+  it('query with explicit H matches nothing', () => {
+    using lib = rdkit.createSubstructLibrary();
+    using mol1 = rdkit.getMol('c1ccccc1')!;
+    using mol2 = rdkit.getMol('Cc1ccccc1')!;
+    lib.add(mol1);
+    lib.add(mol2);
+
+    using query = rdkit.getMol(BENZENE_MOLBLOCK)!;
+    const queryWithHs = query.addHs();
+    using queryHsMol = rdkit.getMol(queryWithHs)!;
+    const result = lib.getMatches(queryHsMol);
+    expect(result.count).toBe(0);
+  });
+
+  it('query with explicit H and mergeQueryHs matches only unsubstituted benzene', () => {
+    using lib = rdkit.createSubstructLibrary();
+    using mol1 = rdkit.getMol('c1ccccc1')!;
+    using mol2 = rdkit.getMol('Cc1ccccc1')!;
+    lib.add(mol1);
+    lib.add(mol2);
+
+    using query = rdkit.getMol(BENZENE_MOLBLOCK)!;
+    const queryWithHs = query.addHs();
+    using queryHsMol = rdkit.getMol(queryWithHs)!;
+    using queryMerged = rdkit.getMol(queryHsMol.getMolblock(), { mergeQueryHs: true })!;
+    const result = lib.getMatches(queryMerged);
+    expect(Array.from(result.indices)).toEqual([0]);
   });
 });

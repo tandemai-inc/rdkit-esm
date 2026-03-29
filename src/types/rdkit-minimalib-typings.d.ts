@@ -688,6 +688,9 @@ export interface SubstructLibrary {
     numThreads: number,
     maxResults: number,
   ): Uint32Array;
+
+  delete(): void;
+  isDeleted(): boolean;
 }
 
 export interface MolList {
@@ -761,7 +764,7 @@ export interface StringList extends EmscriptenVector<string> {}
 /** Returns a new SubstructLibrary instance */
 interface SubstructLibraryConstructor {
   new (): SubstructLibrary;
-  new (initialCapacity: number): SubstructLibrary;
+  new (numBits: number): SubstructLibrary;
 }
 
 interface MolListConstructor {

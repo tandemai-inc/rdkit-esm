@@ -2,6 +2,7 @@
 
 ## [vX.X.X] Unreleased
 
+- Implement Substructure Library: `RDKit.createSubstructLibrary()`, fix types
 - Implement MMPA fragmentation: `Mol.getMmpaFrags()`
 - Port tests from rdkit minimalib tests.js
 - Missing types: colour palette presets, Drawing extents, highlightAtomRadii, sanitize flags, assignCIPLabels, setAromaticBonds, strictValenceCheck, parseProperties, parseConformers, get_frags options
