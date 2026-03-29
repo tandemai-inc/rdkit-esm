@@ -2,6 +2,8 @@
 
 ## [vX.X.X] Unreleased
 
+## [v0.6.0]
+
 - Add Dice, Cosine, Tversky and Asymmetric FP similarity
 - Implement Substructure Library: `RDKit.createSubstructLibrary()`, fix types
 - Implement MMPA fragmentation: `Mol.getMmpaFrags()`
