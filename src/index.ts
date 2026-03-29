@@ -23,6 +23,10 @@ export type { MMPAFragmentation, RDKitMmpaFragsResult } from './mol.ts';
 export { MolArray } from './mol-array.ts';
 export { Reaction } from './reaction.ts';
 export { Fingerprint } from './fingerprints/fingerprint.ts';
+export type {
+  SimilarityMetric,
+  TverskySimilarityOptions,
+} from './fingerprints/fingerprints.types.ts';
 export { isRDKitParseError } from './logger.ts';
 export { SubstructLibraryWrapper } from './substruct-library.ts';
 
