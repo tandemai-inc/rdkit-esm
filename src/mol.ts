@@ -15,6 +15,7 @@ import type {
   RDKitAlignedCoordsOptions,
   RDKitGetSmilesOptions,
   RDKitMolZipOptions,
+  RDKitGetFragsOptions,
 } from './types/rdkit-minimalib-json-typings';
 import { MolArray } from './mol-array.ts';
 import type { InChI_Flags } from './types/inchi';
@@ -22,11 +23,44 @@ import type {
   RDKitGetCxSmilesOptions,
   RDKitGetUint8ArrayOptions,
   RDKitCondenseAbbreviationsOptions,
+  RDKitMmpaFragsOptions,
 } from './types/rdkit-esm.typings.ts';
 import { DEFAULT_MAX_COVERAGE, DEFAULT_USE_LINKERS } from './abbreviations/abbreviations.ts';
 import { buildCxSmilesRawOptions } from './formats/cxsmiles.ts';
 import { buildGetMolAsUint8ArrayOptions } from './formats/pickle.ts';
 import { Fingerprint } from './fingerprints/fingerprint.ts';
+
+export type MMPAFragmentation = {
+  /**
+   * Core fragment with dummy atoms ([*:n]) at cut points.
+   *
+   * @remarks For single-cut fragmentations, this is the largest fragment
+   * after splitting the combined sidechains mol. This differs from the
+   * raw RDKit result, which returns no core for single-cut pairs.
+   */
+  core: Mol;
+  /**
+   * Sidechains fragment with dummy atoms ([*:n]) at cut points.
+   * For 2+ cut, this is the combined sidechains mol returned by RDKit.
+   * For single-cut, this is the smallest fragment after splitting.
+   * Distinct sidechains can be obtained with `sidechains.getFrags()`.
+   * `molzip(core, sidechains)` reconstructs the original molecule.
+   */
+  sidechains: Mol;
+};
+
+export type RDKitMmpaFragsResult = {
+  /** Core fragments. */
+  cores: MolArray;
+  /** Sidechains fragments. */
+  sidechains: MolArray;
+  /** Number of fragmentations. */
+  readonly length: number;
+  /** Iterate over fragmentations by index. */
+  [Symbol.iterator](): Iterator<MMPAFragmentation>;
+  delete(): void;
+  [Symbol.dispose](): void;
+};
 
 /**
  * A wrapper around RDKit's JSMol object providing a typed, camelCase API.
@@ -43,12 +77,12 @@ import { Fingerprint } from './fingerprints/fingerprint.ts';
  * ```
  */
 export class Mol implements Disposable {
-  #jsMol: JSMol | null;
-  #module: RDKitModule;
+  protected _jsMol: JSMol | null;
+  protected module: RDKitModule;
 
   constructor(jsMol: JSMol, module: RDKitModule) {
-    this.#jsMol = jsMol;
-    this.#module = module;
+    this._jsMol = jsMol;
+    this.module = module;
   }
 
   /**
@@ -56,10 +90,10 @@ export class Mol implements Disposable {
    * @throws If the molecule has been deleted.
    */
   get jsMol(): JSMol {
-    if (!this.#jsMol) {
+    if (!this._jsMol) {
       throw new Error('Mol has been deleted');
     }
-    return this.#jsMol;
+    return this._jsMol;
   }
 
   /**
@@ -72,7 +106,7 @@ export class Mol implements Disposable {
     if (query instanceof Mol) {
       return [query.jsMol, false];
     }
-    const qmol = this.#module.get_qmol(query);
+    const qmol = this.module.get_qmol(query);
     if (!qmol) {
       throw new Error(`Invalid SMARTS query: ${query}`);
     }
@@ -82,7 +116,7 @@ export class Mol implements Disposable {
   // -- String representations --
 
   /** Returns the canonical SMILES string */
-  getSmiles(options?: RDKitGetSmilesOptions): string {
+  getSmiles(options?: Partial<RDKitGetSmilesOptions>): string {
     return options ? this.jsMol.get_smiles(JSON.stringify(options)) : this.jsMol.get_smiles();
   }
 
@@ -93,7 +127,7 @@ export class Mol implements Disposable {
   }
 
   /** Returns the SMARTS string */
-  getSmarts(options?: RDKitGetSmilesOptions): string {
+  getSmarts(options?: Partial<RDKitGetSmilesOptions>): string {
     return options ? this.jsMol.get_smarts(JSON.stringify(options)) : this.jsMol.get_smarts();
   }
 
@@ -147,7 +181,7 @@ export class Mol implements Disposable {
    */
   getInchikey(args?: InChI_Flags[]): string {
     const inchi = this.getInchi(args);
-    return this.#module.get_inchikey_for_inchi(inchi);
+    return this.module.get_inchikey_for_inchi(inchi);
   }
 
   /**
@@ -468,11 +502,11 @@ export class Mol implements Disposable {
   zipWith(other: Mol, options?: RDKitMolZipOptions): void {
     const mol = this.jsMol;
     const newMol = options
-      ? this.#module.molzip(mol, other.jsMol, JSON.stringify(options))
-      : this.#module.molzip(mol, other.jsMol);
+      ? this.module.molzip(mol, other.jsMol, JSON.stringify(options))
+      : this.module.molzip(mol, other.jsMol);
     if (!newMol || !newMol.is_valid()) return;
     mol.delete();
-    this.#jsMol = newMol;
+    this._jsMol = newMol;
   }
 
   // -- Coordinate generation --
@@ -574,8 +608,10 @@ export class Mol implements Disposable {
    * manually deleted by the caller to avoid memory leaks.
    * @returns An object with atom/fragment mappings and a `MolArray` of fragments
    */
-  getFrags() {
-    const { mappings, molList } = this.jsMol.get_frags();
+  getFrags(options?: Partial<RDKitGetFragsOptions>) {
+    const { mappings, molList } = options
+      ? this.jsMol.get_frags(JSON.stringify(options))
+      : this.jsMol.get_frags();
     const parsed = JSON.parse(mappings) as {
       frags: number[];
       fragsMolAtomMapping: number[][];
@@ -584,7 +620,7 @@ export class Mol implements Disposable {
     const mols = new MolArray();
     for (let i = 0; i < molList.size(); i++) {
       const jsMol = molList.at(i);
-      if (jsMol) mols.push(new Mol(jsMol, this.#module));
+      if (jsMol) mols.push(new Mol(jsMol, this.module));
     }
     molList.delete();
 
@@ -601,18 +637,94 @@ export class Mol implements Disposable {
     };
   }
 
+  /**
+   * Performs MMPA (Matched Molecular Pairs Analysis) fragmentation.
+   *
+   * Each fragmentation yields a `core` and `sidechains` mol, both with dummy
+   * atoms ([*:n]) at cut points. `mol.zipWith(fragmentation.sidechain, fragmentation.core)`
+   * reconstructs the original molecule.
+   *
+   * @throws If `minCuts < 1` or `maxCuts < minCuts`.
+   *
+   * @warning The returned `RDKitMmpaFragsResult` contains new `Mol` instances
+   * that must be deleted by the caller to avoid memory leaks.
+   */
+  getMmpaFrags(options: RDKitMmpaFragsOptions): RDKitMmpaFragsResult {
+    const { minCuts, maxCuts, fragmentableBondLimit } = options;
+    if (minCuts < 1) throw new Error('getMmpaFrags: minCuts must be at least 1');
+    if (maxCuts < minCuts)
+      throw new Error(`getMmpaFrags: maxCuts (${maxCuts}) must be >= minCuts (${minCuts})`);
+
+    const raw = this.jsMol.get_mmpa_frags(minCuts, maxCuts, fragmentableBondLimit);
+
+    const cores = new MolArray();
+    const sidechains = new MolArray();
+    const fragmentations: MMPAFragmentation[] = [];
+
+    if (raw?.cores && raw?.sidechains) {
+      const n = raw.cores.size();
+      for (let i = 0; i < n; i++) {
+        const rawCore = raw.cores.at(i);
+        const rawSidechain = raw.sidechains.at(i);
+        if (!rawSidechain) continue;
+
+        if (rawCore) {
+          // 2+ cut: core and sidechains come directly from RDKit
+          const core = new Mol(rawCore, this.module);
+          const sidechain = new Mol(rawSidechain, this.module);
+          cores.push(core);
+          sidechains.push(sidechain);
+          fragmentations.push({ core, sidechains: sidechain });
+        } else {
+          // 1-cut: RDKit returns no core; split combined sidechains mol
+          // Largest fragment (by atom count) becomes core, smallest becomes sidechains
+          const combined = new Mol(rawSidechain, this.module);
+          const { mols: frags } = combined.getFrags();
+          combined.delete();
+          frags.sort((a, b) => b.numAtoms - a.numAtoms);
+          const core = frags[0];
+          const sidechain = frags[1];
+          cores.push(core);
+          sidechains.push(sidechain);
+          fragmentations.push({ core, sidechains: sidechain });
+        }
+      }
+      raw.cores.delete();
+      raw.sidechains.delete();
+    }
+
+    return {
+      cores,
+      sidechains,
+      get length() {
+        return fragmentations.length;
+      },
+      *[Symbol.iterator]() {
+        yield* fragmentations;
+      },
+      delete() {
+        cores.delete();
+        sidechains.delete();
+      },
+      [Symbol.dispose]() {
+        cores.delete();
+        sidechains.delete();
+      },
+    };
+  }
+
   // -- Copy --
 
   /** Returns a copy of the molecule */
   copy(): Mol {
-    return new Mol(this.jsMol.copy(), this.#module);
+    return new Mol(this.jsMol.copy(), this.module);
   }
 
   // -- Lifecycle --
 
   /** Returns true if the underlying C++ object has been deleted */
   get isDeleted(): boolean {
-    return this.#jsMol === null || this.#jsMol.isDeleted();
+    return this._jsMol === null || this._jsMol.isDeleted();
   }
 
   /**
@@ -621,8 +733,8 @@ export class Mol implements Disposable {
    * @see {@link https://emscripten.org/docs/porting/connecting_cpp_and_javascript/embind.html#memory-management | Emscripten docs}
    */
   delete(): void {
-    this.#jsMol?.delete();
-    this.#jsMol = null;
+    this._jsMol?.delete();
+    this._jsMol = null;
   }
 
   /** Disposable support — allows use with the `using` keyword */

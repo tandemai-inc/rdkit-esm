@@ -104,6 +104,25 @@ export type RDKitJson = {
 
 export type DrawColour = [number, number, number, number?];
 export type ColourPalette = { [k: number]: DrawColour };
+export type ColourPaletteName = 'default' | 'avalon' | 'cdk' | 'darkmode' | 'bw';
+
+/** Flags controlling which elements are included when computing drawing extents.
+ *  Each key corresponds to a DrawElement enum value; `true` includes it, `false` excludes it.
+ *  Example: `{ ALL: true, HIGHLIGHTS: false }` includes everything except highlights. */
+export type DrawingExtentsInclude = Partial<
+  Record<
+    | 'NONE'
+    | 'PRESHAPES'
+    | 'BONDS'
+    | 'ATOMLABELS'
+    | 'HIGHLIGHTS'
+    | 'ANNOTATIONS'
+    | 'RADICALS'
+    | 'POSTSHAPES'
+    | 'ALL',
+    boolean
+  >
+>;
 
 export type RDKitDepictionDetails = {
   /** Drawing width in pixels */
@@ -191,7 +210,7 @@ export type RDKitDepictionDetails = {
   /** Defines 10 default colors for highlighting atoms and bonds or reactants in reactions */
   highlightColourPalette: DrawColour[];
   /** The palette used to assign colors to atoms based on atomic number */
-  atomColourPalette: ColourPalette;
+  atomColourPalette: ColourPalette | ColourPaletteName;
   /** Fixes scale to this fraction of draw window width so an average bond is this fraction of the width; -1.0 means no fix */
   fixedScale: number;
   /** Fixes the bond length (and hence the scale) to always be this number of pixels; -1.0 means no fix. If both fixedScale and fixedBondLength are > 0, fixedScale wins */
@@ -216,8 +235,10 @@ export type RDKitDepictionDetails = {
   multiColourHighlightStyle: 'CIRCLEANDLINE' | 'LASSO';
   /** Moves the centre of the drawn molecule to (0,0) */
   centreMoleculesBeforeDrawing: boolean;
-  /** Which elements should be included when computing drawing extents; bitmask of DrawElement flags (PRESHAPES=1, BONDS=2, ATOMLABELS=4, HIGHLIGHTS=8, ANNOTATIONS=16, RADICALS=32, POSTSHAPES=64, ALL=0x7fffffff) */
-  drawingExtentsInclude: number;
+  /** Which elements should be included when computing drawing extents.
+   *  Pass an object with DrawElement flag names as keys and boolean values.
+   *  Example: `{ ALL: true, HIGHLIGHTS: false }` = include everything except highlights. */
+  drawingExtentsInclude: DrawingExtentsInclude;
   /** Draw terminal methyl and related groups as CH3 */
   explicitMethyl: boolean;
   /** Include radicals in the drawing; can be useful to turn off for reactions and queries */
@@ -260,6 +281,8 @@ export type RDKitDepictionDetails = {
   highlightAtomColors: Record<number, DrawColour>;
   /** Per-bond highlight colors, keyed by bond index */
   highlightBondColors: Record<number, DrawColour>;
+  /** Per-atom highlight radii, keyed by atom index */
+  highlightAtomRadii: Record<number, number>;
   /** If true, highlighted hetero atoms are drawn in standard colours rather than black */
   standardColoursForHighlightedAtoms: boolean;
   // Drawing call parameters (parsed from the details JSON by common.h, not part of MolDrawOptions)
@@ -311,23 +334,63 @@ export type RDKitSubstructMatch = {
   bonds: number[];
 };
 
+/**
+ * Flags controlling which sanitization steps are run when `sanitize` is an object.
+ * Each key corresponds to a `MolOps::SanitizeFlags` enum value; `true` enables it,
+ * `false` disables it. Omitted keys are left at their default (all enabled).
+ * Example: `{ SANITIZE_KEKULIZE: false }` runs all steps except kekulization.
+ */
+export type RDKitSanitizeFlags = Partial<
+  Record<
+    | 'SANITIZE_NONE'
+    | 'SANITIZE_CLEANUP'
+    | 'SANITIZE_PROPERTIES'
+    | 'SANITIZE_SYMMRINGS'
+    | 'SANITIZE_KEKULIZE'
+    | 'SANITIZE_FINDRADICALS'
+    | 'SANITIZE_SETAROMATICITY'
+    | 'SANITIZE_SETCONJUGATION'
+    | 'SANITIZE_SETHYBRIDIZATION'
+    | 'SANITIZE_CLEANUPCHIRALITY'
+    | 'SANITIZE_ADJUSTHS'
+    | 'SANITIZE_CLEANUP_ORGANOMETALLICS'
+    | 'SANITIZE_CLEANUPATROPISOMERS'
+    | 'SANITIZE_ALL',
+    boolean
+  >
+>;
+
 export type RDKitGetMolOpt = {
   kekulize: boolean;
   setAromaticity: boolean;
   fastFindRings: boolean;
   mappedDummiesAreRGroups: boolean;
-  sanitize: boolean;
+  /**
+   * `true`/`false` to fully enable/disable sanitization, or a `RDKitSanitizeFlags`
+   * object for partial sanitization (selectively enable/disable individual steps).
+   * @default true
+   */
+  sanitize: boolean | RDKitSanitizeFlags;
   removeHs: boolean;
   assignStereo: boolean;
   mergeQueryHs: boolean;
+  assignCIPLabels: boolean;
   /** Assign chiral types from molfile parity flags */
   assignChiralTypesFromMolParity: boolean;
   /** Convert mapped dummy atoms to query atoms */
   makeDummiesQueries: boolean;
   /** Apply strict parsing rules to CXSMILES input */
   strictCXSMILES: boolean;
-  /** Apply strict parsing rules to Molfile input */
+  /** Apply strict parsing rules to Molfile input (molblock input only) */
   strictParsing: boolean;
+  /** Parse aromatic bond type from RDKit JSON input (RDKit JSON input only) */
+  setAromaticBonds: boolean;
+  /** Apply strict valence check when parsing RDKit JSON input (RDKit JSON input only) */
+  strictValenceCheck: boolean;
+  /** Parse molecule properties from RDKit JSON input (RDKit JSON input only) */
+  parseProperties: boolean;
+  /** Parse conformers from RDKit JSON input (RDKit JSON input only) */
+  parseConformers: boolean;
 };
 
 export type RDKitGetMolBlockOptions = {
@@ -436,10 +499,6 @@ export type RDKitGetMCSOptions = {
   AtomRingMatchesRingOnly: boolean;
   BondRingMatchesRingOnly: boolean;
   MaxDistance: number;
-  /**
-   * @alias BondCompleteRingsOnly
-   */
-  CompleteRingsOnly: boolean;
   AtomCompleteRingsOnly: boolean;
   BondCompleteRingsOnly: boolean;
   /**
@@ -616,4 +675,11 @@ export type RDKitGetRgdOptions = {
   includeTargetMolInResults: boolean;
   timeout: number;
   chunkSize: number;
+};
+
+export type RDKitGetFragsOptions = {
+  /** Whether to sanitize the fragment molecules. @default true */
+  sanitizeFrags: boolean;
+  /** Whether to copy conformers to the fragment molecules. @default true */
+  copyConformers: boolean;
 };

@@ -9,10 +9,9 @@ beforeAll(async () => {
 
 describe('getMol', () => {
   it('getMol returns a Mol for valid SMILES', () => {
-    const mol = rdkit.getMol('c1ccccc1');
+    using mol = rdkit.getMol('c1ccccc1');
     expect(mol).not.toBeNull();
     expect(mol!.isValid()).toBe(true);
-    mol!.delete();
   });
 
   it('getMol returns a Mol with specified options', () => {
@@ -28,21 +27,18 @@ describe('getMol', () => {
   });
 
   it('getMol accepts a Uint8Array input', () => {
-    const mol = rdkit.getMol('c1ccccc1')!;
+    using mol = rdkit.getMol('c1ccccc1')!;
     const pickled = mol.getAsUint8Array();
-    mol.delete();
-    const mol2 = rdkit.getMol(pickled)!;
+    using mol2 = rdkit.getMol(pickled)!;
     expect(mol2).not.toBeNull();
     expect(mol2.getSmiles()).toBe('c1ccccc1');
-    mol2.delete();
   });
 });
 
 describe('getQMol', () => {
   it('getQMol returns a Mol for valid SMARTS', () => {
-    const mol = rdkit.getQMol('[#6]');
+    using mol = rdkit.getQMol('[#6]');
     expect(mol).not.toBeNull();
-    mol!.delete();
   });
 });
 
@@ -218,5 +214,52 @@ describe('configure({ enableLogging })', () => {
     );
 
     expect(consoleSpy).not.toHaveBeenCalled();
+  });
+
+  it('does not call console.error by default when no listener is registered', () => {
+    rdkit2.getMol(ACETYLCHOLINE_INVALID);
+    expect(consoleSpy).not.toHaveBeenCalled();
+  });
+
+  it('calls console.error when enableLogging: true and no listener is registered', () => {
+    rdkit2.configure({ enableLogging: true });
+    rdkit2.getMol(ACETYLCHOLINE_INVALID);
+    expect(consoleSpy).toHaveBeenCalled();
+  });
+
+  it('toggling enableLogging: true then false stops console.error', () => {
+    rdkit2.configure({ enableLogging: true });
+    rdkit2.getMol(ACETYLCHOLINE_INVALID);
+    expect(consoleSpy).toHaveBeenCalledTimes(1);
+    consoleSpy.mockClear();
+
+    rdkit2.configure({ enableLogging: false });
+    rdkit2.getMol(ACETYLCHOLINE_INVALID);
+    expect(consoleSpy).not.toHaveBeenCalled();
+  });
+
+  it('error message contains valence description', () => {
+    const listener = vi.fn((e) => e);
+    const off = rdkit2.events.addErrorListener(listener);
+
+    rdkit2.getMol(ACETYLCHOLINE_INVALID);
+
+    off();
+    expect(listener).toHaveBeenCalledTimes(1);
+    const message = listener.mock.results[0].value.message;
+    expect(message.toLowerCase()).toContain('valence');
+  });
+
+  it('pentavalent carbon also fails with valence error', () => {
+    const PENTAVALENT_CARBON = 'CC(C)(C)(C)C';
+    const listener = vi.fn((e) => e);
+    const off = rdkit2.events.addErrorListener(listener);
+
+    rdkit2.getMol(PENTAVALENT_CARBON);
+
+    off();
+    expect(listener).toHaveBeenCalledTimes(1);
+    const message = listener.mock.results[0].value.message;
+    expect(message.toLowerCase()).toContain('valence');
   });
 });

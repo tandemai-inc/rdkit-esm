@@ -2,6 +2,15 @@
 
 ## [vX.X.X] Unreleased
 
+## [v0.6.0]
+
+- Add Dice, Cosine, Tversky and Asymmetric FP similarity
+- Implement Substructure Library: `RDKit.createSubstructLibrary()`, fix types
+- Implement MMPA fragmentation: `Mol.getMmpaFrags()`
+- Port tests from rdkit minimalib tests.js
+- Missing types: colour palette presets, Drawing extents, highlightAtomRadii, sanitize flags, assignCIPLabels, setAromaticBonds, strictValenceCheck, parseProperties, parseConformers, get_frags options
+- Missing parameters: `rdkit.molzip()`, `Mol.getFrags()`
+
 ## [v0.5.1]
 
 - bump dependencies

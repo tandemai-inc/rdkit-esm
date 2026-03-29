@@ -2,23 +2,34 @@
 
 RDKit minimal lib for the modern web.
 
-A typed ESM wrapper around [RDKit](https://www.rdkit.org/)'s WebAssembly MinimalLib. Instead of manually serializing and deserializing JSON strings to interact with the raw WASM API, you get a direct TypeScript interface with full autocomplete and compile-time validation of every option.
+## About
+
+> A scientific library for Cheminformatics (depict, search, compare, process molecular data). Same features as the RDKit.js library, distributed as a standard ES module for modern development environments (install from npm, import in your code). Type safety for every method and parameters, autocomplete and documentation in your IDE.
+
+RDKit ESM is a wrapper around [RDKit-js](https://www.rdkitjs.com/), the official JavaScript distribution of RDKit's main functionalities.
+Based on the same MinimalLib Web Assembly (WASM) binary, it simplifies writing code by wrapping all the conversions for the user: no need for manually serializing and deserializing JSON strings to interact with the raw WASM API, you get a direct TypeScript interface with full autocomplete and compile-time validation of every option. No need to build specific object like MolList: regular JS arrays of Mol objects can be used instead.
+
+![Autocomplete](docs/img/autocomplete.png)
 
 **Features:** molecule parsing, substructure search, molecular descriptors, fingerprints (Morgan, MACCS, pattern, ...), reactions, Maximum Common Substructure, R-group decomposition, SVG and Canvas rendering.
 
 ## Acknowledgment
 
-This library is based on the RDKit project and it's RDKit-js distribution. We thank the RDKit community for their contributions,
-in particular Michel Moreau and Paolo Tosco for maintaining the MinimalLib and the RDKit-js distribution. The initial types
-definitions at the basis of this project had been written by Ádám Baróthi.
+This library is based on the RDKit project and its RDKit-js distribution. We thank the RDKit community for their contributions,
+in particular Michel Moreau and Paolo Tosco for maintaining the MinimalLib and the RDKit-js distribution. The original types
+definitions in RDKit-js had been written by Ádám Baróthi.
 
-## Installation
+The examples in this repository and the unit-tests are based on the code and the data in the MinimalLib repository, written mostly by Greg Landrum and Paolo Tosco.
+
+## Quick Start
+
+### Installation
 
 ```bash
 npm install rdkit-esm
 ```
 
-## Quick Start
+### Usage
 
 ```ts
 import { initRDKit } from 'rdkit-esm';
@@ -36,6 +47,26 @@ if (mol) {
 }
 ```
 
+### Important note about code bundling
+
+If your application deployment involves a build step, the bundler requires a hint about
+the WASM binary file location, so that it gets copied with the other assets (such as images).
+The code will vary depending on your bundler.
+
+With Vite.js, the initialization code will look like:
+
+```ts
+import { initRDKit } from 'rdkit-esm';
+import wasmUrl from 'rdkit-esm/dist/RDKit_minimal.wasm?url'; // the `?url` part is a directive for rolldown wasm plugin
+
+// Pass the `locateFile` function which returns the path where the WASM is located
+// During the build process, Vite will replace it with the path to the assets directory
+// where the WASM file has been copied to
+const rdkit = await initRDKit({ locateFile: () => wasmUrl });
+```
+
+Note that using a distribution as a WASM file is the most efficient (can be compressed by the server and is processed more rapidly by the browser than a base64 encoded string).
+
 ## API Overview
 
 ### `initRDKit(options?): Promise<RDKit>`
@@ -46,16 +77,17 @@ Loads the WASM module and returns the main interface. **Must be awaited** before
 
 The main entry point for creating molecules, reactions, and collections.
 
-| Method                              | Description                                                                                |
-| ----------------------------------- | ------------------------------------------------------------------------------------------ |
-| `getMol(input, options?)`           | Create a `Mol` from SMILES, SMARTS, MolFile, or JSON. Returns `null` on invalid input.     |
-| `getQMol(input)`                    | Create a query `Mol` from a SMARTS string or a query MolFile.                              |
-| `getRxn(input, options?)`           | Create a `Reaction` from reaction SMARTS, SMILES, or an RXN block.                         |
-| `getMCS(mols, options?)`            | Compute the Maximum Common Substructure across a set of molecules (`Mol[]` or `string[]`). |
-| `getRGD(core, molecules, options?)` | R-Group Decomposition against one or more core structures.                                 |
-| `molzip(mol1, mol2)`                | Combine two molecules.                                                                     |
-| `version`                           | RDKit version string.                                                                      |
-| `module`                            | Raw `RDKitModule` for direct WASM access.                                                  |
+| Method                              | Description                                                                                                                                                                                                       |
+| ----------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `getMol(input, options?)`           | Create a `Mol` from strings (SMILES, V2000/V3000 Mol, CXSMILES), commonchem/RDKit JSON, RDKit pickle (as a Uint8Array). Returns `null` on invalid input or throws with the reason if `{ throwOnError }` is passed |
+| `getQMol(input)`                    | Create a query `Mol` from a SMARTS string or a query Mol File.                                                                                                                                                    |
+| `getRxn(input, options?)`           | Create a `Reaction` from reaction SMARTS, SMILES, or an RXN block.                                                                                                                                                |
+| `getMCS(mols, options?)`            | Compute the Maximum Common Substructure across a set of molecules (`Mol[]` or `string[]`).                                                                                                                        |
+| `getRGD(core, molecules, options?)` | R-Group Decomposition against one or more core structures (`Mol`, `Mol[]`, `string` or `string[]`).                                                                                                               |
+| `molzip(mol1, mol2)`                | Combine two molecules using matching RGroups, labels, etc...                                                                                                                                                      |
+| `version`                           | RDKit version string.                                                                                                                                                                                             |
+| `createSubstructLibrary`            | Returns a Substructure Library wrapper for optimized substructure searches                                                                                                                                        |
+| `configure(options)`                | General configuration options for the library, including `enableLogging`                                                                                                                                          |
 
 ### `Mol`
 
@@ -99,29 +131,6 @@ All classes also implement the `Disposable` interface. In environments that supp
 using mol = rdkit.getMol('CCO')!;
 // mol is deleted automatically when the scope exits
 ```
-
-## Development
-
-```bash
-# Install dependencies
-pnpm install
-
-# Run the unit tests
-pnpm test
-
-# Build for distribution
-pnpm build
-
-# Type-check
-pnpm typecheck
-
-# Format code
-pnpm fmt
-```
-
-### Upgrading RDKit MinimalLib
-
-The `MinimalLib/` directory contains a copy of the RDKit MinimalLib compilation output. To upgrade to a newer RDKit version, replace the contents of `MinimalLib/dist/` with the WASM and JS files from the new build.
 
 ## License
 

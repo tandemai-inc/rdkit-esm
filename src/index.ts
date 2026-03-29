@@ -12,15 +12,27 @@ export type {
   RDKitGetMolOptions,
   RDKitGetQMolOptions,
   RDKitGetRxnOptions,
+  RDKitMmpaFragsOptions,
+  SubstructLibraryOptions,
+  SubstructLibraryAddOptions,
+  SubstructLibrarySearchOptions,
 } from './types/rdkit-esm.typings.ts';
 export type { RGDRow } from './rgd.ts';
 export { Mol } from './mol.ts';
+export type { MMPAFragmentation, RDKitMmpaFragsResult } from './mol.ts';
 export { MolArray } from './mol-array.ts';
 export { Reaction } from './reaction.ts';
 export { Fingerprint } from './fingerprints/fingerprint.ts';
+export type {
+  SimilarityMetric,
+  TverskySimilarityOptions,
+} from './fingerprints/fingerprints.types.ts';
 export { isRDKitParseError } from './logger.ts';
+export { SubstructLibraryWrapper } from './substruct-library.ts';
 
 // Re-export useful types for consumers
+export type { SubstructLibraryEntry, SubstructLibrarySearchResult } from './substruct-library.ts';
+
 export type {
   RDKitGetMolOpt,
   RDKitGetMolBlockOptions,
@@ -36,6 +48,8 @@ export type {
   RDKitJsonExtension,
   DrawColour,
   ColourPalette,
+  ColourPaletteName,
+  DrawingExtentsInclude,
   RDKitStereoTags,
   RDKitRemoveHsOptions,
   RDKitAlignedCoordsOptions,
@@ -49,6 +63,8 @@ export type {
   RDKitRxnDetails,
   RDKitGetRgdOptions,
   RDKitGetSmilesOptions,
+  RDKitGetFragsOptions,
+  RDKitSanitizeFlags,
 } from './types/rdkit-minimalib-json-typings';
 
 export type { RDKitModule, JSMol, JSReaction, MolList } from './types/rdkit-minimalib-typings';

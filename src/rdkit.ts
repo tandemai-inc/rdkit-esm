@@ -1,12 +1,14 @@
 import { Mol } from './mol.ts';
 import { fromMolArraytoMolList, fromStringArraytoMolList, isMolArray } from './mol-array.ts';
 import { Reaction } from './reaction.ts';
+import { SubstructLibraryWrapper } from './substruct-library.ts';
 import type { RDKitModule, MolList, JSMol, JSReaction } from './types/rdkit-minimalib-typings';
-import { decomposeRGroups, type RGDRow } from './rgd.ts';
+import { decomposeRGroups, type RGDResult } from './rgd.ts';
 import type {
   RDKitGetMCSOptions,
   RDKitMCSResult,
   RDKitGetRgdOptions,
+  RDKitMolZipOptions,
 } from './types/rdkit-minimalib-json-typings';
 import { computeFingerprintSimilarity } from './fingerprints/bitops.ts';
 import { RDKitLogger, RDKitParseError } from './logger.ts';
@@ -17,6 +19,7 @@ import type {
   RDKitGetMolOptions,
   RDKitGetQMolOptions,
   RDKitGetRxnOptions,
+  SubstructLibraryOptions,
 } from './types/rdkit-esm.typings.ts';
 
 /** Result of a Maximum Common Substructure (MCS) computation */
@@ -49,16 +52,16 @@ export interface MCSResult extends Disposable {
  * ```
  */
 export class RDKit {
-  readonly #mod: RDKitModule;
-  readonly #logger: RDKitLogger;
+  protected readonly mod: RDKitModule;
+  protected readonly logger: RDKitLogger;
   readonly events: RDKitEvents;
 
   /** @internal */
   constructor(mod: RDKitModule) {
-    this.#mod = mod;
-    this.#logger = new RDKitLogger(mod);
+    this.mod = mod;
+    this.logger = new RDKitLogger(mod);
     this.events = {
-      addErrorListener: (cb: RDKitFailCallback) => this.#logger.addCallback(cb),
+      addErrorListener: (cb: RDKitFailCallback) => this.logger.addCallback(cb),
     };
   }
 
@@ -77,26 +80,26 @@ export class RDKit {
   getMol(input: string | Uint8Array, options?: Partial<RDKitGetMolOptions>): Mol | null;
   getMol(input: string | Uint8Array, options?: Partial<RDKitGetMolOptions>): Mol | null {
     const { throwOnError = false, ...wasmOptions } = options ?? {};
-    this.#logger.reset(throwOnError);
+    this.logger.reset(throwOnError);
 
     let jsMol: JSMol | null;
     if (input instanceof Uint8Array) {
       if (options) {
         console.warn('Options are ignored when getMol is called with a binary input (pikkle).');
       }
-      jsMol = this.#mod.get_mol_from_uint8array(input);
+      jsMol = this.mod.get_mol_from_uint8array(input);
     } else {
       jsMol =
         Object.keys(wasmOptions).length > 0
-          ? this.#mod.get_mol(input, JSON.stringify(wasmOptions))
-          : this.#mod.get_mol(input);
+          ? this.mod.get_mol(input, JSON.stringify(wasmOptions))
+          : this.mod.get_mol(input);
     }
 
     if (!jsMol) {
-      this.#logger.handleError(input, 'getMol');
+      this.logger.handleError(input, 'getMol');
       return null;
     }
-    return new Mol(jsMol, this.#mod);
+    return new Mol(jsMol, this.mod);
   }
 
   /**
@@ -110,14 +113,14 @@ export class RDKit {
   getQMol(input: string, options?: Partial<RDKitGetQMolOptions>): Mol | null;
   getQMol(input: string, options?: Partial<RDKitGetQMolOptions>): Mol | null {
     const { throwOnError = false } = options ?? {};
-    this.#logger.reset(throwOnError);
+    this.logger.reset(throwOnError);
 
-    const jsMol = this.#mod.get_qmol(input);
+    const jsMol = this.mod.get_qmol(input);
     if (!jsMol) {
-      this.#logger.handleError(input, 'getQMol');
+      this.logger.handleError(input, 'getQMol');
       return null;
     }
-    return new Mol(jsMol, this.#mod);
+    return new Mol(jsMol, this.mod);
   }
 
   /**
@@ -135,9 +138,9 @@ export class RDKit {
     }
 
     if (isMolArray(mols)) {
-      molList = fromMolArraytoMolList(mols, this.#mod);
+      molList = fromMolArraytoMolList(mols, this.mod);
     } else {
-      molList = fromStringArraytoMolList(mols, this.#mod);
+      molList = fromStringArraytoMolList(mols, this.mod);
     }
 
     if (molList.size() < 2) {
@@ -146,14 +149,14 @@ export class RDKit {
     }
 
     const json = options
-      ? this.#mod.get_mcs_as_json(molList, JSON.stringify(options))
-      : this.#mod.get_mcs_as_json(molList);
+      ? this.mod.get_mcs_as_json(molList, JSON.stringify(options))
+      : this.mod.get_mcs_as_json(molList);
 
     molList.delete();
 
     const parsed = JSON.parse(json) as RDKitMCSResult;
     let cachedQmol: Mol | null | undefined;
-    const mod = this.#mod;
+    const mod = this.mod;
 
     return {
       ...parsed,
@@ -193,23 +196,23 @@ export class RDKit {
   getRxn(input: string, options?: Partial<RDKitGetRxnOptions>): Reaction | null;
   getRxn(input: string, options?: Partial<RDKitGetRxnOptions>): Reaction | null {
     const { throwOnError = false, ...wasmOptions } = options ?? {};
-    this.#logger.reset(throwOnError);
+    this.logger.reset(throwOnError);
 
     let jsRxn: JSReaction | null = null;
     try {
       jsRxn =
         Object.keys(wasmOptions).length > 0
-          ? this.#mod.get_rxn(input, JSON.stringify(wasmOptions))
-          : this.#mod.get_rxn(input);
+          ? this.mod.get_rxn(input, JSON.stringify(wasmOptions))
+          : this.mod.get_rxn(input);
     } catch {
       jsRxn = null;
     }
 
     if (!jsRxn) {
-      this.#logger.handleError(input, 'getRxn');
+      this.logger.handleError(input, 'getRxn');
       return null;
     }
-    return new Reaction(jsRxn, this.#mod);
+    return new Reaction(jsRxn, this.mod);
   }
 
   /**
@@ -229,14 +232,31 @@ export class RDKit {
     core: string | string[] | Mol | Mol[],
     molecules: string[] | Mol[],
     options?: Partial<RDKitGetRgdOptions>,
-  ): RGDRow[] | null {
-    return decomposeRGroups(core, molecules, options, this.#mod);
+  ): RGDResult | null {
+    return decomposeRGroups(core, molecules, options, this.mod);
   }
 
-  molzip(mol1: Mol, mol2: Mol): Mol | null {
-    const jsMol = this.#mod.molzip(mol1.jsMol, mol2.jsMol);
+  /**
+   * Creates an empty {@link SubstructLibraryWrapper} for batch substructure searching.
+   *
+   * @example
+   * ```ts
+   * using lib = rdkit.createSubstructLibrary();
+   * for (const smi of smilesList) lib.add(smi);
+   * const result = lib.getMatches('C1CCCCN1'); // SMARTS query
+   * console.log(result.count, Array.from(result.indices));
+   * ```
+   */
+  createSubstructLibrary(options?: SubstructLibraryOptions): SubstructLibraryWrapper {
+    return new SubstructLibraryWrapper(this.mod, options);
+  }
+
+  molzip(mol1: Mol, mol2: Mol, options?: Partial<RDKitMolZipOptions>): Mol | null {
+    const jsMol = options
+      ? this.mod.molzip(mol1.jsMol, mol2.jsMol, JSON.stringify(options))
+      : this.mod.molzip(mol1.jsMol, mol2.jsMol);
     if (!jsMol) return null;
-    return new Mol(jsMol, this.#mod);
+    return new Mol(jsMol, this.mod);
   }
 
   computeFingerprintsSimilarity(...args: Parameters<typeof computeFingerprintSimilarity>): number {
@@ -255,21 +275,21 @@ export class RDKit {
       allowNonTetrahedralChirality,
       enableLogging,
     } = options;
-    if (preferCoordgen !== undefined) this.#mod.prefer_coordgen(preferCoordgen);
+    if (preferCoordgen !== undefined) this.mod.prefer_coordgen(preferCoordgen);
     if (useLegacyStereoPerception !== undefined)
-      this.#mod.use_legacy_stereo_perception(useLegacyStereoPerception);
+      this.mod.use_legacy_stereo_perception(useLegacyStereoPerception);
     if (allowNonTetrahedralChirality !== undefined)
-      this.#mod.allow_non_tetrahedral_chirality(allowNonTetrahedralChirality);
-    if (enableLogging !== undefined) this.#logger.setEnableLogging(enableLogging);
+      this.mod.allow_non_tetrahedral_chirality(allowNonTetrahedralChirality);
+    if (enableLogging !== undefined) this.logger.setEnableLogging(enableLogging);
   }
 
   /** Returns the RDKit version string */
   get version(): string {
-    return this.#mod.version();
+    return this.mod.version();
   }
 
   /** The underlying RDKitModule for direct access to the raw API */
   get module(): RDKitModule {
-    return this.#mod;
+    return this.mod;
   }
 }

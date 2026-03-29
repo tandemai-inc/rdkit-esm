@@ -62,6 +62,57 @@ export type RDKitGetMolOptions = RDKitGetMolOpt & { throwOnError: boolean };
 export type RDKitGetQMolOptions = { throwOnError: boolean };
 export type RDKitGetRxnOptions = RDKitRxnDetails & { throwOnError: boolean };
 
+export type RDKitMmpaFragsOptions = {
+  /** Minimum number of bonds to simultaneously cut. */
+  minCuts: number;
+  /** Maximum number of bonds to simultaneously cut. */
+  maxCuts: number;
+  /**
+   * Fragmentation is aborted when the molecule has more cuttable bonds
+   * than this limit. Prevents combinatorial explosion on highly connected molecules.
+   */
+  fragmentableBondLimit: number;
+};
+
+export type SubstructLibraryOptions = {
+  /**
+   * Pattern fingerprint bit size for pre-screening.
+   * Larger values reduce false positives at the cost of memory.
+   * Ignored if `disableFingerprints` is true.
+   * Default: WASM default (2048).
+   */
+  nBits?: number;
+  /**
+   * Disable fingerprint pre-screening (brute-force matching only).
+   * Overrides `nBits`. Useful for tiny libraries or testing.
+   * Internally passes `numBits=0` to the WASM constructor.
+   */
+  disableFingerprints?: boolean;
+};
+
+export type SubstructLibraryAddOptions = {
+  /**
+   * Skip SMILES validation and sanitization.
+   * Use only with RDKit-canonical SMILES strings (e.g. from a previous `getSmiles()` call).
+   * Improves add performance on large libraries.
+   */
+  trusted?: boolean;
+};
+
+export type SubstructLibrarySearchOptions = {
+  /**
+   * Enable chiral substructure searching.
+   * Default: false
+   */
+  useChirality?: boolean;
+  /**
+   * Stop after finding this many matches.
+   * Default: no limit.
+   */
+  maxResults?: number;
+  // numThreads intentionally omitted — the WASM build has no pthread support.
+};
+
 export type RDKitCondenseAbbreviationsOptions = {
   /** @default 0.4 */
   maxCoverage: number;

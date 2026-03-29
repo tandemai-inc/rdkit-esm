@@ -360,7 +360,7 @@ export interface JSMol {
   get_kekule_form(): string;
 
   /** Returns the disconnected fragments of the molecule */
-  get_frags(): { mappings: JSONString; molList: MolList };
+  get_frags(details_json?: string): { mappings: JSONString; molList: MolList };
 
   /** Generate new 2D coordinates */
   set_new_coords(): boolean;
@@ -688,6 +688,9 @@ export interface SubstructLibrary {
     numThreads: number,
     maxResults: number,
   ): Uint32Array;
+
+  delete(): void;
+  isDeleted(): boolean;
 }
 
 export interface MolList {
@@ -761,7 +764,7 @@ export interface StringList extends EmscriptenVector<string> {}
 /** Returns a new SubstructLibrary instance */
 interface SubstructLibraryConstructor {
   new (): SubstructLibrary;
-  new (initialCapacity: number): SubstructLibrary;
+  new (numBits: number): SubstructLibrary;
 }
 
 interface MolListConstructor {
@@ -771,8 +774,8 @@ interface MolListConstructor {
 interface RGroupDecomposition {
   add(mol: JSMol): number;
   process(): boolean;
-  get_rgroups_as_columns(): { [key: 'Core' | `R${number}`]: MolList };
-  get_rgroups_as_rows(): { [key: 'Core' | `R${number}`]: JSMol }[];
+  get_rgroups_as_columns(): { [key in 'Core' | `R${number}`]: MolList };
+  get_rgroups_as_rows(): { [key in 'Core' | `R${number}`]: JSMol }[];
   delete(): void;
 }
 
