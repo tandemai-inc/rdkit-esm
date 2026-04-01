@@ -2,6 +2,8 @@
 
 RDKit minimal lib for the modern web.
 
+![RDKit v2026.03.1](https://img.shields.io/badge/RDKit-v2026--03--1-brightgreen?style=flat)
+
 ## About
 
 > A scientific library for Cheminformatics (depict, search, compare, process molecular data). Same features as the RDKit.js library, distributed as a standard ES module for modern development environments (install from npm, import in your code). Type safety for every method and parameters, autocomplete and documentation in your IDE.
