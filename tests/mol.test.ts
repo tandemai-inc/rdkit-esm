@@ -533,7 +533,7 @@ describe('Mol - lifecycle', () => {
     let molRef: typeof import('../src/index.ts').Mol.prototype | null = null;
     {
       using mol = rdkit.getMol('c1ccccc1')!;
-      expect(mol.isValid()).toBe(true);
+      expect(mol.isDeleted).toBe(false);
       molRef = mol;
     }
     expect(() => molRef!.jsMol).toThrow('Mol has been deleted');

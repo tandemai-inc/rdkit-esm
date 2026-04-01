@@ -335,7 +335,10 @@ export interface JSMol {
    */
   generate_aligned_coords(templateMol: JSMol, options: JSONString): string;
 
-  /** Returns true if the molecule's structure is valid */
+  /**
+   * Returns true if the molecule's structure is valid
+   * @deprecated An invalid molecule is `null`. Kept for backward compatibility.
+   */
   is_valid(): boolean;
 
   /** Returns the total number of atoms in the molecule */

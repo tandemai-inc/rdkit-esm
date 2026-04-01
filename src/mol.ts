@@ -403,11 +403,6 @@ export class Mol implements Disposable {
 
   // -- Molecule info --
 
-  /** Returns true if the molecule's structure is valid */
-  isValid(): boolean {
-    return this.jsMol.is_valid();
-  }
-
   /** Returns the number of atoms in the molecule */
   get numAtoms(): number {
     return this.jsMol.get_num_atoms();

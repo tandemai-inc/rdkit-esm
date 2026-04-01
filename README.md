@@ -100,8 +100,8 @@ Wraps a single molecule with a typed, camelCase API.
 - **Drawing** — `getSVG(options?)`, `drawToCanvas(canvas, ...)`
 - **Coordinates** — `setNewCoords()`, `generateAlignedCoords(template, options?)`
 - **Mutations** — `addHs()` / `removeHs()`, `convertToAromaticForm()` / `convertToKekuleForm()`, `combineWith()`, `zipWith()`
-- **Properties** — `hasProp()`, `getProp()`, `setProp()`, `clearProp()`, `getPropList()`
-- **Info** — `isValid()`, `getNumAtoms()`, `getNumBonds()`, `hasCoords()`, `getStereoTags()`
+- **Properties** — `hasProp()`, `getProp()`, `setProp()`, `clearProp()`, `getPropMap()`
+- **Info** — `isDeleted`, `numAtoms`, `numHeavyAtoms`, `numBonds`, `hasCoords()`, `getStereoTags()`
 
 ### `MolArray`
 
