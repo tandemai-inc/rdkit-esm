@@ -477,47 +477,43 @@ const CYCLOPROPANE_MB = `
   1  3  1  0
 M  END`;
 
-//TODO: JSON output to handle
 describe('test_return_draw_coords', () => {
   it('returnDrawCoords:true produces a JSON result with drawCoords and svg', () => {
     using mol = rdkit.getMol(CYCLOPROPANE_MB)!;
-    const raw = mol.getSVG({ width: 300, height: 200, padding: 0.2, returnDrawCoords: true });
-    const res = JSON.parse(raw);
+    const res = mol.getSVGWithDrawCoords({ width: 300, height: 200, padding: 0.2 });
     expect(res.drawCoords).toBeTruthy();
     expect(res.svg).toBeTruthy();
   });
 
   it('returnDrawCoords with highlight shifts draw coordinates', () => {
     using mol = rdkit.getMol(CYCLOPROPANE_MB)!;
-    const rawRef = mol.getSVG({ width: 300, height: 200, padding: 0.2, returnDrawCoords: true });
-    const ref = JSON.parse(rawRef).drawCoords.flat();
+    const res = mol.getSVGWithDrawCoords({ width: 300, height: 200, padding: 0.2 });
+    const ref = res.drawCoords.flat();
 
-    const rawHighlight = mol.getSVG({
+    const resHighlight = mol.getSVGWithDrawCoords({
       width: 300,
       height: 200,
       padding: 0.2,
       atoms: [0],
-      returnDrawCoords: true,
     });
-    const highlight = JSON.parse(rawHighlight).drawCoords.flat();
+    const highlight = resHighlight.drawCoords.flat();
     const aboveTol = ref.some((r: number, i: number) => Math.abs(r - highlight[i]) > 0.1);
     expect(aboveTol).toBe(true);
   });
 
   it('drawingExtentsInclude ALL:true suppresses coordinate shift from highlight', () => {
     using mol = rdkit.getMol(CYCLOPROPANE_MB)!;
-    const rawRef = mol.getSVG({ width: 300, height: 200, padding: 0.2, returnDrawCoords: true });
-    const ref = JSON.parse(rawRef).drawCoords.flat();
+    const res = mol.getSVGWithDrawCoords({ width: 300, height: 200, padding: 0.2 });
+    const ref = res.drawCoords.flat();
 
-    const rawHighlight = mol.getSVG({
+    const resHighlight = mol.getSVGWithDrawCoords({
       width: 300,
       height: 200,
       padding: 0.2,
       atoms: [0],
-      returnDrawCoords: true,
       drawingExtentsInclude: { ALL: true, HIGHLIGHTS: false },
     });
-    const highlight = JSON.parse(rawHighlight).drawCoords.flat();
+    const highlight = resHighlight.drawCoords.flat();
     const aboveTol = ref.some((r: number, i: number) => Math.abs(r - highlight[i]) > 0.1);
     expect(aboveTol).toBe(false);
   });

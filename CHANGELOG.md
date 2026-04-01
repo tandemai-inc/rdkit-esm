@@ -2,6 +2,11 @@
 
 ## [vX.X.X] Unreleased
 
+- Upgrade minimalLib to RDKit v2026.03.1
+- fix type guards for null return type
+- remove isValid and mark is_valid() as deprecated in minimalLib types
+- add getSVGWithDrawCoords to handle inconsistent return type when `returnDrawCoords` is true
+
 ## [v0.6.0]
 
 - Add Dice, Cosine, Tversky and Asymmetric FP similarity

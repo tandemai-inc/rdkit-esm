@@ -219,10 +219,30 @@ export class Mol implements Disposable {
    * // With atom highlighting
    * const svg = mol.getSVG({ atoms: [0, 1, 2], highlightColour: [1, 0, 0, 1] });
    */
-  getSVG(options?: Partial<RDKitDepictionDetails>): string {
+  getSVG(
+    options?: Partial<
+      Exclude<RDKitDepictionDetails, 'returnDrawCoords'> & { returnDrawCoords: never }
+    >,
+  ): string {
+    if (options?.returnDrawCoords) {
+      throw new Error(
+        'getSVG does not support returnDrawCoords option. Use getSVGWithDrawCoords instead.',
+      );
+    }
+
     const mol = this.jsMol;
     if (!options) return mol.get_svg();
     return mol.get_svg_with_highlights(JSON.stringify(options));
+  }
+
+  getSVGWithDrawCoords(options?: Partial<RDKitDepictionDetails>): {
+    svg: string;
+    drawCoords: [number, number, number][];
+  } {
+    const opts = { ...options, returnDrawCoords: true };
+    const resultJson = this.jsMol.get_svg_with_highlights(JSON.stringify(opts));
+    const result = JSON.parse(resultJson);
+    return result;
   }
 
   // -- Substructure --
