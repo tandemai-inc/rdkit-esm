@@ -73,9 +73,10 @@ export class RDKit {
    * @returns A Mol instance, or null if the input is invalid.
    *   Pass `{ throwOnError: true }` to throw a {@link RDKitParseError} instead.
    */
+  getMol(input: string | Uint8Array): Mol | null;
   getMol(
     input: string | Uint8Array,
-    options?: Partial<RDKitGetMolOptions> & { throwOnError: true },
+    options: Partial<RDKitGetMolOptions> & { throwOnError: true },
   ): Mol;
   getMol(input: string | Uint8Array, options?: Partial<RDKitGetMolOptions>): Mol | null;
   getMol(input: string | Uint8Array, options?: Partial<RDKitGetMolOptions>): Mol | null {
@@ -109,7 +110,8 @@ export class RDKit {
    * @returns A Mol instance, or null if the input is invalid.
    *   Pass `{ throwOnError: true }` to throw a {@link RDKitParseError} instead.
    */
-  getQMol(input: string, options?: Partial<RDKitGetQMolOptions> & { throwOnError: true }): Mol;
+  getQMol(input: string): Mol | null;
+  getQMol(input: string, options: Partial<RDKitGetQMolOptions> & { throwOnError: true }): Mol;
   getQMol(input: string, options?: Partial<RDKitGetQMolOptions>): Mol | null;
   getQMol(input: string, options?: Partial<RDKitGetQMolOptions>): Mol | null {
     const { throwOnError = false } = options ?? {};
