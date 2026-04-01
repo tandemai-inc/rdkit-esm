@@ -27,7 +27,7 @@
     "dev": "tsdown --watch",
     "fmt": "oxfmt",
     "fmt:check": "oxfmt --check",
-    "test": "vitest",
+    "test": "vitest --typecheck",
     "coverage": "vitest run --coverage",
     "typecheck": "tsgo --noEmit",
     "prepublishOnly": "pnpm run build"
