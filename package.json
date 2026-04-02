@@ -1,6 +1,6 @@
 {
   "name": "rdkit-esm",
-  "version": "0.6.0",
+  "version": "0.7.0-rc.0",
   "description": "RDKit minimal lib for the modern web.",
   "homepage": "https://github.com/tandemai/rdkit-esm#readme",
   "bugs": {
