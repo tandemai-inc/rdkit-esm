@@ -4,6 +4,7 @@ import type {
   RDKitGetSmilesOptions,
   RDKitGetMolOpt,
   RDKitRxnDetails,
+  RDKitDepictionDetails,
 } from './rdkit-minimalib-json-typings';
 
 /** Wrapper-level CX SMILES options with ergonomic `fields` array */
@@ -61,6 +62,8 @@ export type RDKitEvents = {
 export type RDKitGetMolOptions = RDKitGetMolOpt & { throwOnError: boolean };
 export type RDKitGetQMolOptions = { throwOnError: boolean };
 export type RDKitGetRxnOptions = RDKitRxnDetails & { throwOnError: boolean };
+
+export type RDKitGetSVGOptions = Omit<RDKitDepictionDetails, 'returnDrawCoords'>;
 
 export type RDKitMmpaFragsOptions = {
   /** Minimum number of bonds to simultaneously cut. */

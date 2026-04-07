@@ -481,8 +481,9 @@ describe('test_return_draw_coords', () => {
   it('returnDrawCoords:true produces a JSON result with drawCoords and svg', () => {
     using mol = rdkit.getMol(CYCLOPROPANE_MB)!;
     const res = mol.getSVGWithDrawCoords({ width: 300, height: 200, padding: 0.2 });
-    expect(res.drawCoords).toBeTruthy();
-    expect(res.svg).toBeTruthy();
+    expect(res.drawCoords).toHaveLength(mol.numAtoms);
+    expect(res.drawCoords.flat()).toHaveLength(mol.numAtoms * 2);
+    expect(res.svg).toBeTypeOf('string');
   });
 
   it('returnDrawCoords with highlight shifts draw coordinates', () => {

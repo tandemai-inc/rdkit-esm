@@ -12,6 +12,9 @@ export type {
   RDKitGetMolOptions,
   RDKitGetQMolOptions,
   RDKitGetRxnOptions,
+  RDKitGetCxSmilesOptions,
+  RDKitCondenseAbbreviationsOptions,
+  RDKitGetSVGOptions,
   RDKitMmpaFragsOptions,
   SubstructLibraryOptions,
   SubstructLibraryAddOptions,
@@ -36,7 +39,6 @@ export type { SubstructLibraryEntry, SubstructLibrarySearchResult } from './subs
 export type {
   RDKitGetMolOpt,
   RDKitGetMolBlockOptions,
-  RDKitDepictionDetails,
   RDKitSubstructMatch,
   RDKitDescriptors,
   RDKitJson,

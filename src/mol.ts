@@ -1,7 +1,6 @@
 import type { JSMol, RDKitModule } from './types/rdkit-minimalib-typings';
 import type {
   RDKitGetMolBlockOptions,
-  RDKitDepictionDetails,
   RDKitSubstructMatch,
   RDKitDescriptors,
   RDKitJson,
@@ -24,6 +23,7 @@ import type {
   RDKitGetUint8ArrayOptions,
   RDKitCondenseAbbreviationsOptions,
   RDKitMmpaFragsOptions,
+  RDKitGetSVGOptions,
 } from './types/rdkit-esm.typings.ts';
 import { DEFAULT_MAX_COVERAGE, DEFAULT_USE_LINKERS } from './abbreviations/abbreviations.ts';
 import { buildCxSmilesRawOptions } from './formats/cxsmiles.ts';
@@ -219,12 +219,8 @@ export class Mol implements Disposable {
    * // With atom highlighting
    * const svg = mol.getSVG({ atoms: [0, 1, 2], highlightColour: [1, 0, 0, 1] });
    */
-  getSVG(
-    options?: Partial<
-      Exclude<RDKitDepictionDetails, 'returnDrawCoords'> & { returnDrawCoords: never }
-    >,
-  ): string {
-    if (options?.returnDrawCoords) {
+  getSVG(options?: Partial<RDKitGetSVGOptions>): string {
+    if (options && 'returnDrawCoords' in options) {
       throw new Error(
         'getSVG does not support returnDrawCoords option. Use getSVGWithDrawCoords instead.',
       );
@@ -235,9 +231,9 @@ export class Mol implements Disposable {
     return mol.get_svg_with_highlights(JSON.stringify(options));
   }
 
-  getSVGWithDrawCoords(options?: Partial<RDKitDepictionDetails>): {
+  getSVGWithDrawCoords(options?: Partial<RDKitGetSVGOptions>): {
     svg: string;
-    drawCoords: [number, number, number][];
+    drawCoords: [number, number][];
   } {
     const opts = { ...options, returnDrawCoords: true };
     const resultJson = this.jsMol.get_svg_with_highlights(JSON.stringify(opts));
@@ -606,7 +602,7 @@ export class Mol implements Disposable {
 
   // -- Canvas drawing --
 
-  drawToCanvas(canvas: HTMLCanvasElement, options?: Partial<RDKitDepictionDetails>): void {
+  drawToCanvas(canvas: HTMLCanvasElement, options?: Partial<RDKitGetSVGOptions>): void {
     const mol = this.jsMol;
     if (options) {
       mol.draw_to_canvas_with_highlights(canvas, JSON.stringify(options));
