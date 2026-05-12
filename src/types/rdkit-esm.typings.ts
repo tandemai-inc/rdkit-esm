@@ -7,16 +7,23 @@ import type {
   RDKitDepictionDetails,
 } from './rdkit-minimalib-json-typings';
 
-/** Wrapper-level CX SMILES options with ergonomic `fields` array */
+/**
+ * Wrapper-level CX SMILES options with ergonomic `fields` array
+ */
 export type RDKitGetCxSmilesOptions = RDKitGetSmilesOptions & {
-  /** CX extension fields to include. Omit for all fields (default). Empty array for none. */
+  /**
+   * CX extension fields to include. Omit for all fields (default). Empty array for none.
+   */
   fields: CxSmilesField[];
-  /** Restore bond direction option. Accepts `true`, `'true'`, or `'clear'`. */
+  /**
+   * Restore bond direction option. Accepts `true`, `'true'`, or `'clear'`.
+   */
   restoreBondDirOption: true | 'true' | 'clear';
 };
 
 export type RDKitGetUint8ArrayOptions = {
-  /** Properties to include in the binary export (pickle)
+  /**
+   * Properties to include in the binary export (pickle)
    * @default: when `properties` is omitted, all data properties are included except the computed properties.
    */
   properties: PropertyPickleOptionsKeys[];
@@ -34,11 +41,17 @@ export type RDKitGetUint8ArrayOptions = {
 //   }
 
 export type RDKitConfigureOptions = {
-  /** Switch between RDKit's built-in coordinate generator and CoordGen. */
+  /**
+   * Switch between RDKit's built-in coordinate generator and CoordGen.
+   */
   preferCoordgen: boolean;
-  /** Use the legacy stereo perception algorithm. */
+  /**
+   * Use the legacy stereo perception algorithm.
+   */
   useLegacyStereoPerception: boolean;
-  /** Perceive chirality on non-tetrahedral stereocenters (square-planar, trigonal-bipyramidal, etc.). */
+  /**
+   * Perceive chirality on non-tetrahedral stereocenters (square-planar, trigonal-bipyramidal, etc.).
+   */
   allowNonTetrahedralChirality: boolean;
   /** When true, RDKit error messages also appear in the console (uses set_log_tee).
    *  Default: false (capture-only when a fail listener is set). */
@@ -66,9 +79,13 @@ export type RDKitGetRxnOptions = RDKitRxnDetails & { throwOnError: boolean };
 export type RDKitGetSVGOptions = Omit<RDKitDepictionDetails, 'returnDrawCoords'>;
 
 export type RDKitMmpaFragsOptions = {
-  /** Minimum number of bonds to simultaneously cut. */
+  /**
+   * Minimum number of bonds to simultaneously cut.
+   */
   minCuts: number;
-  /** Maximum number of bonds to simultaneously cut. */
+  /**
+   * Maximum number of bonds to simultaneously cut.
+   */
   maxCuts: number;
   /**
    * Fragmentation is aborted when the molecule has more cuttable bonds
@@ -117,8 +134,12 @@ export type SubstructLibrarySearchOptions = {
 };
 
 export type RDKitCondenseAbbreviationsOptions = {
-  /** @default 0.4 */
+  /**
+   * @default 0.4
+   */
   maxCoverage: number;
-  /** @default false */
+  /**
+   * @default false
+   */
   useLinkers: boolean;
 };
