@@ -927,7 +927,7 @@ export interface RDKitModule {
    *
    * @param value
    */
-  use_legacy_stereo_perception(value: boolean): void;
+  use_legacy_stereo_perception(value: boolean): boolean;
 
   enable_logging(logName?: string): boolean;
   disable_logging(logName?: string): boolean;
