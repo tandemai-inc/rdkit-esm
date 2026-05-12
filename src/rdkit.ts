@@ -84,16 +84,16 @@ export class RDKit {
     this.logger.reset(throwOnError);
 
     let jsMol: JSMol | null;
+    const hasOptions = Object.keys(wasmOptions).length > 0;
     if (input instanceof Uint8Array) {
-      if (options) {
+      if (hasOptions) {
         console.warn('Options are ignored when getMol is called with a binary input (pikkle).');
       }
       jsMol = this.mod.get_mol_from_uint8array(input);
     } else {
-      jsMol =
-        Object.keys(wasmOptions).length > 0
-          ? this.mod.get_mol(input, JSON.stringify(wasmOptions))
-          : this.mod.get_mol(input);
+      jsMol = hasOptions
+        ? this.mod.get_mol(input, JSON.stringify(wasmOptions))
+        : this.mod.get_mol(input);
     }
 
     if (!jsMol) {
