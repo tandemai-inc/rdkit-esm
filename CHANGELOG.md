@@ -2,14 +2,12 @@
 
 ## [vX.X.X] Unreleased
 
-## [v0.8.0]
-
-- MinimalLib WASM now includes minimization and conformer generation
-- Add `Mol.getForceFieldEnergy()`, `Mol.minimize()` (MMFF94 with UFF fallback) and `Mol.generateConformers()` (ETKDGv3)
-- Add `RDKitOperationError` / `isRDKitOperationError`; the error listener also reports failures of these `Mol` operations
-
 ## [v0.7.0]
 
+- MinimalLib WASM now includes minimization and conformer generation
+- RDKit upgraded to v2026.09 preprelease SHA 23378a7f2f82ae6c867201db8c56ab4cc4a4e671
+- Add `Mol.getForceFieldEnergy()`, `Mol.minimize()` (MMFF94 with UFF fallback) and `Mol.generateConformers()` (ETKDGv3)
+- Add `RDKitOperationError` / `isRDKitOperationError`; the error listener also reports failures of these `Mol` operations
 - Upgrade minimalLib to RDKit v2026.03.1
 - fix type guards for null return type
 - remove isValid and mark is_valid() as deprecated in minimalLib types
