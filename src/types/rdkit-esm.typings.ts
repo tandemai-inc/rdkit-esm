@@ -5,6 +5,10 @@ import type {
   RDKitGetMolOpt,
   RDKitRxnDetails,
   RDKitDepictionDetails,
+  RDKitMinimizeDetails,
+  RDKitMinimizeResult,
+  RDKitGenerateConformersDetails,
+  RDKitGenerateConformersResult,
 } from './rdkit-minimalib-json-typings';
 
 /**
@@ -60,10 +64,16 @@ export type RDKitConfigureOptions = {
 
 export type RDKitParseOperation = 'getMol' | 'getQMol' | 'getRxn';
 
+/** `Mol` computations that report failures through the error listener */
+export type RDKitMolOperation = 'getForceFieldEnergy' | 'minimize' | 'generateConformers';
+
+export type RDKitOperation = RDKitParseOperation | RDKitMolOperation;
+
 export type RDKitParseErrorEvent = {
+  /** Parsed input for parse operations; the molecule's SMILES for `Mol` operations */
   input: string | Uint8Array;
   message: string;
-  operation: RDKitParseOperation;
+  operation: RDKitOperation;
 };
 
 export type RDKitFailCallback = (event: RDKitParseErrorEvent) => void;
@@ -142,4 +152,35 @@ export type RDKitCondenseAbbreviationsOptions = {
    * @default false
    */
   useLinkers: boolean;
+};
+
+// -- Force field and conformers --
+
+export type RDKitForceFieldEnergyOptions = { throwOnError: boolean };
+
+export type RDKitMinimizeOptions = Omit<RDKitMinimizeDetails, 'job'> & { throwOnError: boolean };
+
+export type RDKitMinimizationFrame = {
+  /** Force-field energy in kcal/mol */
+  energy: number;
+  /** Atom coordinates in Å, in the same shape as `Mol.getCoords()` */
+  coords: [number, number, number][];
+};
+
+export type RDKitMinimization = Omit<RDKitMinimizeResult, 'frames'> & {
+  /**
+   * Minimization trajectory, in order: the starting geometry, one frame every
+   * `snapshotFrequency` iterations (plus the converged geometry when the minimizer
+   * converges), and the final geometry. Consecutive identical frames are not repeated.
+   */
+  frames: RDKitMinimizationFrame[];
+};
+
+export type RDKitGenerateConformersOptions = RDKitGenerateConformersDetails & {
+  throwOnError: boolean;
+};
+
+export type RDKitConformers = Omit<RDKitGenerateConformersResult, 'conformers'> & {
+  /** Atom coordinates in Å of each conformer, in the same shape as `Mol.getCoords()` */
+  conformers: [number, number, number][][];
 };

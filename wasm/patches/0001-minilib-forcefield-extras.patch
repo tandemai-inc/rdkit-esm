@@ -1,0 +1,51 @@
+diff --git a/Code/MinimalLib/CMakeLists.txt b/Code/MinimalLib/CMakeLists.txt
+index 310a0ca..06a5774 100644
+--- a/Code/MinimalLib/CMakeLists.txt
++++ b/Code/MinimalLib/CMakeLists.txt
+@@ -5,7 +5,9 @@ if(RDK_BUILD_MINIMAL_LIB)
+         "CIPLabeler;MolDraw2D;Depictor;"
+         "Descriptors;SubstructMatch;FileParsers;"
+         "SmilesParse;GraphMol;RDGeometryLib;"
+-        "RDGeneral;RGroupDecomposition;Fingerprints")
++        "RDGeneral;RGroupDecomposition;Fingerprints;"
++        "ForceFieldHelpers;ForceField;Trajectory;"
++        "DistGeomHelpers;DistGeometry;MolAlign;Alignment")
+     if(RDK_BUILD_INCHI_SUPPORT)
+         add_definitions(-DRDK_BUILD_INCHI_SUPPORT)
+         set(MINIMAL_LIB_LIBRARIES "${MINIMAL_LIB_LIBRARIES};RDInchiLib")
+@@ -40,7 +42,8 @@ if(RDK_BUILD_MINIMAL_LIB)
+             set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${FREETYPE_LIBRARY}")
+         endif()
+     endif()
+-    add_executable(RDKit_minimal jswrapper.cpp minilib.cpp JSONParsers.cpp)
++    add_executable(RDKit_minimal jswrapper.cpp minilib.cpp JSONParsers.cpp
++        forcefield.cpp)
+     target_link_libraries(RDKit_minimal ${MINIMAL_LIB_LIBRARIES})
+ 
+     set_target_properties(RDKit_minimal PROPERTIES LINK_FLAGS "--bind")
+diff --git a/Code/MinimalLib/jswrapper.cpp b/Code/MinimalLib/jswrapper.cpp
+index 5c834e6..270394c 100644
+--- a/Code/MinimalLib/jswrapper.cpp
++++ b/Code/MinimalLib/jswrapper.cpp
+@@ -566,6 +566,8 @@ EMSCRIPTEN_BINDINGS(RDKit_minimal) {
+       .function("get_v2Kmolblock(details)",
+                 select_overload<std::string(const std::string &) const>(
+                     &JSMolBase::get_v2Kmolblock))
++      .function("run_forcefield", &JSMolBase::run_forcefield)
++      .function("generate_conformers", &JSMolBase::generate_conformers)
+       .function("get_as_uint8array(details)", &get_as_uint8array)
+       .function("get_as_uint8array", &get_as_uint8array_no_details)
+ #ifdef RDK_BUILD_INCHI_SUPPORT
+diff --git a/Code/MinimalLib/minilib.h b/Code/MinimalLib/minilib.h
+index a8cce73..18518d4 100644
+--- a/Code/MinimalLib/minilib.h
++++ b/Code/MinimalLib/minilib.h
+@@ -45,6 +45,8 @@ class JSMolBase {
+   std::string get_v3Kmolblock() const { return get_v3Kmolblock("{}"); }
+   std::string get_v2Kmolblock(const std::string &details) const;
+   std::string get_v2Kmolblock() const { return get_v2Kmolblock("{}"); }
++  std::string run_forcefield(const std::string &details);
++  std::string generate_conformers(const std::string &details);
+   std::string get_pickle(const std::string &details) const;
+   std::string get_pickle() const { return get_pickle(""); };
+ #ifdef RDK_BUILD_INCHI_SUPPORT

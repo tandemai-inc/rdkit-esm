@@ -23,6 +23,8 @@ definitions in RDKit-js had been written by Ádám Baróthi.
 
 The examples in this repository and the unit-tests are based on the code and the data in the MinimalLib repository, written mostly by Greg Landrum and Paolo Tosco.
 
+Bindings for minimization and 3D conformer generation are based on code from [Molarium](https://molarium.org/) by Rafal Wiewiora. [Github](https://github.com/rafwiewiora/molarium)
+
 ## Quick Start
 
 ### Installation

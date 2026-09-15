@@ -58,6 +58,25 @@ export interface JSMol {
   get_v2Kmolblock(): string;
   get_v2Kmolblock(options: JSONString): string;
 
+  /**
+   * Extras (not in official MinimalLib, see `wasm/README.md`).
+   * Runs an MMFF94 force-field job on the first conformer, falling back to UFF
+   * when MMFF94 has no parameters for the molecule.
+   * @param details `RDKitForceFieldDetails` as a stringified JSON
+   * @returns `RDKitForceFieldEnergyResult` or `RDKitMinimizeResult` as a JSON string,
+   * or `""` on failure (the reason is logged to `rdApp.error`)
+   */
+  run_forcefield(details: JSONString): string;
+
+  /**
+   * Extras (not in official MinimalLib, see `wasm/README.md`).
+   * Replaces the molecule's conformers with ETKDGv3 conformers.
+   * @param details `RDKitGenerateConformersDetails` as a stringified JSON
+   * @returns `RDKitGenerateConformersResult` as a JSON string,
+   * or `""` on failure (the reason is logged to `rdApp.error`)
+   */
+  generate_conformers(details: JSONString): string;
+
   /** Returns the V3000 Molfile string
    * @param RDKitGetMolBlockOpt as a stringifyed JSON
    */

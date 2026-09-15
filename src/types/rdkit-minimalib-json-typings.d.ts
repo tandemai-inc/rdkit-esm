@@ -991,3 +991,106 @@ export type RDKitGetFragsOptions = {
    */
   copyConformers: boolean;
 };
+
+// -- Force-field and conformer extras (not in official MinimalLib, see wasm/README.md) --
+
+/**
+ * Force field used by a computation. UFF is only used when MMFF94 has no
+ * parameters for the molecule.
+ */
+export type RDKitForceFieldName = 'MMFF94' | 'UFF';
+
+export type RDKitForceFieldEnergyDetails = {
+  job: 'energy';
+};
+
+export type RDKitMinimizeDetails = {
+  job: 'minimize';
+  /**
+   * Maximum number of BFGS iterations. The minimization stops earlier when it converges.
+   * @default 200
+   */
+  maxIterations: number;
+  /**
+   * Record a frame every `snapshotFrequency` iterations. `0` records no intermediate frames.
+   * @default 0
+   */
+  snapshotFrequency: number;
+  /**
+   * Indices of atoms that keep their exact coordinates. At least one atom must stay free.
+   * @default []
+   */
+  fixedAtoms: number[];
+};
+
+/** Details accepted by `JSMol.run_forcefield` */
+export type RDKitForceFieldDetails =
+  | RDKitForceFieldEnergyDetails
+  | (Pick<RDKitMinimizeDetails, 'job'> & Partial<Omit<RDKitMinimizeDetails, 'job'>>);
+
+export type RDKitForceFieldFrame = {
+  /** Force-field energy in kcal/mol */
+  energy: number;
+  /** Flat atom coordinates in Å: `[x0, y0, z0, x1, y1, z1, …]` */
+  positions: number[];
+};
+
+export type RDKitForceFieldEnergyResult = {
+  forcefield: RDKitForceFieldName;
+  /** `true` when UFF was used because MMFF94 has no parameters for the molecule */
+  fallback: boolean;
+  /** Force-field energy in kcal/mol */
+  energy: number;
+};
+
+export type RDKitMinimizeResult = {
+  forcefield: RDKitForceFieldName;
+  /** `true` when UFF was used because MMFF94 has no parameters for the molecule */
+  fallback: boolean;
+  /** Energy of the starting geometry in kcal/mol */
+  initialEnergy: number;
+  /** Energy of the final geometry in kcal/mol */
+  finalEnergy: number;
+  /** `false` when `maxIterations` was reached before convergence */
+  converged: boolean;
+  /**
+   * Minimization trajectory, in order: the starting geometry, one frame every
+   * `snapshotFrequency` iterations (plus the converged geometry when the minimizer
+   * converges), and the final geometry. Consecutive identical frames are not repeated.
+   */
+  frames: RDKitForceFieldFrame[];
+};
+
+/** Details accepted by `JSMol.generate_conformers` */
+export type RDKitGenerateConformersDetails = {
+  /**
+   * Number of conformers to embed. `0` removes all conformers.
+   * @default 10
+   */
+  count: number;
+  /**
+   * Seed for the random number generator. `-1` uses a random seed.
+   * @default -1
+   */
+  randomSeed: number;
+  /**
+   * Heavy-atom RMSD in Å below which two conformers are considered duplicates and
+   * only one is kept. A negative value disables pruning.
+   * @default -1
+   */
+  pruneRmsThreshold: number;
+  /**
+   * MMFF94 (or UFF) minimization iterations applied to each conformer. `0` disables minimization.
+   * @default 0
+   */
+  minimizeIterations: number;
+};
+
+export type RDKitGenerateConformersResult = {
+  /** Number of conformers that were minimized */
+  minimizedCount: number;
+  /** Force field used for minimization, or `null` when no conformer was minimized */
+  forcefield: RDKitForceFieldName | null;
+  /** Flat coordinates in Å of each conformer, in conformer order */
+  conformers: number[][];
+};

@@ -15,6 +15,10 @@ import type {
   RDKitGetSmilesOptions,
   RDKitMolZipOptions,
   RDKitGetFragsOptions,
+  RDKitForceFieldDetails,
+  RDKitForceFieldEnergyResult,
+  RDKitMinimizeResult,
+  RDKitGenerateConformersResult,
 } from './types/rdkit-minimalib-json-typings';
 import { MolArray } from './mol-array.ts';
 import type { InChI_Flags } from './types/inchi';
@@ -24,11 +28,27 @@ import type {
   RDKitCondenseAbbreviationsOptions,
   RDKitMmpaFragsOptions,
   RDKitGetSVGOptions,
+  RDKitMolOperation,
+  RDKitForceFieldEnergyOptions,
+  RDKitMinimizeOptions,
+  RDKitMinimization,
+  RDKitGenerateConformersOptions,
+  RDKitConformers,
 } from './types/rdkit-esm.typings.ts';
 import { DEFAULT_MAX_COVERAGE, DEFAULT_USE_LINKERS } from './abbreviations/abbreviations.ts';
 import { buildCxSmilesRawOptions } from './formats/cxsmiles.ts';
 import { buildGetMolAsUint8ArrayOptions } from './formats/pickle.ts';
 import { Fingerprint } from './fingerprints/fingerprint.ts';
+import { getLogger, RDKitOperationError } from './logger.ts';
+
+/** Converts flat `[x0, y0, z0, x1, …]` coordinates to `[x, y, z]` tuples, as returned by `getCoords()` */
+const toCoords = (positions: number[]): [number, number, number][] => {
+  const coords: [number, number, number][] = [];
+  for (let i = 0; i < positions.length; i += 3) {
+    coords.push([positions[i], positions[i + 1], positions[i + 2]]);
+  }
+  return coords;
+};
 
 export type MMPAFragmentation = {
   /**
@@ -518,6 +538,118 @@ export class Mol implements Disposable {
     if (!newMol || !newMol.is_valid()) return;
     mol.delete();
     this._jsMol = newMol;
+  }
+
+  // -- Force field and conformers --
+
+  /**
+   * Runs a force-field or conformer extra and parses its JSON result.
+   * An empty result means failure: the reason is reported through the logger.
+   */
+  private runExtra<T>(
+    operation: RDKitMolOperation,
+    throwOnError: boolean,
+    call: (mol: JSMol) => string,
+  ): T | null {
+    const mol = this.jsMol;
+    const logger = getLogger(this.module);
+    logger?.reset(throwOnError);
+    const raw = call(mol);
+    if (raw) return JSON.parse(raw) as T;
+    if (logger) logger.handleError(mol.get_smiles(), operation);
+    else if (throwOnError) throw new RDKitOperationError(operation, mol.get_smiles(), '');
+    return null;
+  }
+
+  /**
+   * Computes the force-field energy of the first conformer with MMFF94,
+   * falling back to UFF when MMFF94 has no parameters for the molecule.
+   *
+   * @remarks Add explicit hydrogens first (`addHsInPlace()`), otherwise RDKit logs a
+   * warning and the energy is not physically meaningful.
+   *
+   * @returns The energy in kcal/mol and the force field used, or null on failure
+   * (e.g. the molecule has no coordinates).
+   *   Pass `{ throwOnError: true }` to throw a {@link RDKitOperationError} instead.
+   */
+  getForceFieldEnergy(): RDKitForceFieldEnergyResult | null;
+  getForceFieldEnergy(
+    options: Partial<RDKitForceFieldEnergyOptions> & { throwOnError: true },
+  ): RDKitForceFieldEnergyResult;
+  getForceFieldEnergy(
+    options?: Partial<RDKitForceFieldEnergyOptions>,
+  ): RDKitForceFieldEnergyResult | null;
+  getForceFieldEnergy(
+    options?: Partial<RDKitForceFieldEnergyOptions>,
+  ): RDKitForceFieldEnergyResult | null {
+    const { throwOnError = false } = options ?? {};
+    const details: RDKitForceFieldDetails = { job: 'energy' };
+    return this.runExtra('getForceFieldEnergy', throwOnError, (mol) =>
+      mol.run_forcefield(JSON.stringify(details)),
+    );
+  }
+
+  /**
+   * Minimizes the first conformer with MMFF94, falling back to UFF when MMFF94 has
+   * no parameters for the molecule. The conformer is updated in place.
+   *
+   * @remarks
+   * - Add explicit hydrogens first (`addHsInPlace()`), otherwise RDKit logs a warning.
+   * - 2D coordinates are accepted, but a perfectly flat structure stays flat:
+   *   there is no force out of the plane. Use `generateConformers()` to get 3D coordinates.
+   *
+   * @param options - Minimization options
+   * @returns Energies, convergence and the minimization trajectory, or null on failure
+   * (e.g. the molecule has no coordinates, or `fixedAtoms` is out of range).
+   *   Pass `{ throwOnError: true }` to throw a {@link RDKitOperationError} instead.
+   */
+  minimize(): RDKitMinimization | null;
+  minimize(options: Partial<RDKitMinimizeOptions> & { throwOnError: true }): RDKitMinimization;
+  minimize(options?: Partial<RDKitMinimizeOptions>): RDKitMinimization | null;
+  minimize(options?: Partial<RDKitMinimizeOptions>): RDKitMinimization | null {
+    const { throwOnError = false, ...wasmOptions } = options ?? {};
+    const details: RDKitForceFieldDetails = { job: 'minimize', ...wasmOptions };
+    const result = this.runExtra<RDKitMinimizeResult>('minimize', throwOnError, (mol) =>
+      mol.run_forcefield(JSON.stringify(details)),
+    );
+    if (!result) return null;
+    return {
+      ...result,
+      frames: result.frames.map(({ energy, positions }) => ({
+        energy,
+        coords: toCoords(positions),
+      })),
+    };
+  }
+
+  /**
+   * Replaces the molecule's conformers with 3D conformers embedded with ETKDGv3,
+   * optionally minimized with MMFF94 (or UFF).
+   *
+   * @remarks
+   * - Add explicit hydrogens first (`addHsInPlace()`), otherwise RDKit logs a warning.
+   * - All conformers are kept on the molecule, but `getCoords()`, `getMolblock()` and
+   *   `minimize()` only use the first one. All of them are returned here and in `getJSON()`.
+   *
+   * @param options - Embedding options
+   * @returns The coordinates of each conformer, or null on failure
+   * (e.g. the molecule cannot be embedded).
+   *   Pass `{ throwOnError: true }` to throw a {@link RDKitOperationError} instead.
+   */
+  generateConformers(): RDKitConformers | null;
+  generateConformers(
+    options: Partial<RDKitGenerateConformersOptions> & { throwOnError: true },
+  ): RDKitConformers;
+  generateConformers(options?: Partial<RDKitGenerateConformersOptions>): RDKitConformers | null;
+  generateConformers(options?: Partial<RDKitGenerateConformersOptions>): RDKitConformers | null {
+    const { throwOnError = false, ...wasmOptions } = options ?? {};
+    const result = this.runExtra<RDKitGenerateConformersResult>(
+      'generateConformers',
+      throwOnError,
+      (mol) => mol.generate_conformers(JSON.stringify(wasmOptions)),
+    );
+    if (!result) return null;
+    return { ...result, conformers: result.conformers.map(toCoords) };
   }
 
   // -- Coordinate generation --

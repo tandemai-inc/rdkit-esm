@@ -4,7 +4,8 @@ RDKit-ESM is a library wrapping the RDKit MinimalLib WASM port of RDKit for easi
 
 ## Context: project overview
 
-- compiled artifacts from RDKit are in ./MinimalLib/dist
+- compiled artifacts are in ./MinimalLib/dist. That WASM is official RDKit MinimalLib **plus** a small extras layer (force field / ETKDG). It is not an unmodified official binary. See `wasm/README.md`.
+- extras live in `wasm/`: pin (`RDKIT_SHA`), `extras/forcefield.cpp`, `patches/0001-minilib-forcefield-extras.patch`, `scripts/build-wasm.sh`. Rebuild with official Docker (`GET_SRC=copy`); do not fork all of RDKit.
 - manually maintained typings for MinimalLib are in ./src/types/rdkit-minimalib-typings.d.ts. The shape of the JSON objects are in /src/types/rdkit-minimalib-json-typings.d.ts.
 - main code is in ./src
 - the library is bundled using tsdown, distributed in ESM format only. Package contains the WASM asset, which must be bundled by third party consumers.
@@ -49,7 +50,7 @@ Concretely: instead of `mol.get_svg(600, 400, JSON.stringify({ addStereoAnnotati
 - **`Reaction`** (`reaction.ts`) — wraps `JSReaction`. Implements `Disposable`.
 - **`MolArray`** (`mol-array.ts`) — `Array<Mol>` subclass with batch `delete()` and `Symbol.dispose` for bulk lifecycle management.
 - **`Fingerprint`** (`fingerprints/fingerprint.ts`) — wraps the three raw variants (string / binary_text / uint8array) into one object with `onBits`, `fpU8`, `fpU32`, `toString()`, `nBits`, `type`.
-- **`RDKitLogger`** (`logger.ts`) — manages WASM log capture/tee, single error listener slot, `throwOnError` support. All error handling in `getMol`/`getQMol`/`getRxn` routes through this.
+- **`RDKitLogger`** (`logger.ts`) — manages WASM log capture/tee, single error listener slot, `throwOnError` support. All error handling in `getMol`/`getQMol`/`getRxn` and in the force-field/conformer `Mol` methods routes through this. `Mol` finds the logger with `getLogger(module)`.
 
 ### Type files
 
@@ -59,7 +60,7 @@ Concretely: instead of `mol.get_svg(600, 400, JSON.stringify({ addStereoAnnotati
 
 ### Error handling pattern
 
-`getMol()`, `getQMol()`, `getRxn()` return `null` on failure by default. Pass `{ throwOnError: true }` to throw `RDKitParseError` instead. Register `rdkit.events.addErrorListener(cb)` to receive `{ input, message, operation }` on any parse failure regardless of throw mode.
+`getMol()`, `getQMol()`, `getRxn()` return `null` on failure by default. Pass `{ throwOnError: true }` to throw `RDKitParseError` instead. Register `rdkit.events.addErrorListener(cb)` to receive `{ input, message, operation }` on any parse failure regardless of throw mode. `Mol.getForceFieldEnergy()`, `Mol.minimize()` and `Mol.generateConformers()` follow the same pattern (WASM returns `""` and logs to `rdApp.error`) and throw `RDKitOperationError`, with the molecule's SMILES as `input`.
 
 ### Memory management
 
