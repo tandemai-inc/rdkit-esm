@@ -50,7 +50,9 @@ export type RDKitDescriptors = Record<RDKitDescriptorNames, number>;
 
 export type RDKitJsonAtom = {
   chg: number;
-  /** Implicit Hydrogens count */
+  /**
+   * Implicit Hydrogens count
+   */
   impHs: number;
   isotope: number;
   nRad: number;
@@ -59,7 +61,9 @@ export type RDKitJsonAtom = {
 };
 
 export type RDKitJsonBond = {
-  /** Bond order */
+  /**
+   * Bond order
+   */
   bo: number;
   stereo: 'unspecified' | 'cis' | 'trans' | 'either';
   stereoAtoms: [number, number];
@@ -106,9 +110,11 @@ export type DrawColour = [number, number, number, number?];
 export type ColourPalette = { [k: number]: DrawColour };
 export type ColourPaletteName = 'default' | 'avalon' | 'cdk' | 'darkmode' | 'bw';
 
-/** Flags controlling which elements are included when computing drawing extents.
+/**
+ * Flags controlling which elements are included when computing drawing extents.
  *  Each key corresponds to a DrawElement enum value; `true` includes it, `false` excludes it.
- *  Example: `{ ALL: true, HIGHLIGHTS: false }` includes everything except highlights. */
+ *  Example: `{ ALL: true, HIGHLIGHTS: false }` includes everything except highlights.
+ */
 export type DrawingExtentsInclude = Partial<
   Record<
     | 'NONE'
@@ -125,184 +131,358 @@ export type DrawingExtentsInclude = Partial<
 >;
 
 export type RDKitDepictionDetails = {
-  /** Drawing width in pixels */
+  /**
+   * Drawing width in pixels
+   */
   width: number;
-  /** Drawing height in pixels */
+  /**
+   * Drawing height in pixels
+   */
   height: number;
-  /** X offset for drawing origin in pixels */
+  /**
+   * X offset for drawing origin in pixels
+   */
   offsetx: number;
-  /** Y offset for drawing origin in pixels */
+  /**
+   * Y offset for drawing origin in pixels
+   */
   offsety: number;
-  /** Toggles replacing 2H with D and 3H with T */
+  /**
+   * Toggles replacing 2H with D and 3H with T
+   */
   atomLabelDeuteriumTritium: boolean;
-  /** Draws "breaks" at dummy atoms */
+  /**
+   * Draws "breaks" at dummy atoms
+   */
   dummiesAreAttachments: boolean;
-  /** Draws circles under highlighted atoms */
+  /**
+   * Draws circles under highlighted atoms
+   */
   circleAtoms: boolean;
-  /** Split bonds into per-atom segments; most useful for dynamic manipulation of drawing, especially for SVG */
+  /**
+   * Split bonds into per-atom segments; most useful for dynamic manipulation of drawing, especially for SVG
+   */
   splitBonds: boolean;
-  /** Default highlight color */
+  /**
+   * Default highlight color
+   */
   highlightColour: DrawColour;
-  /** Highlight by drawing an outline *underneath* the molecule */
+  /**
+   * Highlight by drawing an outline *underneath* the molecule
+   */
   continuousHighlight: boolean;
-  /** Fill the areas used to highlight atoms and atom regions */
+  /**
+   * Fill the areas used to highlight atoms and atom regions
+   */
   fillHighlights: boolean;
-  /** Default highlight radius if nothing given for a particular atom; units are Angstrom */
+  /**
+   * Default highlight radius if nothing given for a particular atom; units are Angstrom
+   */
   highlightRadius: number;
-  /** If positive, used as a cutoff (in pixels) for highlighting close contacts */
+  /**
+   * If positive, used as a cutoff (in pixels) for highlighting close contacts
+   */
   flagCloseContactsDist: number;
-  /** Toggles inclusion of atom tags in the output; does not make sense for all renderers */
+  /**
+   * Toggles inclusion of atom tags in the output; does not make sense for all renderers
+   */
   includeAtomTags: boolean;
-  /** Toggles clearing the background before drawing a molecule */
+  /**
+   * Toggles clearing the background before drawing a molecule
+   */
   clearBackground: boolean;
-  /** Color to be used while clearing the background */
+  /**
+   * Color to be used while clearing the background
+   */
   backgroundColour: DrawColour;
-  /** Color to be used for query bonds */
+  /**
+   * Color to be used for query bonds
+   */
   queryColour: DrawColour;
-  /** Font size (in pixels) to be used for the legend (if present) */
+  /**
+   * Font size (in pixels) to be used for the legend (if present)
+   */
   legendFontSize: number;
-  /** Fraction of the draw panel to be used for the legend if present */
+  /**
+   * Fraction of the draw panel to be used for the legend if present
+   */
   legendFraction: number;
-  /** Maximum size in pixels for font in drawn molecule; -1 means no max */
+  /**
+   * Maximum size in pixels for font in drawn molecule; -1 means no max
+   */
   maxFontSize: number;
-  /** Minimum size in pixels for font in drawn molecule; -1 means no min */
+  /**
+   * Minimum size in pixels for font in drawn molecule; -1 means no min
+   */
   minFontSize: number;
-  /** Font size to use, in pixels; default -1 means not fixed. If set, always used irrespective of scale, minFontSize and maxFontSize */
+  /**
+   * Font size to use, in pixels; default -1 means not fixed. If set, always used irrespective of scale, minFontSize and maxFontSize
+   */
   fixedFontSize: number;
-  /** Scales font relative to atom labels for atom and bond annotation */
+  /**
+   * Scales font relative to atom labels for atom and bond annotation
+   */
   annotationFontScale: number;
-  /** Name of font file for freetype rendering; if given, over-rides default (BuiltinTelexRegular). Can also be BuiltinRobotoRegular */
+  /**
+   * Name of font file for freetype rendering; if given, over-rides default (BuiltinTelexRegular). Can also be BuiltinRobotoRegular
+   */
   fontFile: string;
-  /** Color to be used for the legend (if present) */
+  /**
+   * Color to be used for the legend (if present)
+   */
   legendColour: DrawColour;
-  /** Offset for the extra lines in a multiple bond, as a fraction of mean bond length */
+  /**
+   * Offset for the extra lines in a multiple bond, as a fraction of mean bond length
+   */
   multipleBondOffset: number;
-  /** Fraction of empty space to leave around the molecule */
+  /**
+   * Fraction of empty space to leave around the molecule
+   */
   padding: number;
-  /** Fraction of empty space to leave around each component in a reaction drawing */
+  /**
+   * Fraction of empty space to leave around each component in a reaction drawing
+   */
   componentPadding: number;
-  /** Additional padding to leave around atom labels; expressed as a fraction of the font size */
+  /**
+   * Additional padding to leave around atom labels; expressed as a fraction of the font size
+   */
   additionalAtomLabelPadding: number;
-  /** Replacement labels for atoms */
+  /**
+   * Replacement labels for atoms
+   */
   atomLabels: Record<number, string>;
-  /** Disables inclusion of atom labels in the rendering */
+  /**
+   * Disables inclusion of atom labels in the rendering
+   */
   noAtomLabels: boolean;
-  /** Atom regions */
+  /**
+   * Atom regions
+   */
   atomRegions: number[][];
-  /** Color to be used for the symbols and arrows in reactions */
+  /**
+   * Color to be used for the symbols and arrows in reactions
+   */
   symbolColour: DrawColour;
-  /** Color to be used for annotations */
+  /**
+   * Color to be used for annotations
+   */
   annotationColour: DrawColour;
-  /** Color to be used for atom indices and notes */
+  /**
+   * Color to be used for atom indices and notes
+   */
   atomNoteColour: DrawColour;
-  /** Color to be used for bond indices and notes */
+  /**
+   * Color to be used for bond indices and notes
+   */
   bondNoteColour: DrawColour;
-  /** Default line width when drawing bonds */
+  /**
+   * Default line width when drawing bonds
+   */
   bondLineWidth: number;
-  /** Whether to apply scale() to the bond width */
+  /**
+   * Whether to apply scale() to the bond width
+   */
   scaleBondWidth: boolean;
-  /** Whether to apply scale() to bond highlight widths */
+  /**
+   * Whether to apply scale() to bond highlight widths
+   */
   scaleHighlightBondWidth: boolean;
-  /** Multiplier for standard bond width used for highlighting */
+  /**
+   * Multiplier for standard bond width used for highlighting
+   */
   highlightBondWidthMultiplier: number;
-  /** Call prepareMolForDrawing() on each molecule passed to drawMolecules() */
+  /**
+   * Call prepareMolForDrawing() on each molecule passed to drawMolecules()
+   */
   prepareMolsBeforeDrawing: boolean;
-  /** Defines 10 default colors for highlighting atoms and bonds or reactants in reactions */
+  /**
+   * Defines 10 default colors for highlighting atoms and bonds or reactants in reactions
+   */
   highlightColourPalette: DrawColour[];
-  /** The palette used to assign colors to atoms based on atomic number */
+  /**
+   * The palette used to assign colors to atoms based on atomic number
+   */
   atomColourPalette: ColourPalette | ColourPaletteName;
-  /** Fixes scale to this fraction of draw window width so an average bond is this fraction of the width; -1.0 means no fix */
+  /**
+   * Fixes scale to this fraction of draw window width so an average bond is this fraction of the width; -1.0 means no fix
+   */
   fixedScale: number;
-  /** Fixes the bond length (and hence the scale) to always be this number of pixels; -1.0 means no fix. If both fixedScale and fixedBondLength are > 0, fixedScale wins */
+  /**
+   * Fixes the bond length (and hence the scale) to always be this number of pixels; -1.0 means no fix. If both fixedScale and fixedBondLength are > 0, fixedScale wins
+   */
   fixedBondLength: number;
-  /** Angle in degrees to rotate coords by about centre before drawing */
+  /**
+   * Angle in degrees to rotate coords by about centre before drawing
+   */
   rotate: number;
-  /** Adds atom indices to drawings */
+  /**
+   * Adds atom indices to drawings
+   */
   addAtomIndices: boolean;
-  /** Adds bond indices to drawings */
+  /**
+   * Adds bond indices to drawings
+   */
   addBondIndices: boolean;
-  /** Adds isotope labels to non-dummy atoms */
+  /**
+   * Adds isotope labels to non-dummy atoms
+   */
   isotopeLabels: boolean;
-  /** Adds isotope labels to dummy atoms */
+  /**
+   * Adds isotope labels to dummy atoms
+   */
   dummyIsotopeLabels: boolean;
-  /** Adds E/Z and R/S stereo annotations to drawings */
+  /**
+   * Adds E/Z and R/S stereo annotations to drawings
+   */
   addStereoAnnotation: boolean;
-  /** Show CIP codes for 'or' and 'and' StereoGroups that are normally hidden */
+  /**
+   * Show CIP codes for 'or' and 'and' StereoGroups that are normally hidden
+   */
   showAllCIPCodes: boolean;
-  /** Forces atom highlights always to be circles; default (false) puts ellipses round longer labels */
+  /**
+   * Forces atom highlights always to be circles; default (false) puts ellipses round longer labels
+   */
   atomHighlightsAreCircles: boolean;
-  /** Highlight style for multi-colour highlights */
+  /**
+   * Highlight style for multi-colour highlights
+   */
   multiColourHighlightStyle: 'CIRCLEANDLINE' | 'LASSO';
-  /** Moves the centre of the drawn molecule to (0,0) */
+  /**
+   * Moves the centre of the drawn molecule to (0,0)
+   */
   centreMoleculesBeforeDrawing: boolean;
   /** Which elements should be included when computing drawing extents.
    *  Pass an object with DrawElement flag names as keys and boolean values.
    *  Example: `{ ALL: true, HIGHLIGHTS: false }` = include everything except highlights. */
   drawingExtentsInclude: DrawingExtentsInclude;
-  /** Draw terminal methyl and related groups as CH3 */
+  /**
+   * Draw terminal methyl and related groups as CH3
+   */
   explicitMethyl: boolean;
-  /** Include radicals in the drawing; can be useful to turn off for reactions and queries */
+  /**
+   * Include radicals in the drawing; can be useful to turn off for reactions and queries
+   */
   includeRadicals: boolean;
-  /** When possible, include metadata about molecules and reactions in the output to allow them to be reconstructed */
+  /**
+   * When possible, include metadata about molecules and reactions in the output to allow them to be reconstructed
+   */
   includeMetadata: boolean;
-  /** Simulate hand-drawn lines for bonds; when combined with a font like Comic-Sans or Comic-Neue, gives xkcd-like drawings */
+  /**
+   * Simulate hand-drawn lines for bonds; when combined with a font like Comic-Sans or Comic-Neue, gives xkcd-like drawings
+   */
   comicMode: boolean;
-  /** Multiplier for standard bond width used for variable attachment points */
+  /**
+   * Multiplier for standard bond width used for variable attachment points
+   */
   variableBondWidthMultiplier: number;
-  /** Radius value to use for atoms involved in variable attachment points */
+  /**
+   * Radius value to use for atoms involved in variable attachment points
+   */
   variableAtomRadius: number;
-  /** Colour to use for variable attachment points */
+  /**
+   * Colour to use for variable attachment points
+   */
   variableAttachmentColour: DrawColour;
-  /** Add a molecule annotation with "ABS" if the chiral flag is set */
+  /**
+   * Add a molecule annotation with "ABS" if the chiral flag is set
+   */
   includeChiralFlagLabel: boolean;
-  /** If all specified stereocenters are in a single StereoGroup, show a molecule-level annotation instead of the individual labels */
+  /**
+   * If all specified stereocenters are in a single StereoGroup, show a molecule-level annotation instead of the individual labels
+   */
   simplifiedStereoGroupLabel: boolean;
-  /** If true, double bonds with unspecified stereo are drawn crossed; potential stereocenters with unspecified stereo are drawn with a wavy bond */
+  /**
+   * If true, double bonds with unspecified stereo are drawn crossed; potential stereocenters with unspecified stereo are drawn with a wavy bond
+   */
   unspecifiedStereoIsUnknown: boolean;
-  /** If true, wedged and dashed bonds are drawn using symbolColour rather than inheriting their colour from the atoms */
+  /**
+   * If true, wedged and dashed bonds are drawn using symbolColour rather than inheriting their colour from the atoms
+   */
   singleColourWedgeBonds: boolean;
-  /** If the molecule came from a MolBlock, prefer the wedging information it provides; if false, use RDKit rules */
+  /**
+   * If the molecule came from a MolBlock, prefer the wedging information it provides; if false, use RDKit rules
+   */
   useMolBlockWedging: boolean;
-  /** Scaling factor used for pixels-to-angstrom conversion when auto scaling is being used */
+  /**
+   * Scaling factor used for pixels-to-angstrom conversion when auto scaling is being used
+   */
   scalingFactor: number;
-  /** When > 0, sets the baseFontSize for text drawing; reference: default DrawText::baseFontSize is 0.6 */
+  /**
+   * When > 0, sets the baseFontSize for text drawing; reference: default DrawText::baseFontSize is 0.6
+   */
   baseFontSize: number;
-  /** When drawing multiple molecules with DrawMolecules, forces them to use the same scale */
+  /**
+   * When drawing multiple molecules with DrawMolecules, forces them to use the same scale
+   */
   drawMolsSameScale: boolean;
-  /** Replace any-atom, any-hetero, any-halo queries with complex query symbols A, Q, X, M, optionally followed by H if hydrogen is included (except for AH, which stays *) */
+  /**
+   * Replace any-atom, any-hetero, any-halo queries with complex query symbols A, Q, X, M, optionally followed by H if hydrogen is included (except for AH, which stays *)
+   */
   useComplexQueryAtomSymbols: boolean;
-  /** If true, puts brackets round atom lists in query atoms */
+  /**
+   * If true, puts brackets round atom lists in query atoms
+   */
   bracketsAroundAtomLists: boolean;
-  /** Atom indices to highlight */
+  /**
+   * Atom indices to highlight
+   */
   atoms: number[];
-  /** Bond indices to highlight */
+  /**
+   * Bond indices to highlight
+   */
   bonds: number[];
-  /** Per-atom highlight colors, keyed by atom index */
+  /**
+   * Per-atom highlight colors, keyed by atom index
+   */
   highlightAtomColors: Record<number, DrawColour>;
-  /** Per-bond highlight colors, keyed by bond index */
+  /**
+   * Per-bond highlight colors, keyed by bond index
+   */
   highlightBondColors: Record<number, DrawColour>;
-  /** Per-atom highlight radii, keyed by atom index */
+  /**
+   * Per-atom highlight radii, keyed by atom index
+   */
   highlightAtomRadii: Record<number, number>;
-  /** If true, highlighted hetero atoms are drawn in standard colours rather than black */
+  /**
+   * If true, highlighted hetero atoms are drawn in standard colours rather than black
+   */
   standardColoursForHighlightedAtoms: boolean;
   // Drawing call parameters (parsed from the details JSON by common.h, not part of MolDrawOptions)
-  /** Caption text to display below the molecule (distinct from legendFontSize/legendColour which control its appearance) */
+  /**
+   * Caption text to display below the molecule (distinct from legendFontSize/legendColour which control its appearance)
+   */
   legend: string;
-  /** Panel width in pixels for multi-panel or grid drawings */
+  /**
+   * Panel width in pixels for multi-panel or grid drawings
+   */
   panelWidth: number;
-  /** Panel height in pixels for multi-panel or grid drawings */
+  /**
+   * Panel height in pixels for multi-panel or grid drawings
+   */
   panelHeight: number;
-  /** Disable freetype font rendering and use the built-in font instead */
+  /**
+   * Disable freetype font rendering and use the built-in font instead
+   */
   noFreetype: boolean;
-  /** Pre-kekulize the molecule before drawing */
+  /**
+   * Pre-kekulize the molecule before drawing
+   */
   kekulize: boolean;
-  /** Add chiral hydrogen atoms before drawing */
+  /**
+   * Add chiral hydrogen atoms before drawing
+   */
   addChiralHs: boolean;
-  /** Control bond wedging in the drawing */
+  /**
+   * Control bond wedging in the drawing
+   */
   wedgeBonds: boolean;
-  /** Force use of existing coordinates rather than generating new ones */
+  /**
+   * Force use of existing coordinates rather than generating new ones
+   */
   forceCoords: boolean;
-  /** Draw wavy bonds for double bonds with unspecified stereo */
+  /**
+   * Draw wavy bonds for double bonds with unspecified stereo
+   */
   wavyBonds: boolean;
   /** Return atom drawing coordinates in the output JSON
    * IMPORTANT: this changes the output format in the case of get_svg...()
@@ -375,39 +555,67 @@ export type RDKitGetMolOpt = {
   assignStereo: boolean;
   mergeQueryHs: boolean;
   assignCIPLabels: boolean;
-  /** Assign chiral types from molfile parity flags */
+  /**
+   * Assign chiral types from molfile parity flags
+   */
   assignChiralTypesFromMolParity: boolean;
-  /** Convert mapped dummy atoms to query atoms */
+  /**
+   * Convert mapped dummy atoms to query atoms
+   */
   makeDummiesQueries: boolean;
-  /** Apply strict parsing rules to CXSMILES input */
+  /**
+   * Apply strict parsing rules to CXSMILES input
+   */
   strictCXSMILES: boolean;
-  /** Apply strict parsing rules to Molfile input (molblock input only) */
+  /**
+   * Apply strict parsing rules to Molfile input (molblock input only)
+   */
   strictParsing: boolean;
-  /** Parse aromatic bond type from RDKit JSON input (RDKit JSON input only) */
+  /**
+   * Parse aromatic bond type from RDKit JSON input (RDKit JSON input only)
+   */
   setAromaticBonds: boolean;
-  /** Apply strict valence check when parsing RDKit JSON input (RDKit JSON input only) */
+  /**
+   * Apply strict valence check when parsing RDKit JSON input (RDKit JSON input only)
+   */
   strictValenceCheck: boolean;
-  /** Parse molecule properties from RDKit JSON input (RDKit JSON input only) */
+  /**
+   * Parse molecule properties from RDKit JSON input (RDKit JSON input only)
+   */
   parseProperties: boolean;
-  /** Parse conformers from RDKit JSON input (RDKit JSON input only) */
+  /**
+   * Parse conformers from RDKit JSON input (RDKit JSON input only)
+   */
   parseConformers: boolean;
 };
 
 export type RDKitGetMolBlockOptions = {
-  /** @default true */
+  /**
+   * @default true
+   */
   includeStereo: boolean;
-  /** @default true */
+  /**
+   * @default true
+   */
   kekulize: boolean;
-  /** @default false */
+  /**
+   * @default false
+   */
   useMolBlockWedging: boolean;
-  /** @default false */
+  /**
+   * @default false
+   */
   addChiralHs: boolean;
-  /** @default 'AUTO' */
+  /**
+   * @default 'AUTO'
+   */
   forceMDLVersion: 'AUTO' | 'V2000' | 'V3000';
 };
 
 export type RDKitGetSmilesOptions = {
-  /** Include stereochemistry and isotope information @default true */
+  /**
+   * Include stereochemistry and isotope information @default true
+   */
   doIsomericSmiles: boolean;
   /**
    * Kekulize the molecule before generating the SMILES and output
@@ -422,11 +630,17 @@ export type RDKitGetSmilesOptions = {
    * @default -1
    */
   rootedAtAtom: number;
-  /** Generate canonical SMILES @default true */
+  /**
+   * Generate canonical SMILES @default true
+   */
   canonical: boolean;
-  /** Include symbols for all bonds @default false */
+  /**
+   * Include symbols for all bonds @default false
+   */
   allBondsExplicit: boolean;
-  /** Provide hydrogen counts for every atom @default false */
+  /**
+   * Provide hydrogen counts for every atom @default false
+   */
   allHsExplicit: boolean;
   /**
    * Randomize the output order. The resulting SMILES is not canonical and
@@ -443,11 +657,15 @@ export type RDKitGetSmilesOptions = {
 export type RDKitGetCXSmilesRawOptions = RDKitGetSmilesOptions & CXSmilesOptions;
 
 type CXSmilesOptions = { [K in CxSmilesField as `CX_${K}`]: boolean } & {
-  /** @default RestoreBondDirOptionClear */
+  /**
+   * @default RestoreBondDirOptionClear
+   */
   restoreBondDirOption: 'RestoreBondDirOptionTrue' | 'RestoreBondDirOptionClear';
 };
 
-/** CX extension field names (without the `CX_` prefix) */
+/**
+ * CX extension field names (without the `CX_` prefix)
+ */
 export type CxSmilesField =
   | 'NONE'
   | 'ATOM_LABELS'
@@ -524,106 +742,192 @@ export type RDKitMCSResult = {
 };
 
 export type RDKitMorganFPOptions = {
-  /** @default 2 */
+  /**
+   * @default 2
+   */
   radius: number;
-  /** @default 2048 */
+  /**
+   * @default 2048
+   */
   nBits: number;
-  /** @default false */
+  /**
+   * @default false
+   */
   useCountSimulation: boolean;
-  /** @default false */
+  /**
+   * @default false
+   */
   useChirality: boolean;
-  /** @default true */
+  /**
+   * @default true
+   */
   useBondTypes: boolean;
-  /** @default false */
+  /**
+   * @default false
+   */
   includeRedundantEnvironments: boolean;
-  /** @default false */
+  /**
+   * @default false
+   */
   onlyNonzeroInvariants: boolean;
 };
 
 export type RDKitPatternFPOptions = {
-  /** @default 2048 */
+  /**
+   * @default 2048
+   */
   nBits: number;
-  /** @default false */
+  /**
+   * @default false
+   */
   tautomericFingerprint: boolean;
 };
 
 export type RDKitTopologicalTorsionFPOptions = {
-  /** @default 2048 */
+  /**
+   * @default 2048
+   */
   nBits: number;
-  /** @default false */
+  /**
+   * @default false
+   */
   useChirality: boolean;
-  /** @default 4 */
+  /**
+   * @default 4
+   */
   torsionAtomCount: number;
-  /** @default true */
+  /**
+   * @default true
+   */
   useCountSimulation: boolean;
 };
 
 export type RDKitRdkitFpOptions = {
-  /** @default 2048 */
+  /**
+   * @default 2048
+   */
   nBits: number;
-  /** @default 2 */
+  /**
+   * @default 2
+   */
   nBitsPerHash: number;
-  /** @default 1 */
+  /**
+   * @default 1
+   */
   minPath: number;
-  /** @default 7 */
+  /**
+   * @default 7
+   */
   maxPath: number;
-  /** @default true */
+  /**
+   * @default true
+   */
   useBondOrder: boolean;
-  /** @default true */
+  /**
+   * @default true
+   */
   branchedPaths: boolean;
-  /** @default false */
+  /**
+   * @default false
+   */
   useCountSimulation: boolean;
-  /** @default true */
+  /**
+   * @default true
+   */
   useHs: boolean;
 };
 
 export type RDKitAtomPairFPOptions = {
-  /** @default 2048 */
+  /**
+   * @default 2048
+   */
   nBits: number;
-  /** @default false */
+  /**
+   * @default false
+   */
   useChirality: boolean;
-  /** @default 1 */
+  /**
+   * @default 1
+   */
   minLength: number;
-  /** @default 30 */
+  /**
+   * @default 30
+   */
   maxLength: number;
-  /** @default true */
+  /**
+   * @default true
+   */
   useCountSimulation: boolean;
-  /** @default true */
+  /**
+   * @default true
+   */
   use2D: boolean;
 };
 
 export type RDKitRemoveHsOptions = {
-  /** @default false — hydrogens that have no bonds */
+  /**
+   * @default false — hydrogens that have no bonds
+   */
   removeDegreeZero: boolean;
-  /** @default false — hydrogens with two (or more) bonds */
+  /**
+   * @default false — hydrogens with two (or more) bonds
+   */
   removeHigherDegrees: boolean;
-  /** @default false — hydrogens with bonds only to other hydrogens */
+  /**
+   * @default false — hydrogens with bonds only to other hydrogens
+   */
   removeOnlyHNeighbors: boolean;
-  /** @default false — hydrogens with non-default isotopes */
+  /**
+   * @default false — hydrogens with non-default isotopes
+   */
   removeIsotopes: boolean;
-  /** @default false — removes isotopic Hs, tracks them via _isotopicHs property */
+  /**
+   * @default false — removes isotopic Hs, tracks them via _isotopicHs property
+   */
   removeAndTrackIsotopes: boolean;
-  /** @default false — hydrogens with at least one dummy-atom neighbor */
+  /**
+   * @default false — hydrogens with at least one dummy-atom neighbor
+   */
   removeDummyNeighbors: boolean;
-  /** @default false — hydrogens defining bond stereochemistry */
+  /**
+   * @default false — hydrogens defining bond stereochemistry
+   */
   removeDefiningBondStereo: boolean;
-  /** @default true — hydrogens with wedged bonds */
+  /**
+   * @default true — hydrogens with wedged bonds
+   */
   removeWithWedgedBond: boolean;
-  /** @default false — hydrogens with queries defined */
+  /**
+   * @default false — hydrogens with queries defined
+   */
   removeWithQuery: boolean;
-  /** @default true — mapped hydrogens */
+  /**
+   * @default true — mapped hydrogens
+   */
   removeMapped: boolean;
-  /** @default true — hydrogens in SubstanceGroups */
+  /**
+   * @default true — hydrogens in SubstanceGroups
+   */
   removeInSGroups: boolean;
-  /** @default true — display warnings for Hs that are not removed */
+  /**
+   * @default true — display warnings for Hs that are not removed
+   */
   showWarnings: boolean;
-  /** @default true @deprecated — equivalent of !implicitOnly */
+  /**
+   * @default true @deprecated — equivalent of !implicitOnly
+   */
   removeNonimplicit: boolean;
-  /** @default false @deprecated */
+  /**
+   * @default false @deprecated
+   */
   updateExplicitCount: boolean;
-  /** @default false — remove hydrides */
+  /**
+   * @default false — remove hydrides
+   */
   removeHydrides: boolean;
-  /** @default false — remove Hs bonded to atoms with non-tetrahedral stereochemistry */
+  /**
+   * @default false — remove Hs bonded to atoms with non-tetrahedral stereochemistry
+   */
   removeNontetrahedralNeighbors: boolean;
 };
 
@@ -678,8 +982,115 @@ export type RDKitGetRgdOptions = {
 };
 
 export type RDKitGetFragsOptions = {
-  /** Whether to sanitize the fragment molecules. @default true */
+  /**
+   * Whether to sanitize the fragment molecules. @default true
+   */
   sanitizeFrags: boolean;
-  /** Whether to copy conformers to the fragment molecules. @default true */
+  /**
+   * Whether to copy conformers to the fragment molecules. @default true
+   */
   copyConformers: boolean;
+};
+
+// -- Force-field and conformer extras (not in official MinimalLib, see wasm/README.md) --
+
+/**
+ * Force field used by a computation. UFF is only used when MMFF94 has no
+ * parameters for the molecule.
+ */
+export type RDKitForceFieldName = 'MMFF94' | 'UFF';
+
+export type RDKitForceFieldEnergyDetails = {
+  job: 'energy';
+};
+
+export type RDKitMinimizeDetails = {
+  job: 'minimize';
+  /**
+   * Maximum number of BFGS iterations. The minimization stops earlier when it converges.
+   * @default 200
+   */
+  maxIterations: number;
+  /**
+   * Record a frame every `snapshotFrequency` iterations. `0` records no intermediate frames.
+   * @default 0
+   */
+  snapshotFrequency: number;
+  /**
+   * Indices of atoms that keep their exact coordinates. At least one atom must stay free.
+   * @default []
+   */
+  fixedAtoms: number[];
+};
+
+/** Details accepted by `JSMol.run_forcefield` */
+export type RDKitForceFieldDetails =
+  | RDKitForceFieldEnergyDetails
+  | (Pick<RDKitMinimizeDetails, 'job'> & Partial<Omit<RDKitMinimizeDetails, 'job'>>);
+
+export type RDKitForceFieldFrame = {
+  /** Force-field energy in kcal/mol */
+  energy: number;
+  /** Flat atom coordinates in Å: `[x0, y0, z0, x1, y1, z1, …]` */
+  positions: number[];
+};
+
+export type RDKitForceFieldEnergyResult = {
+  forcefield: RDKitForceFieldName;
+  /** `true` when UFF was used because MMFF94 has no parameters for the molecule */
+  fallback: boolean;
+  /** Force-field energy in kcal/mol */
+  energy: number;
+};
+
+export type RDKitMinimizeResult = {
+  forcefield: RDKitForceFieldName;
+  /** `true` when UFF was used because MMFF94 has no parameters for the molecule */
+  fallback: boolean;
+  /** Energy of the starting geometry in kcal/mol */
+  initialEnergy: number;
+  /** Energy of the final geometry in kcal/mol */
+  finalEnergy: number;
+  /** `false` when `maxIterations` was reached before convergence */
+  converged: boolean;
+  /**
+   * Minimization trajectory, in order: the starting geometry, one frame every
+   * `snapshotFrequency` iterations (plus the converged geometry when the minimizer
+   * converges), and the final geometry. Consecutive identical frames are not repeated.
+   */
+  frames: RDKitForceFieldFrame[];
+};
+
+/** Details accepted by `JSMol.generate_conformers` */
+export type RDKitGenerateConformersDetails = {
+  /**
+   * Number of conformers to embed. `0` removes all conformers.
+   * @default 10
+   */
+  count: number;
+  /**
+   * Seed for the random number generator. `-1` uses a random seed.
+   * @default -1
+   */
+  randomSeed: number;
+  /**
+   * Heavy-atom RMSD in Å below which two conformers are considered duplicates and
+   * only one is kept. A negative value disables pruning.
+   * @default -1
+   */
+  pruneRmsThreshold: number;
+  /**
+   * MMFF94 (or UFF) minimization iterations applied to each conformer. `0` disables minimization.
+   * @default 0
+   */
+  minimizeIterations: number;
+};
+
+export type RDKitGenerateConformersResult = {
+  /** Number of conformers that were minimized */
+  minimizedCount: number;
+  /** Force field used for minimization, or `null` when no conformer was minimized */
+  forcefield: RDKitForceFieldName | null;
+  /** Flat coordinates in Å of each conformer, in conformer order */
+  conformers: number[][];
 };

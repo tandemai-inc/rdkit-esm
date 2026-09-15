@@ -17,21 +17,31 @@ export interface JSMol {
    */
   delete(): void;
 
-  /** Returns true if the underlying C++ object has already been deleted (added by Emscripten) */
+  /**
+   * Returns true if the underlying C++ object has already been deleted (added by Emscripten)
+   */
   isDeleted(): boolean;
 
   // string representations
 
-  /** Returns the SMILES string */
+  /**
+   * Returns the SMILES string
+   */
   get_smiles(details_json?: JSONString): string;
 
-  /** Returns the Chemaxon Extended SMILES string */
+  /**
+   * Returns the Chemaxon Extended SMILES string
+   */
   get_cxsmiles(details_json?: JSONString): string;
 
-  /** Returns the SMARTS string */
+  /**
+   * Returns the SMARTS string
+   */
   get_smarts(details_json?: JSONString): string;
 
-  /** Returns the Chemaxon Extended SMARTS string */
+  /**
+   * Returns the Chemaxon Extended SMARTS string
+   */
   get_cxsmarts(details_json?: JSONString): string;
 
   /**
@@ -48,13 +58,34 @@ export interface JSMol {
   get_v2Kmolblock(): string;
   get_v2Kmolblock(options: JSONString): string;
 
+  /**
+   * Extras (not in official MinimalLib, see `wasm/README.md`).
+   * Runs an MMFF94 force-field job on the first conformer, falling back to UFF
+   * when MMFF94 has no parameters for the molecule.
+   * @param details `RDKitForceFieldDetails` as a stringified JSON
+   * @returns `RDKitForceFieldEnergyResult` or `RDKitMinimizeResult` as a JSON string,
+   * or `""` on failure (the reason is logged to `rdApp.error`)
+   */
+  run_forcefield(details: JSONString): string;
+
+  /**
+   * Extras (not in official MinimalLib, see `wasm/README.md`).
+   * Replaces the molecule's conformers with ETKDGv3 conformers.
+   * @param details `RDKitGenerateConformersDetails` as a stringified JSON
+   * @returns `RDKitGenerateConformersResult` as a JSON string,
+   * or `""` on failure (the reason is logged to `rdApp.error`)
+   */
+  generate_conformers(details: JSONString): string;
+
   /** Returns the V3000 Molfile string
    * @param RDKitGetMolBlockOpt as a stringifyed JSON
    */
   get_v3Kmolblock(): string;
   get_v3Kmolblock(options: JSONString): string;
 
-  /** Return the InChI string */
+  /**
+   * Return the InChI string
+   */
   get_inchi(): string;
   /**
    * @param args InchI CLI arguments
@@ -62,17 +93,23 @@ export interface JSMol {
    */
   get_inchi(args: string): string;
 
-  /** Returns the JSON representation */
+  /**
+   * Returns the JSON representation
+   */
   get_json(): string;
 
   // array representation
 
-  /** Returns an unsigned integer array representation */
+  /**
+   * Returns an unsigned integer array representation
+   */
   get_as_uint8array(options?: JSONString): Uint8Array;
 
   // SVG representations
 
-  /** Returns an SVG of the molecule */
+  /**
+   * Returns an SVG of the molecule
+   */
   get_svg(): string;
 
   /**
@@ -102,7 +139,9 @@ export interface JSMol {
 
   // molecular descriptors
 
-  /** Returns a stringified JSON object of molecular descriptors */
+  /**
+   * Returns a stringified JSON object of molecular descriptors
+   */
   get_descriptors(): string;
 
   // fingerprint methods
@@ -335,10 +374,15 @@ export interface JSMol {
    */
   generate_aligned_coords(templateMol: JSMol, options: JSONString): string;
 
-  /** Returns true if the molecule's structure is valid */
+  /**
+   * Returns true if the molecule's structure is valid
+   * @deprecated An invalid molecule is `null`. Kept for backward compatibility.
+   */
   is_valid(): boolean;
 
-  /** Returns the total number of atoms in the molecule */
+  /**
+   * Returns the total number of atoms in the molecule
+   */
   get_num_atoms(): number;
   /**
    * Returns the number of atoms in the molecule
@@ -347,22 +391,34 @@ export interface JSMol {
   get_num_atoms(heavyOnly: boolean): number;
   get_num_bonds(): number;
 
-  /** Check is the molecule has any 2D coordinates generated */
+  /**
+   * Check is the molecule has any 2D coordinates generated
+   */
   has_coords(): 0 | 2 | 3;
 
-  /** Returns a stringified JSON object containing the atoms and bonds of stereo centers */
+  /**
+   * Returns a stringified JSON object containing the atoms and bonds of stereo centers
+   */
   get_stereo_tags(): string;
 
-  /** Returns the V2000 Molfile representation of the aromatic form of the molecule */
+  /**
+   * Returns the V2000 Molfile representation of the aromatic form of the molecule
+   */
   get_aromatic_form(): string;
 
-  /** Returns the V2000 Molfile representation of the kekule form of the molecule */
+  /**
+   * Returns the V2000 Molfile representation of the kekule form of the molecule
+   */
   get_kekule_form(): string;
 
-  /** Returns the disconnected fragments of the molecule */
+  /**
+   * Returns the disconnected fragments of the molecule
+   */
   get_frags(details_json?: string): { mappings: JSONString; molList: MolList };
 
-  /** Generate new 2D coordinates */
+  /**
+   * Generate new 2D coordinates
+   */
   set_new_coords(): boolean;
 
   /**
@@ -372,7 +428,9 @@ export interface JSMol {
    */
   set_new_coords(useCoordGen: boolean): boolean;
 
-  /** Return a V2000 Molfile string with newly generated coordinates */
+  /**
+   * Return a V2000 Molfile string with newly generated coordinates
+   */
   get_new_coords(): string;
 
   /**
@@ -391,7 +449,9 @@ export interface JSMol {
    */
   has_prop(key: string): boolean;
 
-  /** Returns the list of property names */
+  /**
+   * Returns the list of property names
+   */
   get_prop_list(): StringList;
   get_prop_list(includePrivate: boolean): StringList;
   get_prop_list(includePrivate: boolean, includeComputed: boolean): StringList;
@@ -437,7 +497,9 @@ export interface JSMol {
   remove_hs(): string;
   remove_hs(options: JSONString): string;
 
-  /** Remove explicit hydrogens from the molecule */
+  /**
+   * Remove explicit hydrogens from the molecule
+   */
   remove_hs_in_place(): boolean;
   remove_hs_in_place(options: JSONString): boolean;
 
@@ -448,7 +510,9 @@ export interface JSMol {
    */
   add_hs(): string;
 
-  /** Add explicit hydrogens on the molecule */
+  /**
+   * Add explicit hydrogens on the molecule
+   */
   add_hs_in_place(): boolean;
 
   // aromaticity methods
@@ -461,7 +525,9 @@ export interface JSMol {
    */
   combine_with(other: JSMol, options?: string): void;
 
-  /** Returns a copy of the molecule */
+  /**
+   * Returns a copy of the molecule
+   */
   copy(): JSMol;
 
   // depiction methods
@@ -516,7 +582,9 @@ export interface JSMol {
    * @param png PNG data as Uint8Array
    */
   add_to_png_blob(png: Uint8Array): Uint8Array;
-  /** @see add_to_png_blob */
+  /**
+   * @see add_to_png_blob
+   */
   add_to_png_blob(png: Uint8Array, details: JSONString): Uint8Array;
 
   // coordinates
@@ -661,7 +729,9 @@ export interface SubstructLibrary {
    */
   count_matches(q: JSMol, useChirality: boolean, numThreads: number): number;
 
-  /** Return the number of molecules in the library */
+  /**
+   * Return the number of molecules in the library
+   */
   size(): number;
 
   /**
@@ -749,19 +819,25 @@ export interface MolList {
   size: () => number;
 }
 
-/** Emscripten vector<T> wrapper — raw std::vector binding with get/size/delete */
+/**
+ * Emscripten vector<T> wrapper — raw std::vector binding with get/size/delete
+ */
 export interface EmscriptenVector<T> {
   size(): number;
   get(i: number): T;
   delete(): void;
 }
 
-/** Emscripten vector<string> wrapper */
+/**
+ * Emscripten vector<string> wrapper
+ */
 export interface StringList extends EmscriptenVector<string> {}
 
 // constructor interfaces
 
-/** Returns a new SubstructLibrary instance */
+/**
+ * Returns a new SubstructLibrary instance
+ */
 interface SubstructLibraryConstructor {
   new (): SubstructLibrary;
   new (numBits: number): SubstructLibrary;
@@ -779,7 +855,9 @@ interface RGroupDecomposition {
   delete(): void;
 }
 
-/** The main RDKit module */
+/**
+ * The main RDKit module
+ */
 export interface RDKitModule {
   SubstructLibrary: SubstructLibraryConstructor;
 
@@ -798,9 +876,8 @@ export interface RDKitModule {
    * Create a molecule from an integer array
    *
    * @param pklAsUInt8Array unsigned integer array
-   * @param details_json RDKitGetMolFromPickleOtions
    */
-  get_mol_from_uint8array(pklAsUInt8Array: Uint8Array, details_json?: string): JSMol;
+  get_mol_from_uint8array(pklAsUInt8Array: Uint8Array): JSMol;
 
   /**
    * Create a copy of a molecule
@@ -869,7 +946,7 @@ export interface RDKitModule {
    *
    * @param value
    */
-  use_legacy_stereo_perception(value: boolean): void;
+  use_legacy_stereo_perception(value: boolean): boolean;
 
   enable_logging(logName?: string): boolean;
   disable_logging(logName?: string): boolean;

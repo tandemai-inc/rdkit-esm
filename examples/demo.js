@@ -3,6 +3,7 @@ import { initRDKit } from '../dist/index.js';
 
 /** @type {RDKit} */
 const rdkit = await initRDKit();
+globalThis.rdkit = rdkit; // expose for debugging
 
 document.getElementById('loading').textContent = '';
 document.getElementById('version').textContent = `RDKit ${rdkit.version}`;

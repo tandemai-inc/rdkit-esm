@@ -2,6 +2,8 @@
 
 RDKit minimal lib for the modern web.
 
+![RDKit v2026.03.1](https://img.shields.io/badge/RDKit-v2026--03--1-brightgreen?style=flat)
+
 ## About
 
 > A scientific library for Cheminformatics (depict, search, compare, process molecular data). Same features as the RDKit.js library, distributed as a standard ES module for modern development environments (install from npm, import in your code). Type safety for every method and parameters, autocomplete and documentation in your IDE.
@@ -20,6 +22,8 @@ in particular Michel Moreau and Paolo Tosco for maintaining the MinimalLib and t
 definitions in RDKit-js had been written by Ádám Baróthi.
 
 The examples in this repository and the unit-tests are based on the code and the data in the MinimalLib repository, written mostly by Greg Landrum and Paolo Tosco.
+
+Bindings for minimization and 3D conformer generation are based on code from [Molarium](https://molarium.org/) by Rafal Wiewiora. [Github](https://github.com/rafwiewiora/molarium)
 
 ## Quick Start
 
@@ -100,8 +104,8 @@ Wraps a single molecule with a typed, camelCase API.
 - **Drawing** — `getSVG(options?)`, `drawToCanvas(canvas, ...)`
 - **Coordinates** — `setNewCoords()`, `generateAlignedCoords(template, options?)`
 - **Mutations** — `addHs()` / `removeHs()`, `convertToAromaticForm()` / `convertToKekuleForm()`, `combineWith()`, `zipWith()`
-- **Properties** — `hasProp()`, `getProp()`, `setProp()`, `clearProp()`, `getPropList()`
-- **Info** — `isValid()`, `getNumAtoms()`, `getNumBonds()`, `hasCoords()`, `getStereoTags()`
+- **Properties** — `hasProp()`, `getProp()`, `setProp()`, `clearProp()`, `getPropMap()`
+- **Info** — `isDeleted`, `numAtoms`, `numHeavyAtoms`, `numBonds`, `hasCoords()`, `getStereoTags()`
 
 ### `MolArray`
 

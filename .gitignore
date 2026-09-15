@@ -3,6 +3,7 @@ node_modules
 dist
 coverage
 !MinimalLib/dist
+wasm/.cache/
 *.log
 .DS_Store
 .agents

@@ -73,9 +73,10 @@ export class RDKit {
    * @returns A Mol instance, or null if the input is invalid.
    *   Pass `{ throwOnError: true }` to throw a {@link RDKitParseError} instead.
    */
+  getMol(input: string | Uint8Array): Mol | null;
   getMol(
     input: string | Uint8Array,
-    options?: Partial<RDKitGetMolOptions> & { throwOnError: true },
+    options: Partial<RDKitGetMolOptions> & { throwOnError: true },
   ): Mol;
   getMol(input: string | Uint8Array, options?: Partial<RDKitGetMolOptions>): Mol | null;
   getMol(input: string | Uint8Array, options?: Partial<RDKitGetMolOptions>): Mol | null {
@@ -83,16 +84,16 @@ export class RDKit {
     this.logger.reset(throwOnError);
 
     let jsMol: JSMol | null;
+    const hasOptions = Object.keys(wasmOptions).length > 0;
     if (input instanceof Uint8Array) {
-      if (options) {
+      if (hasOptions) {
         console.warn('Options are ignored when getMol is called with a binary input (pikkle).');
       }
       jsMol = this.mod.get_mol_from_uint8array(input);
     } else {
-      jsMol =
-        Object.keys(wasmOptions).length > 0
-          ? this.mod.get_mol(input, JSON.stringify(wasmOptions))
-          : this.mod.get_mol(input);
+      jsMol = hasOptions
+        ? this.mod.get_mol(input, JSON.stringify(wasmOptions))
+        : this.mod.get_mol(input);
     }
 
     if (!jsMol) {
@@ -109,7 +110,8 @@ export class RDKit {
    * @returns A Mol instance, or null if the input is invalid.
    *   Pass `{ throwOnError: true }` to throw a {@link RDKitParseError} instead.
    */
-  getQMol(input: string, options?: Partial<RDKitGetQMolOptions> & { throwOnError: true }): Mol;
+  getQMol(input: string): Mol | null;
+  getQMol(input: string, options: Partial<RDKitGetQMolOptions> & { throwOnError: true }): Mol;
   getQMol(input: string, options?: Partial<RDKitGetQMolOptions>): Mol | null;
   getQMol(input: string, options?: Partial<RDKitGetQMolOptions>): Mol | null {
     const { throwOnError = false } = options ?? {};

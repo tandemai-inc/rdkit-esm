@@ -1,0 +1,7 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noUnusedLocals": false
+  },
+  "include": ["src", "tests", "MinimalLib/dist/RDKit_minimal.d.ts"]
+}

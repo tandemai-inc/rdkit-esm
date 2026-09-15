@@ -63,8 +63,8 @@ export async function initRDKit(
   const locateFile = options?.locateFile ?? (() => resolveWasmUrl());
   const moduleArgs: Record<string, unknown> = { locateFile };
 
-  // The emscripten module is compiled for web/worker only — in Node there is
-  // no fetch/XHR so we read the WASM binary from disk and pass it directly.
+  // In Node the emscripten glue reads the WASM from disk via `locateFile()`,
+  // so it must return a real filesystem path.
   if (typeof process !== 'undefined' && process.versions?.node) {
     const fs = await import('node:fs');
     const { fileURLToPath } = await import('node:url');
@@ -77,7 +77,7 @@ export async function initRDKit(
       const { join } = await import('node:path');
       wasmPath = join(process.cwd(), wasmPath);
     }
-    moduleArgs.wasmBinary = fs.readFileSync(wasmPath);
+    moduleArgs.locateFile = () => wasmPath;
   }
 
   const mod = await initRDKitModule(moduleArgs);

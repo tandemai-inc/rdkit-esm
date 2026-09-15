@@ -2,16 +2,27 @@ export { initRDKit } from './init.ts';
 export type { InitRDKitOptions } from './init.ts';
 export { RDKit } from './rdkit.ts';
 export type { MCSResult } from './rdkit.ts';
-export { RDKitParseError } from './logger.ts';
+export { RDKitParseError, RDKitOperationError } from './logger.ts';
 export type {
   RDKitConfigureOptions,
   RDKitParseErrorEvent,
   RDKitParseOperation,
+  RDKitMolOperation,
+  RDKitOperation,
+  RDKitForceFieldEnergyOptions,
+  RDKitMinimizeOptions,
+  RDKitMinimization,
+  RDKitMinimizationFrame,
+  RDKitGenerateConformersOptions,
+  RDKitConformers,
   RDKitFailCallback,
   RDKitEvents,
   RDKitGetMolOptions,
   RDKitGetQMolOptions,
   RDKitGetRxnOptions,
+  RDKitGetCxSmilesOptions,
+  RDKitCondenseAbbreviationsOptions,
+  RDKitGetSVGOptions,
   RDKitMmpaFragsOptions,
   SubstructLibraryOptions,
   SubstructLibraryAddOptions,
@@ -27,7 +38,7 @@ export type {
   SimilarityMetric,
   TverskySimilarityOptions,
 } from './fingerprints/fingerprints.types.ts';
-export { isRDKitParseError } from './logger.ts';
+export { isRDKitParseError, isRDKitOperationError } from './logger.ts';
 export { SubstructLibraryWrapper } from './substruct-library.ts';
 
 // Re-export useful types for consumers
@@ -36,7 +47,6 @@ export type { SubstructLibraryEntry, SubstructLibrarySearchResult } from './subs
 export type {
   RDKitGetMolOpt,
   RDKitGetMolBlockOptions,
-  RDKitDepictionDetails,
   RDKitSubstructMatch,
   RDKitDescriptors,
   RDKitJson,
@@ -65,6 +75,15 @@ export type {
   RDKitGetSmilesOptions,
   RDKitGetFragsOptions,
   RDKitSanitizeFlags,
+  RDKitForceFieldName,
+  RDKitForceFieldDetails,
+  RDKitForceFieldEnergyDetails,
+  RDKitForceFieldEnergyResult,
+  RDKitMinimizeDetails,
+  RDKitMinimizeResult,
+  RDKitForceFieldFrame,
+  RDKitGenerateConformersDetails,
+  RDKitGenerateConformersResult,
 } from './types/rdkit-minimalib-json-typings';
 
 export type { RDKitModule, JSMol, JSReaction, MolList } from './types/rdkit-minimalib-typings';

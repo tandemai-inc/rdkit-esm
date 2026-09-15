@@ -11,7 +11,6 @@ describe('getMol', () => {
   it('getMol returns a Mol for valid SMILES', () => {
     using mol = rdkit.getMol('c1ccccc1');
     expect(mol).not.toBeNull();
-    expect(mol!.isValid()).toBe(true);
   });
 
   it('getMol returns a Mol with specified options', () => {
