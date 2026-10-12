@@ -515,6 +515,70 @@ export type RDKitSubstructMatch = {
 };
 
 /**
+ * Substructure matching options, mirroring RDKit's `SubstructMatchParameters` JSON keys
+ * (see `updateSubstructMatchParamsFromJSON` in `SubstructUtils.cpp`).
+ */
+export type RDKitSubstructMatchOptions = {
+  /**
+   * Use chirality in determining whether or not atoms/bonds match
+   * @default false
+   */
+  useChirality: boolean;
+  /**
+   * Use enhanced stereochemistry in determining whether atoms/bonds match
+   * @default false
+   */
+  useEnhancedStereo: boolean;
+  /**
+   * Aromatic and conjugated bonds match each other
+   * @default false
+   */
+  aromaticMatchesConjugated: boolean;
+  /**
+   * Consider query-query matches, not just simple matches
+   * @default false
+   */
+  useQueryQueryMatches: boolean;
+  /**
+   * Allow recursive queries
+   * @default true
+   */
+  recursionPossible: boolean;
+  /**
+   * Uniquify match results by atom indices: matches covering the same set of atoms in a different
+   * order (e.g. a flipped phenyl ring) are collapsed into one. Set to `false` to get every mapping.
+   * @default true
+   */
+  uniquify: boolean;
+  /**
+   * Maximum number of matches to return
+   * @default 1000
+   */
+  maxMatches: number;
+  /**
+   * Maximum number of matches that the recursive substructure matching should return
+   * @default 1000
+   */
+  maxRecursiveMatches: number;
+  /**
+   * Number of threads to use when multi-threading is possible
+   * @default 1
+   */
+  numThreads: number;
+  /**
+   * Atoms and bonds with specified stereochemistry in the query match atoms and bonds with
+   * unspecified stereochemistry in the molecule
+   * @default false
+   */
+  specifiedStereoQueryMatchesUnspecified: boolean;
+  /**
+   * Aromatic bonds match single or double bonds
+   * @default false
+   */
+  aromaticMatchesSingleOrDouble: boolean;
+};
+
+/**
  * Flags controlling which sanitization steps are run when `sanitize` is an object.
  * Each key corresponds to a `MolOps::SanitizeFlags` enum value; `true` enables it,
  * `false` disables it. Omitted keys are left at their default (all enabled).

@@ -243,6 +243,27 @@ describe('Mol - substructure', () => {
     expect(matches).toBeInstanceOf(Array);
     expect(matches.length).toBe(2);
   });
+
+  it('getSubstructMatches with uniquify: false returns symmetric mappings of the same atoms', () => {
+    using mol = rdkit.getMol('c1ccccc1C(=O)[O-]')!;
+    using query = rdkit.getQMol('c1ccccc1C(=O)[O-]')!;
+    expect(mol.getSubstructMatches(query).length).toBe(1);
+    const matches = mol.getSubstructMatches(query, { uniquify: false });
+    expect(matches.length).toBe(2); // phenyl flip
+    expect(new Set(matches[0].atoms)).toEqual(new Set(matches[1].atoms));
+  });
+
+  it('getSubstructMatches caps results with maxMatches', () => {
+    using mol = rdkit.getMol('c1ccccc1')!;
+    expect(mol.getSubstructMatches('c1ccccc1', { uniquify: false }).length).toBe(12);
+    expect(mol.getSubstructMatches('c1ccccc1', { uniquify: false, maxMatches: 3 }).length).toBe(3);
+  });
+
+  it('getSubstructMatch accepts options', () => {
+    using mol = rdkit.getMol('C[C@H](N)O')!;
+    expect(mol.getSubstructMatch('C[C@@H](N)O', { useChirality: true }).atoms).toEqual([]);
+    expect(mol.getSubstructMatch('C[C@@H](N)O').atoms.length).toBe(4);
+  });
 });
 
 describe('Mol - descriptors', () => {

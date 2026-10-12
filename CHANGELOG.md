@@ -2,6 +2,8 @@
 
 ## [vX.X.X] Unreleased
 
+- `Mol.getSubstructMatch()` / `Mol.getSubstructMatches()` accept `RDKitSubstructMatchOptions` (e.g. `uniquify`, `maxMatches`, `useChirality`); add the matching `details` overloads to the MinimalLib typings
+
 ## [v0.7.0]
 
 - MinimalLib WASM now includes minimization and conformer generation

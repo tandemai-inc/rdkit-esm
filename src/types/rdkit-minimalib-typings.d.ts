@@ -128,6 +128,14 @@ export interface JSMol {
    * @returns A stringified JSON object containing the matched atoms and bonds of the parent molecule
    */
   get_substruct_match(q: JSMol): string;
+  /**
+   * Returns a substructure match string
+   *
+   * @param q query molecule
+   * @param details stringified JSON of `RDKitSubstructMatchOptions` (e.g. `uniquify`, `maxMatches`, `useChirality`)
+   * @returns A stringified JSON object containing the matched atoms and bonds of the parent molecule
+   */
+  get_substruct_match(q: JSMol, details: string): string;
 
   /**
    * Returns all substructure matches
@@ -136,6 +144,14 @@ export interface JSMol {
    * @returns A stringified JSON object containing the matched atoms and bonds of the parent molecule
    */
   get_substruct_matches(q: JSMol): string;
+  /**
+   * Returns all substructure matches
+   *
+   * @param q query molecule
+   * @param details stringified JSON of `RDKitSubstructMatchOptions` (e.g. `uniquify`, `maxMatches`, `useChirality`)
+   * @returns A stringified JSON object containing the matched atoms and bonds of the parent molecule
+   */
+  get_substruct_matches(q: JSMol, details: string): string;
 
   // molecular descriptors
 

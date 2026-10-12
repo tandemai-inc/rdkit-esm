@@ -2,6 +2,7 @@ import type { JSMol, RDKitModule } from './types/rdkit-minimalib-typings';
 import type {
   RDKitGetMolBlockOptions,
   RDKitSubstructMatch,
+  RDKitSubstructMatchOptions,
   RDKitDescriptors,
   RDKitJson,
   RDKitStereoTags,
@@ -267,13 +268,19 @@ export class Mol implements Disposable {
    * Returns the first substructure match
    *
    * @param query - A Mol instance or a SMARTS string to use as query
+   * @param options - Substructure matching options (e.g. `useChirality`)
    * @returns The matched atom and bond indices
    */
-  getSubstructMatch(query: Mol | string): RDKitSubstructMatch {
+  getSubstructMatch(
+    query: Mol | string,
+    options?: Partial<RDKitSubstructMatchOptions>,
+  ): RDKitSubstructMatch {
     const mol = this.jsMol;
     const [qmol, shouldDelete] = this.resolveQuery(query);
     try {
-      const matchJson = mol.get_substruct_match(qmol);
+      const matchJson = options
+        ? mol.get_substruct_match(qmol, JSON.stringify(options))
+        : mol.get_substruct_match(qmol);
       if (matchJson === '{}') {
         return { atoms: [], bonds: [] }; // special case: no match returns '{}'!
       }
@@ -287,13 +294,20 @@ export class Mol implements Disposable {
    * Returns all substructure matches
    *
    * @param query - A Mol instance or a SMARTS string to use as query
+   * @param options - Substructure matching options. Set `uniquify: false` to also get the
+   * matches covering the same atoms in a different order (e.g. symmetric groups).
    * @returns An array of matched atom and bond indices
    */
-  getSubstructMatches(query: Mol | string): RDKitSubstructMatch[] {
+  getSubstructMatches(
+    query: Mol | string,
+    options?: Partial<RDKitSubstructMatchOptions>,
+  ): RDKitSubstructMatch[] {
     const mol = this.jsMol;
     const [qmol, shouldDelete] = this.resolveQuery(query);
     try {
-      const matchesJson = mol.get_substruct_matches(qmol);
+      const matchesJson = options
+        ? mol.get_substruct_matches(qmol, JSON.stringify(options))
+        : mol.get_substruct_matches(qmol);
       if (!matchesJson.startsWith('[')) {
         return []; // special case: no matches returns '{}'!
       }

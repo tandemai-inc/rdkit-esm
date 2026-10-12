@@ -48,6 +48,7 @@ export type {
   RDKitGetMolOpt,
   RDKitGetMolBlockOptions,
   RDKitSubstructMatch,
+  RDKitSubstructMatchOptions,
   RDKitDescriptors,
   RDKitJson,
   RDKitJsonAtom,
