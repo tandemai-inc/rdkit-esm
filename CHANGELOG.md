@@ -2,6 +2,10 @@
 
 ## [vX.X.X] Unreleased
 
+## [v0.8.0]
+
+- Upgrade minimalLib to RDKit v2026.09.1 (SHA fece8caa860bdf6c9c82bdb9253f22a0cf87150c)
+- Reduce WASM size from 9.0 MB to 7.1 MB: drop the unexposed ETKDGv4 torsion tables and RDKit default ring templates, deduplicate header-defined string tables (`wasm/patches/0002`–`0004`)
 - `Mol.getSubstructMatch()` / `Mol.getSubstructMatches()` accept `RDKitSubstructMatchOptions` (e.g. `uniquify`, `maxMatches`, `useChirality`); add the matching `details` overloads to the MinimalLib typings
 
 ## [v0.7.0]

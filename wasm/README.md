@@ -20,7 +20,7 @@ The first run builds the dependency image (emscripten, Boost, FreeType, …) and
 1. Reads the RDKit commit from `wasm/RDKIT_SHA`.
 2. Gets RDKit's source at that commit. By default it downloads `https://codeload.github.com/rdkit/rdkit/tar.gz/<sha>` into `wasm/.cache/` (gitignored, reused on later runs). If `RDKIT_SRC` is set, it exports the commit from that local checkout instead.
 3. Unpacks the source into a temporary directory, `/tmp/rdkit-wasm.*`, which is deleted when the script exits.
-4. Copies `extras/forcefield.cpp` into `Code/MinimalLib/` and applies `patches/0001-minilib-forcefield-extras.patch`.
+4. Copies `extras/forcefield.cpp` into `Code/MinimalLib/` and applies every `patches/*.patch` in name order (see [Patches](#patches)).
 5. Runs RDKit's `Code/MinimalLib/scripts/build_rdkitjs.sh` with `GET_SRC=copy`. This compiles inside Docker and runs RDKit's MinimalLib JS tests (`tests.js`) on the result; the build fails if they fail.
 6. Copies `RDKit_minimal.js` and `RDKit_minimal.wasm` into `MinimalLib/dist/`.
 
@@ -44,15 +44,15 @@ No RDKit checkout is modified and nothing is committed.
    git ls-remote https://github.com/rdkit/rdkit.git refs/heads/master
    ```
 
-   We track `master` rather than `Release_2026_03_*` because the Docker WASM build on 2026.03.x lacks later emscripten and Docker fixes.
+   Release commits (e.g. the `Release_2026_09_1` tag) are preferred. Avoid `Release_2026_03_*`: its Docker WASM build lacks later emscripten and Docker fixes.
 
-2. Check that the patch still applies:
+2. Check that the patches still apply:
 
    ```bash
    bash wasm/scripts/build-wasm.sh --check-patch
    ```
 
-   If it doesn't, see [Update the patch](#update-the-patch). A clean patch doesn't guarantee `extras/forcefield.cpp` still compiles: RDKit API changes (`ForceField::minimize`, `ETKDGv3`, `EmbedParameters`) only show up in the full build.
+   If one doesn't, see [Update a patch](#update-a-patch). A clean patch doesn't guarantee `extras/forcefield.cpp` still compiles: RDKit API changes (`ForceField::minimize`, `ETKDGv3`, `EmbedParameters`) only show up in the full build.
 
 3. Build and test: `bash wasm/scripts/build-wasm.sh && pnpm test`.
 4. Bump the package version and add a CHANGELOG entry (`Upgrade minimalLib to RDKit <version>`). The RDKit version is in the root `CMakeLists.txt` (`RDKit_Year`, `RDKit_Month`, `RDKit_Revision`).
@@ -60,12 +60,12 @@ No RDKit checkout is modified and nothing is committed.
 ### Change the extras
 
 - **Change the implementation** in `extras/forcefield.cpp`: rebuild. The patch doesn't change.
-- **Add a function or change a signature** exposed to JS: update the declaration in `minilib.h` and the binding in `jswrapper.cpp`, which means [updating the patch](#update-the-patch). Then update `src/types/rdkit-minimalib-typings.d.ts` to match.
+- **Add a function or change a signature** exposed to JS: update the declaration in `minilib.h` and the binding in `jswrapper.cpp`, which means [updating the patch](#update-a-patch). Then update `src/types/rdkit-minimalib-typings.d.ts` to match.
 - **Link another RDKit library**: add it to `MINIMAL_LIB_LIBRARIES` in the patch's `CMakeLists.txt` section.
 
-### Update the patch
+### Update a patch
 
-The patch is a plain `git diff` of three files in the RDKit tree. To edit or rebase it, work in a throwaway copy of the source:
+Each patch is a plain `git diff` against the RDKit tree. To edit or rebase one, work in a throwaway copy of the source (the example uses `0001`):
 
 ```bash
 bash wasm/scripts/build-wasm.sh --check-patch   # puts the tarball in wasm/.cache/ (fine if the check fails)
@@ -83,11 +83,13 @@ git apply --reject "$PATCH"   # applies what it can; fix any *.rej hunks by hand
 git diff -- Code/MinimalLib/CMakeLists.txt Code/MinimalLib/minilib.h Code/MinimalLib/jswrapper.cpp > "$PATCH"
 ```
 
-Keep `forcefield.cpp` out of the patch: it lives in `extras/` and the script copies it in separately.
+When rebasing a later patch whose files an earlier one also touches, apply and commit the earlier patches before this step. The three current patches touch separate files, so each applies on its own.
+
+Keep `forcefield.cpp` out of `0001`: it lives in `extras/` and the script copies it in separately.
 
 ### Debug a failing Docker stage
 
-`build_rdkitjs.sh` chains four Dockerfiles from `Code/MinimalLib/docker/`. To run them one at a time, prepare a tree as in [Update the patch](#update-the-patch), with the patch applied and `extras/forcefield.cpp` copied into `Code/MinimalLib/`, then:
+`build_rdkitjs.sh` chains four Dockerfiles from `Code/MinimalLib/docker/`. To run them one at a time, prepare a tree as in [Update a patch](#update-a-patch), with all patches applied and `extras/forcefield.cpp` copied into `Code/MinimalLib/`, then:
 
 ```bash
 cd "$TREE/Code/MinimalLib/docker"
@@ -110,9 +112,18 @@ Artifacts end up in `Code/MinimalLib/build/` of that tree.
 
 ## Reference
 
+### Patches
+
+| Patch                                    | What it does                                                                                                                                                                                                                                                                                                                                    |
+| ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `0001-minilib-forcefield-extras.patch`   | Wires in the force-field and conformer extras (below).                                                                                                                                                                                                                                                                                          |
+| `0002-drop-etkdgv4-torsion-tables.patch` | Leaves out the ETKDGv4 Gaussian torsion tables (`CrystalFF/torsionData/gaussTorsionPreferences_v4*.h`). Their brace-initialized globals compile to ~690 kB of startup code, and only ETKDGv3 is exposed. Requesting v4 built-in parameters throws instead of silently embedding without torsion terms. Remove this patch if v4 is ever exposed. |
+| `0003-inline-header-string-tables.patch` | Makes the string tables in `SubstanceGroup.h` and `QueryOps.h` `inline const`. As plain `const` namespace-scope globals in a header, every RDKit source file that includes `ROMol.h` got its own copy and startup initializer (157 copies, ~600 kB of code). No behavior change; a candidate for upstreaming.                                   |
+| `0004-drop-default-ring-templates.patch` | Leaves out RDKit's default ring system templates (`Depictor/TemplateSmarts.h`, ~465 kB of data). They are only read by RDKit's own depictor when `useRingTemplates` is set, which MinimalLib never does; CoordGen (`useCoordGen`) returns before that code and uses its own templates, from which RDKit's set was derived.                      |
+
 ### How the extras are wired in
 
-The patch leaves `minilib.cpp` alone so it stays small and easy to rebase. It changes three files in `Code/MinimalLib/`:
+`0001` leaves `minilib.cpp` alone so it stays small and easy to rebase. It changes three files in `Code/MinimalLib/`:
 
 - `CMakeLists.txt` compiles `forcefield.cpp` and links `ForceFieldHelpers`, `ForceField`, `Trajectory`, `DistGeomHelpers`, `DistGeometry`, `MolAlign` and `Alignment`.
 - `minilib.h` declares `JSMolBase::run_forcefield(details)` and `JSMolBase::generate_conformers(details)`.
@@ -127,7 +138,7 @@ Option and result shapes are typed in `src/types/rdkit-minimalib-json-typings.d.
 
 ### Build settings
 
-The build uses RDKit's official Docker settings (`Code/MinimalLib/docker/03_build.Dockerfile`) unchanged, including InChI and CoordGen support. Keep it that way rather than turning features off to shrink the binary. The force-field code makes the WASM larger than stock MinimalLib (8.2 MB instead of 7.3 MB).
+The build uses RDKit's official Docker settings (`Code/MinimalLib/docker/03_build.Dockerfile`) unchanged, including InChI and CoordGen support. Keep it that way rather than turning features off to shrink the binary. With the extras and patches `0002`–`0004`, the RDKit 2026.09.1 WASM is 7.1 MB (2.5 MB gzipped); with only `0001` it is 9.0 MB.
 
 `src/init.ts` relies on these emscripten flags. If an RDKit upgrade changes them, `initRDKit()` needs updating:
 
@@ -149,8 +160,11 @@ wasm/
   RDKIT_SHA                 # pinned RDKit commit
   RDKIT-LICENSE.txt         # RDKit's BSD-3-Clause license
   extras/forcefield.cpp     # force-field and conformer implementations
-  patches/0001-minilib-forcefield-extras.patch
-                            # CMakeLists.txt, minilib.h and jswrapper.cpp changes
+  patches/                  # applied in name order, see Patches
+    0001-minilib-forcefield-extras.patch
+    0002-drop-etkdgv4-torsion-tables.patch
+    0003-inline-header-string-tables.patch
+    0004-drop-default-ring-templates.patch
   scripts/build-wasm.sh     # build script
   .cache/                   # downloaded RDKit tarballs (gitignored)
 ```

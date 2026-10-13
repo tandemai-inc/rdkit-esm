@@ -1,0 +1,39 @@
+diff --git a/Code/GraphMol/QueryOps.h b/Code/GraphMol/QueryOps.h
+index ebfd6a3..c82834d 100644
+--- a/Code/GraphMol/QueryOps.h
++++ b/Code/GraphMol/QueryOps.h
+@@ -639,7 +639,7 @@ RDKIT_GRAPHMOL_EXPORT ATOM_OR_QUERY *makeMHAtomQuery();
+ 
+ // We support the same special atom queries that we can read from
+ // CXSMILES
+-const std::vector<std::string> complexQueries = {"A", "AH", "Q", "QH",
++inline const std::vector<std::string> complexQueries = {"A", "AH", "Q", "QH",
+                                                  "X", "XH", "M", "MH"};
+ RDKIT_GRAPHMOL_EXPORT void convertComplexNameToQuery(Atom *query,
+                                                      std::string_view symb);
+diff --git a/Code/GraphMol/SubstanceGroup.h b/Code/GraphMol/SubstanceGroup.h
+index c4fbf45..0317aa9 100644
+--- a/Code/GraphMol/SubstanceGroup.h
++++ b/Code/GraphMol/SubstanceGroup.h
+@@ -239,7 +239,7 @@ class RDKIT_GRAPHMOL_EXPORT SubstanceGroup : public RDProps {
+ 
+ namespace SubstanceGroupChecks {
+ 
+-const std::vector<std::string> sGroupTypes = {
++inline const std::vector<std::string> sGroupTypes = {
+     // polymer sgroups:
+     "SRU", "MON", "COP", "CRO", "GRA", "MOD", "MER", "ANY",
+     // formulations/mixtures:
+@@ -247,9 +247,9 @@ const std::vector<std::string> sGroupTypes = {
+     // other
+     "SUP", "MUL", "DAT", "GEN"};
+ 
+-const std::vector<std::string> sGroupSubtypes = {"ALT", "RAN", "BLO"};
+-const std::vector<std::string> sGroupConnectTypes = {"HH", "HT", "EU"};
+-const std::vector<std::string> sGroupClasses = {
++inline const std::vector<std::string> sGroupSubtypes = {"ALT", "RAN", "BLO"};
++inline const std::vector<std::string> sGroupConnectTypes = {"HH", "HT", "EU"};
++inline const std::vector<std::string> sGroupClasses = {
+     "AA",        "dAA",    "DNA",     "RNA",      "SUGAR",    "BASE",
+     "PHOSPHATE", "LINKER", "CHEM",    "LGRP",     "MODAA",    "MODdAA",
+     "MODDNA",    "MODRNA", "XLINKAA", "XLINKdAA", "XLINKDNA", "XLINKRNA",

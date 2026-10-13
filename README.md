@@ -2,7 +2,7 @@
 
 RDKit minimal lib for the modern web.
 
-![RDKit v2026.03.1](https://img.shields.io/badge/RDKit-v2026--03--1-brightgreen?style=flat)
+![RDKit v2026.09.1](https://img.shields.io/badge/RDKit-v2026--09--1-brightgreen?style=flat)
 
 ## About
 
