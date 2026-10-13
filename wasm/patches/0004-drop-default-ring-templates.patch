@@ -1,0 +1,17 @@
+diff --git a/Code/GraphMol/Depictor/Templates.h b/Code/GraphMol/Depictor/Templates.h
+index 70587ff..f7b6594 100644
+--- a/Code/GraphMol/Depictor/Templates.h
++++ b/Code/GraphMol/Depictor/Templates.h
+@@ -15,7 +15,11 @@
+ #include <GraphMol/SmilesParse/SmilesParse.h>
+ #include <GraphMol/MolOps.h>
+ 
+-#include "TemplateSmarts.h"
++// rdkit-esm: RDKit's default ring system templates are left out of the WASM
++// build (~465 kB of data). MinimalLib never enables useRingTemplates, and
++// CoordGen, which it uses for macrocycles, ships its own templates.
++#include <array>
++inline constexpr std::array<const char *, 0> TEMPLATE_SMARTS = {};
+ 
+ #include <fstream>
+ #include <unordered_map>

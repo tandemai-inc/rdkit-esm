@@ -10,7 +10,7 @@ RDKIT_SRC=${RDKIT_SRC:-}
 RDKIT_SHA=$(tr -d '[:space:]' < "$WASM_DIR/RDKIT_SHA")
 CACHE_DIR="$WASM_DIR/.cache"
 EXTRAS_CPP="$WASM_DIR/extras/forcefield.cpp"
-PATCH="$WASM_DIR/patches/0001-minilib-forcefield-extras.patch"
+PATCH_DIR="$WASM_DIR/patches"
 DIST_DIR="$WRAPPER_ROOT/MinimalLib/dist"
 BUILD_TREE=""
 CHECK_ONLY=0
@@ -24,12 +24,12 @@ Wraps RDKit Code/MinimalLib/scripts/build_rdkitjs.sh with GET_SRC=copy.
   1. Extracts RDKit at wasm/RDKIT_SHA into a temp dir
      (GitHub tarball cached in wasm/.cache/, or git archive from $RDKIT_SRC)
   2. Copies extras/forcefield.cpp → Code/MinimalLib/forcefield.cpp
-  3. git apply --check then git apply the extras patch
+  3. git apply --check then git apply patches/*.patch, in name order
   4. Official docker build
   5. Copies RDKit_minimal.{js,wasm} into MinimalLib/dist/
 
 Options:
-  --check-patch   Stop after checking that the patch applies (no docker)
+  --check-patch   Stop after checking that the patches apply (no docker)
   -h, --help      Show this help
 
 Env:
@@ -56,8 +56,11 @@ if [[ ! -f "$EXTRAS_CPP" ]]; then
   echo "missing extras file: $EXTRAS_CPP" >&2
   exit 1
 fi
-if [[ ! -f "$PATCH" ]]; then
-  echo "missing extras patch: $PATCH" >&2
+shopt -s nullglob
+PATCHES=("$PATCH_DIR"/*.patch)
+shopt -u nullglob
+if [[ ${#PATCHES[@]} -eq 0 ]]; then
+  echo "no patches found in $PATCH_DIR" >&2
   exit 1
 fi
 if [[ ! "$RDKIT_SHA" =~ ^[0-9a-f]{40}$ ]]; then
@@ -96,12 +99,12 @@ fi
 
 cp "$EXTRAS_CPP" "$BUILD_TREE/Code/MinimalLib/forcefield.cpp"
 # BUILD_TREE is not a git repo; git apply then behaves like patch.
-git -C "$BUILD_TREE" apply --check "$PATCH"
+git -C "$BUILD_TREE" apply --check "${PATCHES[@]}"
 if [[ "$CHECK_ONLY" -eq 1 ]]; then
-  echo "Extras patch applies cleanly to RDKit $RDKIT_SHA"
+  echo "Patches apply cleanly to RDKit $RDKIT_SHA: ${PATCHES[*]##*/}"
   exit 0
 fi
-git -C "$BUILD_TREE" apply "$PATCH"
+git -C "$BUILD_TREE" apply "${PATCHES[@]}"
 
 # Official entry point. GET_SRC=copy is required (clone branch-arg is mismatched).
 # build_rdkitjs.sh does `realpath build` before mkdir; that fails if build/ is missing.

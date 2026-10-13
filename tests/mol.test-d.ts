@@ -35,4 +35,10 @@ describe('Mol type definitions', () => {
       ReturnType<Mol['getCoords']>
     >();
   });
+
+  it('getSubstructMatches is callable with and without options', () => {
+    const mol = {} as Mol;
+    expectTypeOf(mol.getSubstructMatches).toBeCallableWith('');
+    expectTypeOf(mol.getSubstructMatches).toBeCallableWith('', { uniquify: true });
+  });
 });

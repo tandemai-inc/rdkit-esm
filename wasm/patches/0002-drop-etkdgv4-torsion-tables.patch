@@ -1,0 +1,38 @@
+diff --git a/Code/GraphMol/ForceFieldHelpers/CrystalFF/TorsionPreferences.cpp b/Code/GraphMol/ForceFieldHelpers/CrystalFF/TorsionPreferences.cpp
+index ce12421..4b907db 100644
+--- a/Code/GraphMol/ForceFieldHelpers/CrystalFF/TorsionPreferences.cpp
++++ b/Code/GraphMol/ForceFieldHelpers/CrystalFF/TorsionPreferences.cpp
+@@ -66,9 +66,19 @@ constexpr std::size_t AROM_TORSION_IDX = 2002;
+ #include "torsionData/torsionPreferences_smallrings.in"
+ #include "torsionData/torsionPreferences_macrocycles.in"
+ 
+-#include "torsionData/gaussTorsionPreferences_v4.h"
+-#include "torsionData/gaussTorsionPreferences_v4_macrocycles.h"
+-#include "torsionData/gaussTorsionPreferences_v4_smallrings.h"
++// rdkit-esm: the ETKDGv4 Gaussian torsion tables are left out of the WASM
++// build. Their brace-initialized globals compile to ~690 kB of static
++// initializer code, and the JS API only exposes ETKDGv3.
++using GaussianTorsionAngleRaw =
++    std::vector<std::tuple<std::string, std::vector<double>,
++                           std::vector<double>, std::vector<double>>>;
++namespace GaussTorsions {
++namespace V4 {
++const GaussianTorsionAngleRaw Regular;
++const GaussianTorsionAngleRaw MacroCycles;
++}  // namespace V4
++const GaussianTorsionAngleRaw SmallRings;
++}  // namespace GaussTorsions
+ 
+ // class to store the experimental torsion angles
+ template <TorsionAngleType T>
+@@ -153,6 +163,10 @@ const ExpTorsionAngleCollection<T> *ExpTorsionAngleCollection<T>::getParams(
+     return &(GaussianParamFlyweight(paramData).get());
+   }
+   namespace GT = GaussTorsions::V4;
++  if (GT::Regular.empty()) {
++    throw ValueErrorException(
++        "ETKDGv4 built-in torsion parameters are not included in this build.");
++  }
+   auto data = GT::Regular;
+   if (useSmallRingTorsions) {
+     std::ranges::copy(GaussTorsions::SmallRings, std::back_inserter(data));
