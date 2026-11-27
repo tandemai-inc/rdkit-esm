@@ -29,7 +29,7 @@
     "fmt:check": "oxfmt --check",
     "test": "vitest --typecheck",
     "coverage": "vitest run --coverage",
-    "typecheck": "tsgo --noEmit",
+    "typecheck": "tsc --noEmit",
     "prepublishOnly": "pnpm run build"
   },
   "devDependencies": {
