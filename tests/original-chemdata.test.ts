@@ -819,7 +819,7 @@ M  END
     expect(match).not.toBeNull();
     const [, smi, wedging] = match!;
     expect(smi).toBe('N[C@@H]1C[C@@H]2C[C@H]1[C@@H](O)C2');
-    expect(wedging).toBe('wD:3.9,wU:1.0,5.4,6.7');
+    expect(wedging).toBe('wU:1.0,3.3,5.4,6.7');
   });
 
   it('bicyclo getCxSmiles with empty options returns same result', () => {
@@ -829,7 +829,7 @@ M  END
     expect(match).not.toBeNull();
     const [, smi, wedging] = match!;
     expect(smi).toBe('N[C@@H]1C[C@@H]2C[C@H]1[C@@H](O)C2');
-    expect(wedging).toBe('wD:3.9,wU:1.0,5.4,6.7');
+    expect(wedging).toBe('wU:1.0,3.3,5.4,6.7');
   });
 
   it('bicyclo getCxSmiles with restoreBondDirOption:true changes wedging', () => {

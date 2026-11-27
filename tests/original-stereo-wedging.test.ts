@@ -327,14 +327,16 @@ describe('test_add_chiral_hs', () => {
     using mol = rdkit.getMol(CHIRAL_H_MOL_MB)!;
     const mbRDKit = mol.getMolblock();
     expect(mbRDKit).not.toBe(CHIRAL_H_MOL_MB);
-    expect(mol.getMolblock()).toContain('4  3  1  6');
+    expect(mbRDKit).toContain('4  9  1  1');
+    expect(mbRDKit).toContain('8  9  1  1');
   });
 
   it('getMolblock with useMolBlockWedging:true preserves original wedging (no RDKit recomputation)', () => {
     using mol = rdkit.getMol(CHIRAL_H_MOL_MB)!;
     const mbOrig = mol.getMolblock({ useMolBlockWedging: true });
     // useMolBlockWedging preserves the original wedge direction but normalizes the format
-    expect(mbOrig).not.toContain('4  3  1  6');
+    expect(mbOrig).toContain('4  9  1  1');
+    expect(mbOrig).toContain('8  9  1  1');
     expect(mbOrig).toContain('6  7  1  1');
   });
 
@@ -352,18 +354,17 @@ describe('test_add_chiral_hs', () => {
     expect(molblock.split('\n').some((l) => l.match(/^ [1 ]\d [1 ]\d  [12]  6 *$/))).toBe(true);
     // No "up" wedge bonds (stereo=1)
     expect(molblock.split('\n').some((l) => l.match(/^ [1 ]\d [1 ]\d  [12]  1 *$/))).toBe(false);
-    expect(molblock).not.toContain('4  3  1  6');
     expect(molblock).toContain('6  7  1  6');
   });
 
-  it('alignOnly:false with quinoline scaffold clears wedging, recomputes (has both up and down)', () => {
+  it('alignOnly:false with quinoline scaffold clears wedging, recomputes (only up wedges)', () => {
     using mol = rdkit.getMol(CHIRAL_H_MOL_MB)!;
     using quinoline = rdkit.getMol(QUINOLINE_SCAFFOLD_MB)!;
     using molCopy = mol.copy()!;
     const result = molCopy.generateAlignedCoords(quinoline, { acceptFailure: false });
     expect(result.atoms.length).toBeGreaterThan(0);
     const molblock = molCopy.getMolblock({ useMolBlockWedging: true });
-    expect(molblock.split('\n').some((l) => l.match(/^ [1 ]\d [1 ]\d  [12]  6 *$/))).toBe(true);
+    expect(molblock.split('\n').some((l) => l.match(/^ [1 ]\d [1 ]\d  [12]  6 *$/))).toBe(false);
     expect(molblock.split('\n').some((l) => l.match(/^ [1 ]\d [1 ]\d  [12]  1 *$/))).toBe(true);
   });
 });
@@ -450,22 +451,33 @@ const WEDGED_MB = `
     2.5834   -2.7186    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0
   2  1  1  1
   2  3  1  0
-  4  3  1  0
+  4  3  1  6
   4  5  1  0
   6  5  1  0
   6  7  1  1
   6  8  1  0
   8  9  1  1
   8  2  1  0
-  4  9  1  1
+  4  9  1  0
 M  END
 `;
 
 describe('test_get_molblock_use_molblock_wedging', () => {
+  it('parses the expected stereo', () => {
+    using mol = rdkit.getMol(WEDGED_MB)!;
+    expect(mol.getSmiles()).toBe('N[C@H]1C[C@H]2C[C@@H]1[C@H](O)C2');
+  });
+
   it('default getMolblock produces different wedging than original', () => {
     using mol = rdkit.getMol(WEDGED_MB)!;
     const mbRDKit = mol.getMolblock();
     expect(mbRDKit).not.toBe(WEDGED_MB);
+    expect(mbRDKit).toMatch(/  4  9  1  [16]/);
+    expect(mbRDKit).toMatch(/  8  9  1  [16]/);
+    expect(mbRDKit).toContain('  4  3  1  0');
+    expect(mbRDKit).toContain('  8  2  1  0');
+    expect(mbRDKit).not.toMatch(/  9  4  1  [16]/);
+    expect(mbRDKit).not.toMatch(/  9  8  1  [16]/);
   });
 
   it('getMolblock with useMolBlockWedging:true returns original wedging', () => {

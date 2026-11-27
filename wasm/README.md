@@ -83,7 +83,7 @@ git apply --reject "$PATCH"   # applies what it can; fix any *.rej hunks by hand
 git diff -- Code/MinimalLib/CMakeLists.txt Code/MinimalLib/minilib.h Code/MinimalLib/jswrapper.cpp > "$PATCH"
 ```
 
-When rebasing a later patch whose files an earlier one also touches, apply and commit the earlier patches before this step. The three current patches touch separate files, so each applies on its own.
+When rebasing a later patch whose files an earlier one also touches, apply and commit the earlier patches before this step. The current patches touch separate files, so each applies on its own.
 
 Keep `forcefield.cpp` out of `0001`: it lives in `extras/` and the script copies it in separately.
 
@@ -114,12 +114,13 @@ Artifacts end up in `Code/MinimalLib/build/` of that tree.
 
 ### Patches
 
-| Patch                                    | What it does                                                                                                                                                                                                                                                                                                                                    |
-| ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `0001-minilib-forcefield-extras.patch`   | Wires in the force-field and conformer extras (below).                                                                                                                                                                                                                                                                                          |
-| `0002-drop-etkdgv4-torsion-tables.patch` | Leaves out the ETKDGv4 Gaussian torsion tables (`CrystalFF/torsionData/gaussTorsionPreferences_v4*.h`). Their brace-initialized globals compile to ~690 kB of startup code, and only ETKDGv3 is exposed. Requesting v4 built-in parameters throws instead of silently embedding without torsion terms. Remove this patch if v4 is ever exposed. |
-| `0003-inline-header-string-tables.patch` | Makes the string tables in `SubstanceGroup.h` and `QueryOps.h` `inline const`. As plain `const` namespace-scope globals in a header, every RDKit source file that includes `ROMol.h` got its own copy and startup initializer (157 copies, ~600 kB of code). No behavior change; a candidate for upstreaming.                                   |
-| `0004-drop-default-ring-templates.patch` | Leaves out RDKit's default ring system templates (`Depictor/TemplateSmarts.h`, ~465 kB of data). They are only read by RDKit's own depictor when `useRingTemplates` is set, which MinimalLib never does; CoordGen (`useCoordGen`) returns before that code and uses its own templates, from which RDKit's set was derived.                      |
+| Patch                                    | What it does                                                                                                                                                                                                                                                                                                                                          |
+| ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `0001-minilib-forcefield-extras.patch`   | Wires in the force-field and conformer extras (below).                                                                                                                                                                                                                                                                                                |
+| `0002-drop-etkdgv4-torsion-tables.patch` | Leaves out the ETKDGv4 Gaussian torsion tables (`CrystalFF/torsionData/gaussTorsionPreferences_v4*.h`). Their brace-initialized globals compile to ~690 kB of startup code, and only ETKDGv3 is exposed. Requesting v4 built-in parameters throws instead of silently embedding without torsion terms. Remove this patch if v4 is ever exposed.       |
+| `0003-inline-header-string-tables.patch` | Makes the string tables in `SubstanceGroup.h` and `QueryOps.h` `inline const`. As plain `const` namespace-scope globals in a header, every RDKit source file that includes `ROMol.h` got its own copy and startup initializer (157 copies, ~600 kB of code). No behavior change; a candidate for upstreaming.                                         |
+| `0004-drop-default-ring-templates.patch` | Leaves out RDKit's default ring system templates (`Depictor/TemplateSmarts.h`, ~465 kB of data). They are only read by RDKit's own depictor when `useRingTemplates` is set, which MinimalLib never does; CoordGen (`useCoordGen`) returns before that code and uses its own templates, from which RDKit's set was derived.                            |
+| `0005-drop-npm-publish-check.patch`      | Removes the `rdkit_test` service from `docker/docker_compose_build_minimallib.yml`. Since RDKit 2026.09.2 it runs `npm pack` and `npm publish --dry-run` on the build output, which fails for any RDKit version already on npm, i.e. every release tag. We don't publish RDKit's package, and RDKit's `tests.js` still runs in `03_build.Dockerfile`. |
 
 ### How the extras are wired in
 
@@ -165,6 +166,7 @@ wasm/
     0002-drop-etkdgv4-torsion-tables.patch
     0003-inline-header-string-tables.patch
     0004-drop-default-ring-templates.patch
+    0005-drop-npm-publish-check.patch
   scripts/build-wasm.sh     # build script
   .cache/                   # downloaded RDKit tarballs (gitignored)
 ```

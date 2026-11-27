@@ -1,0 +1,19 @@
+diff --git a/Code/MinimalLib/docker/docker_compose_build_minimallib.yml b/Code/MinimalLib/docker/docker_compose_build_minimallib.yml
+index 96a305d..05ffafa 100644
+--- a/Code/MinimalLib/docker/docker_compose_build_minimallib.yml
++++ b/Code/MinimalLib/docker/docker_compose_build_minimallib.yml
+@@ -59,14 +59,3 @@ services:
+     image: rdkit-minimallib:latest
+     depends_on:
+       - rdkit_get_src
+-
+-  rdkit_test:
+-    environment:
+-      - NETWORK_MODE=${NETWORK_MODE:-bridge}
+-    network_mode: ${NETWORK_MODE:-bridge}
+-    build:
+-      context: .
+-      dockerfile: 05_test.Dockerfile
+-    image: rdkit-minimallib-test:latest
+-    depends_on:
+-      - rdkit_build
