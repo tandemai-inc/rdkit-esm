@@ -81,6 +81,7 @@ export type {
   RDKitForceFieldEnergyDetails,
   RDKitForceFieldEnergyResult,
   RDKitMinimizeDetails,
+  RDKitPositionRestraint,
   RDKitMinimizeResult,
   RDKitForceFieldFrame,
   RDKitGenerateConformersDetails,

@@ -2,6 +2,11 @@
 
 ## [vX.X.X] Unreleased
 
+## [v0.9.0]
+
+- Upgrade minimalLib to RDKit v2026.09.3 (SHA 2b54009e0b381fa12447402412dd0701d16f8138)
+- `Mol.minimize()` accepts `positionRestraints`: groups of atoms tethered to their starting coordinates by a flat-bottomed harmonic restraint (`maxDisplacement`, `forceConstant`), unlike `fixedAtoms` which freezes them
+
 ## [v0.8.0]
 
 - Upgrade minimalLib to RDKit v2026.09.1 (SHA fece8caa860bdf6c9c82bdb9253f22a0cf87150c)

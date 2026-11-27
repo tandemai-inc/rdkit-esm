@@ -611,10 +611,13 @@ export class Mol implements Disposable {
    * - Add explicit hydrogens first (`addHsInPlace()`), otherwise RDKit logs a warning.
    * - 2D coordinates are accepted, but a perfectly flat structure stays flat:
    *   there is no force out of the plane. Use `generateConformers()` to get 3D coordinates.
+   * - With `positionRestraints`, the reported energies include the restraint penalties, so
+   *   `finalEnergy` can differ from `getForceFieldEnergy()` on the result.
    *
    * @param options - Minimization options
    * @returns Energies, convergence and the minimization trajectory, or null on failure
-   * (e.g. the molecule has no coordinates, or `fixedAtoms` is out of range).
+   * (e.g. the molecule has no coordinates, or `fixedAtoms` / `positionRestraints` are out of
+   * range or overlap).
    *   Pass `{ throwOnError: true }` to throw a {@link RDKitOperationError} instead.
    */
   minimize(): RDKitMinimization | null;

@@ -1068,6 +1068,24 @@ export type RDKitForceFieldEnergyDetails = {
   job: 'energy';
 };
 
+/** Atoms tethered to their starting coordinates during a minimization */
+export type RDKitPositionRestraint = {
+  /** Indices of the restrained atoms */
+  atoms: number[];
+  /**
+   * Distance in Å an atom can move from its starting position without penalty.
+   * `0` gives a plain harmonic restraint.
+   * @default 0
+   */
+  maxDisplacement?: number;
+  /**
+   * Force constant in kcal/mol/Å² applied beyond `maxDisplacement`: the penalty is
+   * `0.5 * forceConstant * (distance - maxDisplacement)²`.
+   * @default 100
+   */
+  forceConstant?: number;
+};
+
 export type RDKitMinimizeDetails = {
   job: 'minimize';
   /**
@@ -1085,6 +1103,15 @@ export type RDKitMinimizeDetails = {
    * @default []
    */
   fixedAtoms: number[];
+  /**
+   * Groups of atoms tethered to their starting coordinates. Unlike `fixedAtoms`, restrained
+   * atoms can still move when the force field pushes them hard enough. An atom can be in
+   * at most one group and cannot also be in `fixedAtoms`.
+   *
+   * Restraint penalties are included in the reported energies.
+   * @default []
+   */
+  positionRestraints: RDKitPositionRestraint[];
 };
 
 /** Details accepted by `JSMol.run_forcefield` */

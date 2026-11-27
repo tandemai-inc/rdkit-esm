@@ -187,6 +187,59 @@ describe('Mol.minimize', () => {
     expect(after.slice(3)).not.toEqual(before.slice(3));
   });
 
+  it('lets restrained atoms move less than free ones', () => {
+    using mol = embed(ASPIRIN);
+    using free = mol.copy();
+    const before = mol.getCoords();
+    const atoms = [0, 1, 2, 3];
+    mol.minimize({
+      maxIterations: 2000,
+      positionRestraints: [{ atoms, forceConstant: 1000 }],
+      throwOnError: true,
+    });
+    free.minimize({ maxIterations: 2000, throwOnError: true });
+    const displacement = (coords: [number, number, number][]) =>
+      Math.max(...atoms.map((i) => Math.hypot(...coords[i].map((v, k) => v - before[i][k]))));
+    const restrained = displacement(mol.getCoords());
+    expect(restrained).toBeGreaterThan(0);
+    expect(restrained).toBeLessThan(displacement(free.getCoords()));
+  });
+
+  it('applies no restraint penalty within maxDisplacement', () => {
+    using mol = embed(ASPIRIN);
+    using free = mol.copy();
+    const all = mol.getCoords().map((_, i) => i);
+    const restrained = mol.minimize({
+      maxIterations: 2000,
+      positionRestraints: [{ atoms: all, maxDisplacement: 100 }],
+      throwOnError: true,
+    });
+    const plain = free.minimize({ maxIterations: 2000, throwOnError: true });
+    expect(restrained.finalEnergy).toBeCloseTo(plain.finalEnergy, 6);
+    expect(mol.getCoords()).toEqual(free.getCoords());
+  });
+
+  it('includes restraint penalties in the reported energy', () => {
+    using mol = embed(ASPIRIN);
+    const result = mol.minimize({
+      maxIterations: 2000,
+      positionRestraints: [{ atoms: [0, 1, 2], forceConstant: 1000 }],
+      throwOnError: true,
+    });
+    expect(result.finalEnergy).toBeGreaterThan(
+      mol.getForceFieldEnergy({ throwOnError: true }).energy,
+    );
+  });
+
+  it('returns null for invalid positionRestraints', () => {
+    using mol = embed('CCO');
+    expect(mol.minimize({ positionRestraints: [{ atoms: [99] }] })).toBeNull();
+    expect(mol.minimize({ positionRestraints: [{ atoms: [0], forceConstant: -1 }] })).toBeNull();
+    expect(mol.minimize({ positionRestraints: [{ atoms: [0], maxDisplacement: -1 }] })).toBeNull();
+    expect(mol.minimize({ fixedAtoms: [0], positionRestraints: [{ atoms: [0] }] })).toBeNull();
+    expect(mol.minimize({ positionRestraints: [{ atoms: [0] }, { atoms: [0] }] })).toBeNull();
+  });
+
   it('accepts 2D coordinates', () => {
     using mol = rdkit.getMol('CCO')!;
     mol.addHsInPlace();

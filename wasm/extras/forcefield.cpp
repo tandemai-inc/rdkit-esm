@@ -10,6 +10,7 @@
 #include "minilib.h"
 
 #include <ForceField/ForceField.h>
+#include <ForceField/PositionConstraint.h>
 #include <Geometry/point.h>
 #include <GraphMol/DistGeomHelpers/Embedder.h>
 #include <GraphMol/ForceFieldHelpers/MMFF/AtomTyper.h>
@@ -225,6 +226,49 @@ std::vector<unsigned int> getAtomIndices(const bj::object &options,
   return {unique.begin(), unique.end()};
 }
 
+struct PositionRestraint {
+  std::vector<unsigned int> atoms;
+  double maxDisplacement = 0.0;
+  double forceConstant = 100.0;
+};
+
+double getNonNegativeNumber(const bj::object &options, const char *key,
+                            double defaultValue) {
+  const auto number = getNumber(options, key, defaultValue);
+  if (number < 0) {
+    throw std::invalid_argument(std::string(key) +
+                                " must be a non-negative number");
+  }
+  return number;
+}
+
+std::vector<PositionRestraint> getPositionRestraints(
+    const bj::object &options, unsigned int atomCount) {
+  const auto *value = options.if_contains("positionRestraints");
+  if (!value) {
+    return {};
+  }
+  if (!value->is_array()) {
+    throw std::invalid_argument(
+        "positionRestraints must be an array of restraint groups");
+  }
+  std::vector<PositionRestraint> restraints;
+  for (const auto &item : value->as_array()) {
+    if (!item.is_object()) {
+      throw std::invalid_argument(
+          "each positionRestraints entry must be an object");
+    }
+    const auto &group = item.as_object();
+    if (!group.contains("atoms")) {
+      throw std::invalid_argument("each positionRestraints entry needs atoms");
+    }
+    restraints.push_back({getAtomIndices(group, "atoms", atomCount),
+                          getNonNegativeNumber(group, "maxDisplacement", 0.0),
+                          getNonNegativeNumber(group, "forceConstant", 100.0)});
+  }
+  return restraints;
+}
+
 std::string getJob(const bj::object &options) {
   const auto *value = options.if_contains("job");
   if (value && value->is_string()) {
@@ -267,9 +311,37 @@ std::string minimize(RDKit::RWMol &mol, const bj::object &options) {
         "Minimization requires at least one atom that is not fixed");
   }
 
+  const auto restraints = getPositionRestraints(options, mol.getNumAtoms());
+  const std::set<unsigned int> fixed(fixedAtoms.begin(), fixedAtoms.end());
+  std::set<unsigned int> restrained;
+  for (const auto &group : restraints) {
+    for (const auto atom : group.atoms) {
+      if (fixed.count(atom)) {
+        throw std::invalid_argument(
+            "Atom " + std::to_string(atom) +
+            " is in both fixedAtoms and positionRestraints");
+      }
+      if (!restrained.insert(atom).second) {
+        throw std::invalid_argument("Atom " + std::to_string(atom) +
+                                    " is in more than one positionRestraints "
+                                    "entry");
+      }
+    }
+  }
+
   auto parameterized = parameterize(mol);
   for (const auto atom : fixedAtoms) {
     parameterized.field->fixedPoints().push_back(atom);
+  }
+  // Each restraint is anchored at the atom's starting position and is free
+  // within maxDisplacement, harmonic beyond it. The field owns the contribs.
+  for (const auto &group : restraints) {
+    for (const auto atom : group.atoms) {
+      parameterized.field->contribs().emplace_back(
+          new ForceFields::PositionConstraintContrib(
+              parameterized.field.get(), atom, group.maxDisplacement,
+              group.forceConstant));
+    }
   }
   auto positions = conformerPositions(mol);
   const double initialEnergy =
