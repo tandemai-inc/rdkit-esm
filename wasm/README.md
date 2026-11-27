@@ -114,13 +114,14 @@ Artifacts end up in `Code/MinimalLib/build/` of that tree.
 
 ### Patches
 
-| Patch                                    | What it does                                                                                                                                                                                                                                                                                                                                          |
-| ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `0001-minilib-forcefield-extras.patch`   | Wires in the force-field and conformer extras (below).                                                                                                                                                                                                                                                                                                |
-| `0002-drop-etkdgv4-torsion-tables.patch` | Leaves out the ETKDGv4 Gaussian torsion tables (`CrystalFF/torsionData/gaussTorsionPreferences_v4*.h`). Their brace-initialized globals compile to ~690 kB of startup code, and only ETKDGv3 is exposed. Requesting v4 built-in parameters throws instead of silently embedding without torsion terms. Remove this patch if v4 is ever exposed.       |
-| `0003-inline-header-string-tables.patch` | Makes the string tables in `SubstanceGroup.h` and `QueryOps.h` `inline const`. As plain `const` namespace-scope globals in a header, every RDKit source file that includes `ROMol.h` got its own copy and startup initializer (157 copies, ~600 kB of code). No behavior change; a candidate for upstreaming.                                         |
-| `0004-drop-default-ring-templates.patch` | Leaves out RDKit's default ring system templates (`Depictor/TemplateSmarts.h`, ~465 kB of data). They are only read by RDKit's own depictor when `useRingTemplates` is set, which MinimalLib never does; CoordGen (`useCoordGen`) returns before that code and uses its own templates, from which RDKit's set was derived.                            |
-| `0005-drop-npm-publish-check.patch`      | Removes the `rdkit_test` service from `docker/docker_compose_build_minimallib.yml`. Since RDKit 2026.09.2 it runs `npm pack` and `npm publish --dry-run` on the build output, which fails for any RDKit version already on npm, i.e. every release tag. We don't publish RDKit's package, and RDKit's `tests.js` still runs in `03_build.Dockerfile`. |
+| Patch                                    | What it does                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `0001-minilib-forcefield-extras.patch`   | Wires in the force-field and conformer extras (below).                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| `0002-drop-etkdgv4-torsion-tables.patch` | Leaves out the ETKDGv4 Gaussian torsion tables (`CrystalFF/torsionData/gaussTorsionPreferences_v4*.h`). Their brace-initialized globals compile to ~690 kB of startup code, and only ETKDGv3 is exposed. Requesting v4 built-in parameters throws instead of silently embedding without torsion terms. Remove this patch if v4 is ever exposed.                                                                                                                                                 |
+| `0003-inline-header-string-tables.patch` | Makes the string tables in `SubstanceGroup.h` and `QueryOps.h` `inline const`. As plain `const` namespace-scope globals in a header, every RDKit source file that includes `ROMol.h` got its own copy and startup initializer (157 copies, ~600 kB of code). No behavior change; a candidate for upstreaming.                                                                                                                                                                                   |
+| `0004-drop-default-ring-templates.patch` | Leaves out RDKit's default ring system templates (`Depictor/TemplateSmarts.h`, ~465 kB of data). They are only read by RDKit's own depictor when `useRingTemplates` is set, which MinimalLib never does; CoordGen (`useCoordGen`) returns before that code and uses its own templates, from which RDKit's set was derived.                                                                                                                                                                      |
+| `0005-drop-npm-publish-check.patch`      | Removes the `rdkit_test` service from `docker/docker_compose_build_minimallib.yml`. Since RDKit 2026.09.2 it runs `npm pack` and `npm publish --dry-run` on the build output, which fails for any RDKit version already on npm, i.e. every release tag. We don't publish RDKit's package, and RDKit's `tests.js` still runs in `03_build.Dockerfile`.                                                                                                                                           |
+| `0006-export-es6.patch`                  | Adds `-s EXPORT_ES6=1` so `RDKit_minimal.js` is an ES module (`export default initRDKitModule`). The CommonJS glue called `require` and read `__dirname` in Node, which fail once it is bundled into this ESM package; the ES6 glue creates its own `require` with `createRequire(import.meta.url)`. RDKit's version step and `tests.js` load the glue with `require()`, so they now take `.default` (Node ≥ 22.12 loads an ES module with `require()` as long as it has no top-level `await`). |
 
 ### How the extras are wired in
 
@@ -139,16 +140,16 @@ Option and result shapes are typed in `src/types/rdkit-minimalib-json-typings.d.
 
 ### Build settings
 
-The build uses RDKit's official Docker settings (`Code/MinimalLib/docker/03_build.Dockerfile`) unchanged, including InChI and CoordGen support. Keep it that way rather than turning features off to shrink the binary. With the extras and patches `0002`–`0004`, the RDKit 2026.09.1 WASM is 7.1 MB (2.5 MB gzipped); with only `0001` it is 9.0 MB.
+The build uses RDKit's official Docker settings (`Code/MinimalLib/docker/03_build.Dockerfile`), including InChI and CoordGen support, with one change: `0006` outputs an ES module. Keep it that way rather than turning features off to shrink the binary. With the extras and patches `0002`–`0004`, the RDKit 2026.09.1 WASM is 7.1 MB (2.5 MB gzipped); with only `0001` it is 9.0 MB.
 
 `src/init.ts` relies on these emscripten flags. If an RDKit upgrade changes them, `initRDKit()` needs updating:
 
-| Flag                                                  | Why it matters                                                                     |
-| ----------------------------------------------------- | ---------------------------------------------------------------------------------- |
-| `-s MODULARIZE=1`, `-s EXPORT_NAME='initRDKitModule'` | `RDKit_minimal.js` exports an `initRDKitModule` factory, which `init.ts` imports.  |
-| `-s ALLOW_MEMORY_GROWTH=1`, `-s MAXIMUM_MEMORY=4GB`   | The WASM heap grows as needed, up to 4 GB.                                         |
-| `-s USE_PTHREADS=0`                                   | Single-threaded, so no `SharedArrayBuffer` requirement; ETKDG uses `numThreads=1`. |
-| `--bind`                                              | Enables Embind (set in `Code/MinimalLib/CMakeLists.txt`).                          |
+| Flag                                                                     | Why it matters                                                                            |
+| ------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------- |
+| `-s MODULARIZE=1`, `-s EXPORT_NAME='initRDKitModule'`, `-s EXPORT_ES6=1` | `RDKit_minimal.js` default-exports an `initRDKitModule` factory, which `init.ts` imports. |
+| `-s ALLOW_MEMORY_GROWTH=1`, `-s MAXIMUM_MEMORY=4GB`                      | The WASM heap grows as needed, up to 4 GB.                                                |
+| `-s USE_PTHREADS=0`                                                      | Single-threaded, so no `SharedArrayBuffer` requirement; ETKDG uses `numThreads=1`.        |
+| `--bind`                                                                 | Enables Embind (set in `Code/MinimalLib/CMakeLists.txt`).                                 |
 
 ### Why `GET_SRC=copy`
 
@@ -167,6 +168,7 @@ wasm/
     0003-inline-header-string-tables.patch
     0004-drop-default-ring-templates.patch
     0005-drop-npm-publish-check.patch
+    0006-export-es6.patch
   scripts/build-wasm.sh     # build script
   .cache/                   # downloaded RDKit tarballs (gitignored)
 ```

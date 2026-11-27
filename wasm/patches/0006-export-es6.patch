@@ -1,0 +1,35 @@
+diff --git a/Code/MinimalLib/docker/03_build.Dockerfile b/Code/MinimalLib/docker/03_build.Dockerfile
+index df926c1..6d2369a 100644
+--- a/Code/MinimalLib/docker/03_build.Dockerfile
++++ b/Code/MinimalLib/docker/03_build.Dockerfile
+@@ -82,7 +82,7 @@ RUN emcmake cmake -DRDK_BUILD_FREETYPE_SUPPORT=ON -DRDK_BUILD_MINIMAL_LIB=ON \
+   -DZLIB_LIBRARY=/opt/zlib/lib/libz.a \
+   -DCMAKE_CXX_FLAGS="${EXCEPTION_HANDLING} -O3 -DNDEBUG" \
+   -DCMAKE_C_FLAGS="${EXCEPTION_HANDLING} -O3 -DNDEBUG -DCOMPILE_ANSI_ONLY" \
+-  -DCMAKE_EXE_LINKER_FLAGS="${EXCEPTION_HANDLING} -s STACK_OVERFLOW_CHECK=1 -s USE_PTHREADS=0 -s ALLOW_MEMORY_GROWTH=1 -s MAXIMUM_MEMORY=4GB -s MODULARIZE=1 --emit-tsd RDKit_minimal.d.ts -s EXPORT_NAME='initRDKitModule'" ..
++  -DCMAKE_EXE_LINKER_FLAGS="${EXCEPTION_HANDLING} -s STACK_OVERFLOW_CHECK=1 -s USE_PTHREADS=0 -s ALLOW_MEMORY_GROWTH=1 -s MAXIMUM_MEMORY=4GB -s MODULARIZE=1 -s EXPORT_ES6=1 --emit-tsd RDKit_minimal.d.ts -s EXPORT_NAME='initRDKitModule'" ..
+ 
+ # "patch" to make the InChI code work with emscripten:
+ RUN cp /src/rdkit/External/INCHI-API/src/INCHI_BASE/src/util.c /src/rdkit/External/INCHI-API/src/INCHI_BASE/src/util.c.bak && \
+@@ -103,7 +103,7 @@ RUN mv ./dist ./build
+ # Set package version from the compiled WASM module
+ WORKDIR /src/rdkit/Code/MinimalLib/build
+ RUN \
+-  VERSION=$(node -e 'require("./dist/RDKit_minimal.js")().then(m => console.log(m.version()))') && \
++  VERSION=$(node -e 'require("./dist/RDKit_minimal.js").default().then(m => console.log(m.version()))') && \
+   test -n "$VERSION" && \
+   jq --arg v "$VERSION" '.version = $v' package.json > package.json.tmp && mv package.json.tmp package.json
+ # Normalize package.json the same way npm publish would (e.g. version format).
+diff --git a/Code/MinimalLib/tests/tests.js b/Code/MinimalLib/tests/tests.js
+index 376f04d..c1b33eb 100644
+--- a/Code/MinimalLib/tests/tests.js
++++ b/Code/MinimalLib/tests/tests.js
+@@ -12,7 +12,7 @@
+ const assert = require('assert');
+ const fs = require('fs');
+ const readline = require('readline');
+-var initRDKitModule = require('../build/dist/RDKit_minimal.js');
++var initRDKitModule = require('../build/dist/RDKit_minimal.js').default;
+ 
+ var RDKitModule;
+ 

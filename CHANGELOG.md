@@ -2,6 +2,10 @@
 
 ## [vX.X.X] Unreleased
 
+## [v0.9.1]
+
+- Fix `initRDKit()` in plain Node (ESM): MinimalLib is now built as an ES module (`-s EXPORT_ES6=1`, `wasm/patches/0006`), so the bundled glue no longer calls an undefined `require` or reads `__dirname`
+
 ## [v0.9.0]
 
 - Upgrade minimalLib to RDKit v2026.09.3 (SHA 2b54009e0b381fa12447402412dd0701d16f8138)
